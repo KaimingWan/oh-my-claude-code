@@ -14,6 +14,18 @@ You use AI coding agents every day. But every new session starts from zero. The 
 
 **What if your agent could compound its intelligence over time?**
 
+## Inspiration
+
+This framework is inspired by how the best AI engineers actually work:
+
+**Boris Cherny** (creator of Claude Code) [shared his workflow](https://www.reddit.com/r/ClaudeAI/comments/1ql1ofh/claude_code_creator_boris_explains_cowork_agentic/) — the Claude Code team shares a single CLAUDE.md checked into git, and the whole team contributes to it multiple times a week. When Claude does something wrong, they add it to CLAUDE.md so it doesn't happen again. As [paddo.dev summarized](https://paddo.dev/blog/how-boris-uses-claude-code/): *"This is Compounding Engineering in practice. Every correction becomes permanent context. The cost of a mistake pays dividends forever."*
+
+Boris's most important tip: **give Claude a way to verify its work** — if Claude has that feedback loop, it will 2-3x the quality of the final result.
+
+The [emerging consensus among top agentic engineers](https://www.youtube.com/watch?v=ttdWPDmBN_4&t=17s) points to the same patterns: plan before you code, codify lessons into persistent files, use hooks for automated guardrails, and build feedback loops that make the agent self-correct.
+
+**oh-my-claude-code takes these principles and turns them into a ready-to-use framework** — so you don't have to build the scaffolding yourself.
+
 ## The Philosophy
 
 This framework is built on 4 core beliefs:
