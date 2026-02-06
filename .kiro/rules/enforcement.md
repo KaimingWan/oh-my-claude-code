@@ -1,0 +1,26 @@
+# Enforcement Layer
+
+> If it can be enforced by code, don't enforce it with words.
+
+## Implemented
+
+| Rule | Implementation | Status |
+|------|---------------|--------|
+| 3 Iron Rules reminder | `.kiro/hooks/three-rules-check.sh` (userPromptSubmit) | ✅ |
+| Anti-hallucination guard | `.kiro/hooks/enforce-research.sh` (preToolUse) | ✅ |
+| Persistence check | `.kiro/hooks/check-persist.sh` (stop) | ✅ |
+
+## To Implement
+
+| Rule | Planned Implementation | Priority |
+|------|----------------------|----------|
+| Markdown lint | `.markdownlint.json` | P2 |
+| Sensitive info check | `.githooks/pre-commit` | P1 |
+| Index integrity | `tests/test_index_integrity.py` | P2 |
+
+## Adding New Rules
+
+1. Confirm the rule can be enforced by code
+2. Choose implementation (linting / test / hook)
+3. Implement and test
+4. Move from "To Implement" to "Implemented"

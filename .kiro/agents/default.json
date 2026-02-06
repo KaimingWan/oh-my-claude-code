@@ -1,0 +1,28 @@
+{
+  "name": "default",
+  "description": "Default agent with 3-layer architecture",
+  "tools": ["*"],
+  "allowedTools": ["*"],
+  "resources": [
+    "file://AGENTS.md",
+    "file://knowledge/INDEX.md"
+  ],
+  "hooks": {
+    "userPromptSubmit": [
+      {
+        "command": ".kiro/hooks/three-rules-check.sh"
+      }
+    ],
+    "preToolUse": [
+      {
+        "matcher": "fs_write",
+        "command": ".kiro/hooks/enforce-research.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".kiro/hooks/check-persist.sh"
+      }
+    ]
+  }
+}
