@@ -308,6 +308,19 @@ git clone https://github.com/KaimingWan/oh-my-claude-code.git /tmp/omcc
 | Just self-learning | `.kiro/skills/self-reflect/` |
 | Just knowledge system | `knowledge/` |
 
+### Troubleshooting
+
+**Kiro CLI: "user defined default not found"**
+
+If you see `Error: user defined default default not found` on startup, create a global default agent:
+
+```bash
+mkdir -p ~/.kiro/agents
+echo '{"name":"default","description":"Global default","tools":["*"],"allowedTools":["*"]}' > ~/.kiro/agents/default.json
+```
+
+The project-level `.kiro/agents/default.json` (with hooks) will override this automatically.
+
 ## Compatibility
 
 | Tool | Config | Hooks | Skills | Status |
