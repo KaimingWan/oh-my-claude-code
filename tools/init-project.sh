@@ -34,6 +34,14 @@ cp "$TEMPLATE_DIR/.gitignore" "$TARGET/" 2>/dev/null || true
 
 chmod +x "$TARGET/.kiro/hooks/"*.sh
 
+# Copy skills
+if [ -d "$TEMPLATE_DIR/.kiro/skills" ]; then
+  mkdir -p "$TARGET/.kiro/skills"
+  cp -r "$TEMPLATE_DIR/.kiro/skills/"* "$TARGET/.kiro/skills/"
+  SKILL_COUNT=$(ls -d "$TARGET/.kiro/skills/"*/ 2>/dev/null | wc -l | tr -d ' ')
+  echo "📦 Copied $SKILL_COUNT skills"
+fi
+
 # Replace project name in agent config
 sed -i '' "s/Default agent/$PROJECT_NAME agent/g" "$TARGET/.kiro/agents/default.json" 2>/dev/null || \
 sed -i "s/Default agent/$PROJECT_NAME agent/g" "$TARGET/.kiro/agents/default.json"
@@ -46,6 +54,7 @@ echo "  CLAUDE.md              — High-frequency recall (Claude Code)"
 echo "  AGENTS.md              — High-frequency recall (Kiro CLI)"
 echo "  .kiro/rules/           — Enforcement + Reference layers"
 echo "  .kiro/hooks/           — Automated guardrails"
+echo "  .kiro/skills/          — $SKILL_COUNT pre-installed skills"
 echo "  knowledge/INDEX.md     — Knowledge routing (empty, fill it in)"
 echo "  plans/                 — Task plans"
 echo "  tools/                 — Reusable scripts"
