@@ -106,50 +106,86 @@ Every task passes through these gates — not as suggestions, but as automated c
 | 2 | **Skill First** | Prevents reinventing the wheel. Reuse what exists. |
 | 3 | **Toolify First** | Prevents repetition. If done 3x, make it a tool. |
 
-### 🧠 Self-Reflect (Built-in Skill)
+### 🧠 Self-Reflect — The Agent That Rewires Itself
 
-Real-time correction detection with confidence scoring:
+Most agents forget your corrections the moment the session ends. Self-Reflect changes that fundamentally.
+
+**How it works:** The agent monitors every message for correction patterns — explicit ("no, use X not Y"), implicit ("you missed..."), and even positive reinforcement ("perfect, keep doing this"). Each detection is scored by confidence (70-90%) and automatically routed to the right file in the 3-layer architecture.
 
 ```
-User: no, use gpt-5.1 not gpt-5
-Agent: 📝 Learning captured: 'use gpt-5.1 not gpt-5'
-       → Written to ~/.kiro/AGENTS.md (global preference)
+User: don't add comments unless I ask
+Agent: 📝 Learning captured: 'don't add comments unless I ask'
+       → Written to CLAUDE.md (high-frequency rule)
+       
+       Got it, no comments unless requested.
 ```
 
-Detects: explicit corrections, implicit negation ("you missed..."), and positive reinforcement ("perfect, keep doing this").
+**What gets captured and where:**
 
-Commands: `/reflect` · `/view-queue` · `/skip-reflect`
+| Pattern | Example | Confidence | Written To |
+|---------|---------|-----------|------------|
+| Explicit correction | "no, use gpt-5.1 not gpt-5" | 90% | Global config |
+| Implicit negation | "you missed the error handling" | 80% | Project CLAUDE.md |
+| Style preference | "remember: always use TypeScript" | 90% | Project CLAUDE.md |
+| Positive reinforcement | "perfect, keep doing this" | 70% | Reference layer |
 
-### 🔍 Multi-Level Research (Built-in Skill)
+**The result:** Day 1, you correct the agent 20 times. Day 30, maybe twice. Day 100, it thinks like you.
 
-Cost-aware research strategy with automatic fallback:
+**Commands:** `/reflect` (review & sync) · `/view-queue` (see pending) · `/skip-reflect` (clear queue)
 
-| Level | Tool | Cost |
-|-------|------|------|
-| 0 | Built-in knowledge | Free |
-| 1 | Web search | Free |
-| 2 | Tavily Deep Research API | API credits |
+### 🔍 Multi-Level Research — Smart, Cost-Aware Information Gathering
 
-Rule: never use Level 2 when Level 0 can answer it.
+Most agents either never search (and hallucinate) or always search (and waste API credits). This skill implements a tiered strategy that picks the cheapest source that can answer the question:
 
-### 🛡️ Anti-Hallucination Guard
+```
+Level 0: Built-in knowledge     → Free, instant
+         ↓ Can't answer?
+Level 1: Web search              → Free, 2-3 seconds
+         ↓ Need depth?
+Level 2: Tavily Deep Research    → API credits, 30-120 seconds
+```
 
-Hook that intercepts file writes containing unsupported negative claims ("doesn't support", "no mechanism") and forces verification against official docs.
+**The agent is trained to stay at the lowest level possible.** Common knowledge? Level 0. Quick fact check? Level 1. Competitive analysis or deep technical comparison? Level 2.
 
-### 📚 Knowledge System (Persistent Memory)
+```bash
+# Deep research with structured output
+./scripts/research.sh '{"input": "React vs Vue in 2026", "model": "pro"}' report.md
+
+# Quick lookup
+./scripts/research.sh '{"input": "Next.js app router conventions", "model": "mini"}'
+```
+
+Supports structured JSON output schemas, multiple citation formats (numbered, MLA, APA, Chicago), and automatic model selection.
+
+### 🛡️ Anti-Hallucination Guard — Catch Lies Before They're Written
+
+The `enforce-research.sh` hook runs before every file write. If the agent is about to write an unsupported negative claim — "doesn't support", "no mechanism", "not available" — the hook intercepts it and forces verification against official docs first.
+
+This was born from a real mistake: an agent confidently wrote "this platform has no hook mechanism" into a doc — when it actually did. The hook ensures the agent proves its claims before committing them to files.
+
+### 📚 Knowledge System — Persistent Memory That Grows
 
 ```
 User question → knowledge/INDEX.md → topic indexes → source documents
 ```
 
-Every piece of knowledge is indexed, citable, and persistent across sessions. The agent builds a growing knowledge base that compounds over time.
+Unlike chat history that gets truncated, the knowledge system is a **permanent, structured, indexed memory**:
+
+- **INDEX.md** acts as a routing table — the agent knows where to look before it looks
+- **Topic directories** organize knowledge by domain (you define the structure)
+- **lessons-learned.md** is episodic memory — mistakes and wins, so the agent never repeats errors
+- **Every piece of knowledge is citable** — the agent must reference its source, no hallucinated citations
+
+The knowledge base grows organically as you work. Research results, extracted data, plans — all automatically persisted and indexed.
 
 ### 🔧 Self-Maintenance Commands
 
-| Command | Purpose |
-|---------|---------|
-| `@lint` | Health check — find rules that should be code, check line budget |
-| `@compact` | Compress Layer 2, move low-freq rules to Layer 3 |
+The framework maintains itself:
+
+| Command | What It Does |
+|---------|-------------|
+| `@lint` | Audits your CLAUDE.md — checks line count against 200-line budget, finds rules that should be hooks instead of prose, suggests migrations |
+| `@compact` | Compresses Layer 2 — moves low-frequency rules to Layer 3, merges duplicates, tightens wording. Keeps your agent instructions sharp. |
 
 ## Project Structure
 
