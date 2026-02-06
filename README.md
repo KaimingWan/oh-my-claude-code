@@ -187,6 +187,53 @@ The framework maintains itself:
 | `@lint` | Audits your CLAUDE.md — checks line count against 200-line budget, finds rules that should be hooks instead of prose, suggests migrations |
 | `@compact` | Compresses Layer 2 — moves low-frequency rules to Layer 3, merges duplicates, tightens wording. Keeps your agent instructions sharp. |
 
+## 📦 21 Pre-installed Skills
+
+The framework ships with 21 curated skills organized into 4 categories. The agent automatically activates the right skill based on what you're doing.
+
+### 🔧 Development Workflow (12 skills)
+
+The complete software development lifecycle, from idea to merge:
+
+| Skill | When It Activates |
+|-------|-------------------|
+| `brainstorming` | Before any creative work — explores intent and requirements before implementation |
+| `writing-plans` | When you have a spec — breaks it into a structured, reviewable plan |
+| `executing-plans` | When you have a plan — executes with review checkpoints |
+| `systematic-debugging` | When hitting a bug — structured root cause analysis, not random fixes |
+| `test-driven-development` | When implementing features — tests first, then code |
+| `requesting-code-review` | When work is done — structured self-review before merge |
+| `receiving-code-review` | When getting feedback — technical rigor, not blind agreement |
+| `verification-before-completion` | Before claiming "done" — runs verification, evidence before assertions |
+| `using-git-worktrees` | When starting feature work — isolated worktrees for parallel development |
+| `finishing-a-development-branch` | When implementation is complete — guides merge, PR, or cleanup |
+| `dispatching-parallel-agents` | When facing 2+ independent tasks — parallel execution |
+| `subagent-driven-development` | When executing plans with independent tasks — delegate to subagents |
+
+### ✍️ Writing & Communication (3 skills)
+
+| Skill | When It Activates |
+|-------|-------------------|
+| `writing-clearly-and-concisely` | When writing prose — docs, commit messages, error messages, UI text |
+| `humanizer` | When editing text — removes AI-generated writing patterns |
+| `doc-coauthoring` | When writing docs/proposals — structured co-authoring workflow |
+
+### 🔍 Analysis & Quality (3 skills)
+
+| Skill | When It Activates |
+|-------|-------------------|
+| `security-review` | At the end of every task — audits for vulnerabilities |
+| `mermaid-diagrams` | When visualizing architecture — class, sequence, flow, ER diagrams |
+| `find-skills` | When looking for capabilities — discovers installable skills |
+
+### 🧠 Framework Core (3 skills)
+
+| Skill | When It Activates |
+|-------|-------------------|
+| `self-reflect` | When you correct the agent — captures and persists the learning |
+| `research` | When information is needed — multi-level search with cost awareness |
+| `skill-creator` | When creating new skills — guides skill design and structure |
+
 ## Project Structure
 
 ```
@@ -202,9 +249,14 @@ The framework maintains itself:
 │   │   ├── three-rules-check.sh       # Iron rules enforcement
 │   │   ├── enforce-research.sh        # Anti-hallucination
 │   │   └── check-persist.sh           # Auto-persist reminder
-│   ├── skills/
-│   │   ├── self-reflect/              # 🧠 Self-learning system
-│   │   └── research/                  # 🔍 Multi-level research
+│   ├── skills/                        # 21 pre-installed skills
+│   │   ├── self-reflect/              #   🧠 Self-learning system
+│   │   ├── research/                  #   🔍 Multi-level research
+│   │   ├── brainstorming/             #   💡 Creative exploration
+│   │   ├── writing-plans/             #   📋 Plan before code
+│   │   ├── systematic-debugging/      #   🐛 Root cause analysis
+│   │   ├── security-review/           #   🔒 Vulnerability audit
+│   │   └── ... (15 more)             #   See full list above
 │   └── agents/
 │       └── default.json               # Agent config with hooks
 ├── knowledge/
