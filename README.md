@@ -1,162 +1,169 @@
 # oh-my-claude-code
 
-A battle-tested framework for building **self-improving AI coding agents**. Like oh-my-zsh for your AI coding assistant.
+**Turn your AI coding agent into a self-evolving, personalized super-intelligence.**
+
+Like oh-my-zsh for Zsh, but for AI coding agents. A framework that makes your agent learn from every interaction, persist valuable knowledge, and get stronger over time — automatically.
 
 Works with: **Claude Code** | **Kiro CLI** | **OpenCode** | Any CLAUDE.md-compatible agent
 
 ---
 
-## Why This Exists
+## The Problem
 
-Most AI coding setups are flat — a single instruction file that grows into an unmanageable mess. This framework introduces a **3-layer architecture** that keeps your agent sharp, self-correcting, and continuously improving.
+You use AI coding agents every day. But every new session starts from zero. The agent forgets your preferences, repeats the same mistakes, loses valuable context, and never truly understands your workflow.
+
+**What if your agent could compound its intelligence over time?**
+
+## The Philosophy
+
+This framework is built on 4 core beliefs:
+
+### 🔄 Compound Interest Engineering
+
+> Every interaction should make the agent permanently smarter.
+
+Most AI setups are disposable — chat, get answer, forget. oh-my-claude-code treats every correction, every preference, every lesson as an **investment**. The agent captures learnings in real-time and writes them to persistent files. Day 1 it's generic. Day 30 it knows your codebase, your style, your decision patterns. Day 100 it's an extension of your brain.
+
+```
+Day 1:   Generic AI assistant
+Day 30:  Knows your preferences, avoids past mistakes
+Day 100: Personalized super-intelligence that thinks like you
+```
+
+### 💾 Auto-Persist Valuable Intermediate Results
+
+> If it's worth generating, it's worth saving.
+
+Structured output vanishing in chat history is a tragedy. This framework enforces a simple rule: **every valuable intermediate result gets written to a file**. Research findings → `knowledge/`. Plans → `plans/`. Lessons → `lessons-learned.md`. Nothing valuable is lost.
+
+### 🧠 Feedback Loop → Self-Evolution
+
+> The agent detects your corrections and rewires itself.
+
+When you say "no, use X not Y", the agent doesn't just comply — it **captures the pattern**, classifies it by confidence (70-90%), and writes it to the appropriate layer of its instruction set. Next time, it won't need correcting. This is a closed-loop self-evolution system:
+
+```
+You correct the agent
+       ↓
+Agent detects the correction pattern
+       ↓
+Writes to persistent instruction file (immediately, no queue)
+       ↓
+Next session, the agent already knows
+       ↓
+You correct less and less over time
+       ↓
+🎯 Personalized super-intelligence
+```
+
+### ⚙️ As-Code Constraints + Persistent Memory
+
+> If it can be enforced by code, don't enforce it with words.
+
+Natural language instructions drift. Code doesn't. This framework uses **hooks** (automated scripts that run at key moments) to enforce rules that matter. Combined with a structured **knowledge base** for persistent memory, your agent evolves within guardrails — getting smarter without going off the rails.
+
+## Architecture: 3 Layers
 
 ```
 ┌─────────────────────────────────────────┐
 │  Layer 1: Enforcement (Code)            │  ← Hooks, linters, tests
-│  "If it can be enforced by code,        │    Auto-enforced. Zero drift.
-│   don't enforce it with words."         │
+│  Rules enforced automatically.          │    Zero drift. Zero forgetting.
+│  No reliance on the agent "remembering" │
 ├─────────────────────────────────────────┤
-│  Layer 2: High-Frequency Recall         │  ← CLAUDE.md / AGENTS.md
-│  Core rules the agent reads EVERY turn. │    ≤200 lines. Stays lean.
-│  Strict line budget forces discipline.  │
+│  Layer 2: High-Frequency Recall         │  ← CLAUDE.md / AGENTS.md (≤200 lines)
+│  Core rules read EVERY conversation.    │    Strict budget forces discipline.
+│  The agent's "working memory."          │
 ├─────────────────────────────────────────┤
-│  Layer 3: On-Demand Reference           │  ← Linked .md files
+│  Layer 3: On-Demand Reference           │  ← Linked .md files, knowledge/
 │  Deep docs, templates, SOPs.            │    Loaded only when needed.
-│  No context window waste.               │
+│  The agent's "long-term memory."        │    No context window waste.
 └─────────────────────────────────────────┘
 ```
 
-## ✨ Features
+Why 3 layers? Because a single flat file either wastes context window (too detailed) or misses important rules (too brief). This architecture gives you both precision and depth.
 
-### 🔁 3 Iron Rules (Enforced via Hooks)
+## Features
 
-Every task must pass through these gates before execution:
+### 🚨 3 Iron Rules (Hook-Enforced)
 
-| # | Rule | What It Means |
+Every task passes through these gates — not as suggestions, but as automated checks:
+
+| # | Rule | Why It Matters |
 |---|------|---------------|
-| 1 | **Research First** | Check best practices before answering. Don't guess. |
-| 2 | **Skill First** | Is there an existing skill/template that handles this? |
-| 3 | **Toolify First** | If you're doing it 3+ times, make it reusable. |
+| 1 | **Research First** | Prevents hallucination. Check before answering. |
+| 2 | **Skill First** | Prevents reinventing the wheel. Reuse what exists. |
+| 3 | **Toolify First** | Prevents repetition. If done 3x, make it a tool. |
 
-These aren't suggestions — they're enforced by `hooks/three-rules-check.sh` on every user message.
+### 🧠 Self-Reflect (Built-in Skill)
 
-### 🧠 Self-Learning (Self-Reflect Skill)
-
-The agent learns from your corrections in real-time and never makes the same mistake twice:
+Real-time correction detection with confidence scoring:
 
 ```
-User corrects agent → Agent detects correction → Writes to target file immediately
-                                                  (No queue. No delay.)
+User: no, use gpt-5.1 not gpt-5
+Agent: 📝 Learning captured: 'use gpt-5.1 not gpt-5'
+       → Written to ~/.kiro/AGENTS.md (global preference)
 ```
 
-**How it works:**
-- Detects correction patterns with confidence scoring (70-90%)
-- Captures both negative corrections ("no, use X") and positive reinforcement ("perfect!")
-- Routes learnings to the right layer automatically
-- Maintains an episodic memory in `knowledge/lessons-learned.md`
+Detects: explicit corrections, implicit negation ("you missed..."), and positive reinforcement ("perfect, keep doing this").
 
-**Commands:**
-| Command | Purpose |
-|---------|---------|
-| `/reflect` | Review & sync pending learnings to 3-layer architecture |
-| `/view-queue` | See what the agent has learned |
-| `/skip-reflect` | Clear the learning queue |
+Commands: `/reflect` · `/view-queue` · `/skip-reflect`
 
-### 🔍 Multi-Level Research
+### 🔍 Multi-Level Research (Built-in Skill)
 
-Built-in research strategy that minimizes cost while maximizing quality:
+Cost-aware research strategy with automatic fallback:
 
-| Level | Tool | Use Case | Cost |
-|-------|------|----------|------|
-| 0 | Built-in knowledge | Common concepts | Free |
-| 1 | `web_search` | Quick verification | Free |
-| 2 | Tavily Research API | Deep research, competitive analysis | API credits |
+| Level | Tool | Cost |
+|-------|------|------|
+| 0 | Built-in knowledge | Free |
+| 1 | Web search | Free |
+| 2 | Tavily Deep Research API | API credits |
 
-**Rule**: Always use the lowest level that answers the question. The agent is trained to not waste API credits on questions it can answer from built-in knowledge.
-
-```bash
-# Quick research
-./scripts/research.sh '{"input": "quantum computing trends"}'
-
-# Deep research with structured output
-./scripts/research.sh '{"input": "AI agents comparison", "model": "pro"}' report.md
-```
+Rule: never use Level 2 when Level 0 can answer it.
 
 ### 🛡️ Anti-Hallucination Guard
 
-The `enforce-research.sh` hook intercepts file writes containing unsupported negative claims ("doesn't support", "no mechanism", "not available") and forces the agent to verify against official docs first.
+Hook that intercepts file writes containing unsupported negative claims ("doesn't support", "no mechanism") and forces verification against official docs.
 
-### 🪝 Hook System
-
-Automated guardrails that run at key moments:
-
-| Hook | Trigger | Purpose |
-|------|---------|---------|
-| `three-rules-check.sh` | Every user message | Enforces the 3 iron rules |
-| `enforce-research.sh` | Before file writes | Catches hallucinated claims |
-| `check-persist.sh` | After agent responds | Reminds to persist structured output |
-
-### 📐 Meta Rules: The Constitution
-
-> **If it can be enforced by code, don't enforce it with words.**
-
-This single principle keeps the system healthy. Before adding any rule:
-
-| Ask | If yes → |
-|-----|----------|
-| Can this be a linter/test/hook? | Write code, not prose |
-| Is this needed every conversation? | Layer 2 (≤200 lines) |
-| Is this detailed but rare? | Layer 3 (reference) |
-
-### 📚 Knowledge System
-
-Structured knowledge with index-based retrieval:
+### 📚 Knowledge System (Persistent Memory)
 
 ```
 User question → knowledge/INDEX.md → topic indexes → source documents
 ```
 
-The agent always cites sources. No hallucinated references.
+Every piece of knowledge is indexed, citable, and persistent across sessions. The agent builds a growing knowledge base that compounds over time.
 
-### 🔧 Custom Commands
+### 🔧 Self-Maintenance Commands
 
 | Command | Purpose |
 |---------|---------|
-| `@lint` | Health check — line count, find rules that should be code |
-| `@compact` | Compress instructions, move low-freq rules to reference layer |
+| `@lint` | Health check — find rules that should be code, check line budget |
+| `@compact` | Compress Layer 2, move low-freq rules to Layer 3 |
 
 ## Project Structure
 
 ```
 .
-├── CLAUDE.md                          # High-frequency recall (Claude Code)
-├── AGENTS.md                          # High-frequency recall (Kiro CLI / OpenCode)
-├── .claude/
-│   └── settings.json                  # Claude Code permissions
+├── CLAUDE.md                          # Layer 2: Working memory (Claude Code)
+├── AGENTS.md                          # Layer 2: Working memory (Kiro CLI)
 ├── .kiro/
 │   ├── rules/
-│   │   ├── enforcement.md             # Layer 1: What's enforced by code
-│   │   ├── reference.md               # Layer 3: On-demand detailed docs
-│   │   └── commands.md                # Custom commands (@lint, @compact)
+│   │   ├── enforcement.md             # Layer 1: Code-enforced rules
+│   │   ├── reference.md               # Layer 3: Long-term memory
+│   │   └── commands.md                # @lint, @compact
 │   ├── hooks/
-│   │   ├── three-rules-check.sh       # 3 iron rules enforcement
-│   │   ├── enforce-research.sh        # Anti-hallucination guard
-│   │   └── check-persist.sh           # Persistence reminder
+│   │   ├── three-rules-check.sh       # Iron rules enforcement
+│   │   ├── enforce-research.sh        # Anti-hallucination
+│   │   └── check-persist.sh           # Auto-persist reminder
 │   ├── skills/
 │   │   ├── self-reflect/              # 🧠 Self-learning system
-│   │   │   ├── SKILL.md
-│   │   │   ├── reflect_utils.py
-│   │   │   └── commands/
 │   │   └── research/                  # 🔍 Multi-level research
-│   │       ├── SKILL.md
-│   │       └── scripts/research.sh
 │   └── agents/
-│       └── default.json               # Agent configuration with hooks
+│       └── default.json               # Agent config with hooks
 ├── knowledge/
 │   ├── INDEX.md                       # Knowledge routing table
 │   └── lessons-learned.md             # Episodic memory
-├── plans/                             # Task plans and specs
-├── tools/
+├── plans/                             # Persisted task plans
+├── tools/                             # Reusable scripts
 │   └── init-project.sh                # Bootstrap new projects
 └── templates/                         # Reusable templates
 ```
@@ -168,84 +175,47 @@ The agent always cites sources. No hallucinated references.
 ```bash
 git clone https://github.com/KaimingWan/oh-my-claude-code.git my-project
 cd my-project
-# Edit CLAUDE.md to define your agent's identity and roles
+# Edit CLAUDE.md — define your agent's identity, roles, and rules
+# Start chatting — the agent evolves from here
 ```
 
-### Option 2: Initialize in existing project
+### Option 2: Add to existing project
 
 ```bash
 git clone https://github.com/KaimingWan/oh-my-claude-code.git /tmp/omcc
-/tmp/omcc/tools/init-project.sh ./my-existing-project "My Project"
+/tmp/omcc/tools/init-project.sh ./my-project "My Project"
 ```
 
-### Option 3: Cherry-pick what you need
+### Option 3: Cherry-pick
 
-Just copy the specific pieces:
-- Only want hooks? → Copy `.kiro/hooks/`
-- Only want the 3-layer structure? → Copy `CLAUDE.md` + `.kiro/rules/`
-- Only want self-learning? → Copy `.kiro/skills/self-reflect/`
-- Only want knowledge system? → Copy `knowledge/`
-
-## Customization
-
-### Define Your Agent's Identity
-
-Edit `CLAUDE.md` (or `AGENTS.md` for Kiro):
-
-```markdown
-## Identity
-- **Name**: My Project Agent
-- **Language**: English
-
-## Roles
-| Role | Trigger | Knowledge Source |
-|------|---------|-----------------|
-| 🔧 Engineer | Technical tasks | `knowledge/tech/` |
-| 📣 Writer | Content creation | `knowledge/content/` |
-```
-
-### Add Knowledge
-
-```bash
-mkdir -p knowledge/my-topic
-# Add your .md files
-# Update knowledge/INDEX.md with routing rules
-```
-
-### Add Custom Hooks
-
-Create a script in `.kiro/hooks/`, register in `.kiro/agents/default.json`:
-
-```json
-{
-  "hooks": {
-    "userPromptSubmit": [
-      { "command": ".kiro/hooks/my-hook.sh" }
-    ]
-  }
-}
-```
+| Want | Copy |
+|------|------|
+| Just the 3-layer structure | `CLAUDE.md` + `.kiro/rules/` |
+| Just the hooks | `.kiro/hooks/` + `.kiro/agents/` |
+| Just self-learning | `.kiro/skills/self-reflect/` |
+| Just knowledge system | `knowledge/` |
 
 ## Compatibility
 
-| Tool | Config File | Hooks | Skills | Status |
-|------|------------|-------|--------|--------|
-| **Claude Code** | `CLAUDE.md` | `.claude/settings.json` | ✅ | ✅ Full support |
-| **Kiro CLI** | `AGENTS.md` | `.kiro/hooks/` + `.kiro/agents/` | ✅ | ✅ Full support |
-| **OpenCode** | `AGENTS.md` | — | — | ✅ Instructions work |
-| **Others** | `CLAUDE.md` | — | — | ✅ Instructions work |
+| Tool | Config | Hooks | Skills | Status |
+|------|--------|-------|--------|--------|
+| **Claude Code** | `CLAUDE.md` | ✅ | ✅ | Full support |
+| **Kiro CLI** | `AGENTS.md` | ✅ | ✅ | Full support |
+| **OpenCode** | `AGENTS.md` | — | — | Instructions work |
+| **Others** | `CLAUDE.md` | — | — | Instructions work |
 
 ## Design Principles
 
-1. **Code over prose** — Enforce with hooks/linters, not instructions
-2. **Budget your context** — 200-line cap on high-frequency layer
-3. **Compound interest** — Every correction makes the agent permanently better
-4. **Research before action** — Never guess when you can verify
-5. **Persist everything** — Structured output goes to files, not just chat
+1. **Compound over time** — Every session makes the next one better
+2. **Persist everything valuable** — Chat is ephemeral, files are forever
+3. **Closed-loop evolution** — Corrections → persistent rules → fewer corrections
+4. **Code over prose** — Hooks enforce, words suggest
+5. **Budget your context** — 200-line cap keeps Layer 2 sharp
+6. **Research before action** — Never guess when you can verify
 
 ## Contributing
 
-PRs welcome! The bar for adding to Layer 2 (high-frequency) is intentionally high — see the meta rules. If you've discovered a pattern that makes AI coding agents better, we'd love to see it.
+PRs welcome! The bar for Layer 2 additions is intentionally high — if it can be a hook, make it a hook. If it's not needed every conversation, it belongs in Layer 3.
 
 ## License
 
