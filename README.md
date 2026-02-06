@@ -187,34 +187,39 @@ The framework maintains itself:
 | `@lint` | Audits your CLAUDE.md — checks line count against 200-line budget, finds rules that should be hooks instead of prose, suggests migrations |
 | `@compact` | Compresses Layer 2 — moves low-frequency rules to Layer 3, merges duplicates, tightens wording. Keeps your agent instructions sharp. |
 
-## 📦 21 Pre-installed Skills
+## 📦 21 Pre-installed Skills — Curated from the Best
 
-The framework ships with 21 curated skills organized into 4 categories. The agent automatically activates the right skill based on what you're doing.
+The framework ships with **21 battle-tested skills** from top sources in the Claude Code ecosystem:
 
-### 🔧 Development Workflow (12 skills)
+- 🏆 **[Superpowers](https://github.com/obra/superpowers)** by Jesse Vincent (Obra) — The most popular agentic skills framework for Claude Code. A proven software development methodology used by thousands of developers. Our dev workflow skills (brainstorming, TDD, debugging, code review, etc.) come from this collection.
+- 🧠 **Framework originals** — Self-reflect (self-learning system) and multi-level research are built specifically for this framework.
+
+Skills activate automatically based on what you're doing — no manual invocation needed.
+
+### 🔧 Development Workflow — from Superpowers (12 skills)
 
 The complete software development lifecycle, from idea to merge:
 
 | Skill | When It Activates |
 |-------|-------------------|
-| `brainstorming` | Before any creative work — explores intent and requirements before implementation |
-| `writing-plans` | When you have a spec — breaks it into a structured, reviewable plan |
+| `brainstorming` | Before any creative work — explores intent before implementation |
+| `writing-plans` | When you have a spec — structured, reviewable plan |
 | `executing-plans` | When you have a plan — executes with review checkpoints |
-| `systematic-debugging` | When hitting a bug — structured root cause analysis, not random fixes |
+| `systematic-debugging` | When hitting a bug — root cause analysis, not random fixes |
 | `test-driven-development` | When implementing features — tests first, then code |
 | `requesting-code-review` | When work is done — structured self-review before merge |
 | `receiving-code-review` | When getting feedback — technical rigor, not blind agreement |
-| `verification-before-completion` | Before claiming "done" — runs verification, evidence before assertions |
-| `using-git-worktrees` | When starting feature work — isolated worktrees for parallel development |
-| `finishing-a-development-branch` | When implementation is complete — guides merge, PR, or cleanup |
+| `verification-before-completion` | Before claiming "done" — evidence before assertions |
+| `using-git-worktrees` | When starting feature work — isolated parallel development |
+| `finishing-a-development-branch` | When implementation is complete — merge, PR, or cleanup |
 | `dispatching-parallel-agents` | When facing 2+ independent tasks — parallel execution |
-| `subagent-driven-development` | When executing plans with independent tasks — delegate to subagents |
+| `subagent-driven-development` | When executing plans — delegate to subagents |
 
 ### ✍️ Writing & Communication (3 skills)
 
 | Skill | When It Activates |
 |-------|-------------------|
-| `writing-clearly-and-concisely` | When writing prose — docs, commit messages, error messages, UI text |
+| `writing-clearly-and-concisely` | When writing prose — Strunk's rules for stronger writing |
 | `humanizer` | When editing text — removes AI-generated writing patterns |
 | `doc-coauthoring` | When writing docs/proposals — structured co-authoring workflow |
 
