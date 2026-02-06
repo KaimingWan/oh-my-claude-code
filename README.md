@@ -1,6 +1,6 @@
 # oh-my-claude-code
 
-A battle-tested framework for building **self-improving AI coding agents**. Born from real-world production use, not theory.
+A battle-tested framework for building **self-improving AI coding agents**. Like oh-my-zsh for your AI coding assistant.
 
 Works with: **Claude Code** | **Kiro CLI** | **OpenCode** | Any CLAUDE.md-compatible agent
 
@@ -26,9 +26,9 @@ Most AI coding setups are flat — a single instruction file that grows into an 
 └─────────────────────────────────────────┘
 ```
 
-## Key Ideas
+## ✨ Features
 
-### 🔁 The 3 Iron Rules (Enforced via Hooks)
+### 🔁 3 Iron Rules (Enforced via Hooks)
 
 Every task must pass through these gates before execution:
 
@@ -40,40 +40,73 @@ Every task must pass through these gates before execution:
 
 These aren't suggestions — they're enforced by `hooks/three-rules-check.sh` on every user message.
 
-### 🧠 Self-Learning (Compound Interest)
+### 🧠 Self-Learning (Self-Reflect Skill)
 
-The agent learns from corrections in real-time:
+The agent learns from your corrections in real-time and never makes the same mistake twice:
 
 ```
 User corrects agent → Agent detects correction → Writes to target file immediately
                                                   (No queue. No delay.)
 ```
 
-What gets captured:
-- Mistakes → `knowledge/lessons-learned.md`
-- Patterns → Rules in the appropriate layer
-- Repeated operations (≥3x) → Templates or tools
+**How it works:**
+- Detects correction patterns with confidence scoring (70-90%)
+- Captures both negative corrections ("no, use X") and positive reinforcement ("perfect!")
+- Routes learnings to the right layer automatically
+- Maintains an episodic memory in `knowledge/lessons-learned.md`
+
+**Commands:**
+| Command | Purpose |
+|---------|---------|
+| `/reflect` | Review & sync pending learnings to 3-layer architecture |
+| `/view-queue` | See what the agent has learned |
+| `/skip-reflect` | Clear the learning queue |
+
+### 🔍 Multi-Level Research
+
+Built-in research strategy that minimizes cost while maximizing quality:
+
+| Level | Tool | Use Case | Cost |
+|-------|------|----------|------|
+| 0 | Built-in knowledge | Common concepts | Free |
+| 1 | `web_search` | Quick verification | Free |
+| 2 | Tavily Research API | Deep research, competitive analysis | API credits |
+
+**Rule**: Always use the lowest level that answers the question. The agent is trained to not waste API credits on questions it can answer from built-in knowledge.
+
+```bash
+# Quick research
+./scripts/research.sh '{"input": "quantum computing trends"}'
+
+# Deep research with structured output
+./scripts/research.sh '{"input": "AI agents comparison", "model": "pro"}' report.md
+```
+
+### 🛡️ Anti-Hallucination Guard
+
+The `enforce-research.sh` hook intercepts file writes containing unsupported negative claims ("doesn't support", "no mechanism", "not available") and forces the agent to verify against official docs first.
+
+### 🪝 Hook System
+
+Automated guardrails that run at key moments:
+
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| `three-rules-check.sh` | Every user message | Enforces the 3 iron rules |
+| `enforce-research.sh` | Before file writes | Catches hallucinated claims |
+| `check-persist.sh` | After agent responds | Reminds to persist structured output |
 
 ### 📐 Meta Rules: The Constitution
 
 > **If it can be enforced by code, don't enforce it with words.**
 
-| Before adding a rule to CLAUDE.md, ask: | If yes → |
-|----------------------------------------|----------|
+This single principle keeps the system healthy. Before adding any rule:
+
+| Ask | If yes → |
+|-----|----------|
 | Can this be a linter/test/hook? | Write code, not prose |
-| Is this needed every conversation? | Layer 2 (high-frequency) |
+| Is this needed every conversation? | Layer 2 (≤200 lines) |
 | Is this detailed but rare? | Layer 3 (reference) |
-| Is this a duplicate? | Merge with existing |
-
-This keeps your agent instructions lean and effective.
-
-### 🪝 Hooks: Automated Guardrails
-
-| Hook | Trigger | Purpose |
-|------|---------|---------|
-| `three-rules-check.sh` | Every user message | Reminds agent of the 3 iron rules |
-| `enforce-research.sh` | Before file writes | Catches unsupported negative claims |
-| `check-persist.sh` | After agent responds | Reminds to persist structured output |
 
 ### 📚 Knowledge System
 
@@ -85,32 +118,47 @@ User question → knowledge/INDEX.md → topic indexes → source documents
 
 The agent always cites sources. No hallucinated references.
 
+### 🔧 Custom Commands
+
+| Command | Purpose |
+|---------|---------|
+| `@lint` | Health check — line count, find rules that should be code |
+| `@compact` | Compress instructions, move low-freq rules to reference layer |
+
 ## Project Structure
 
 ```
 .
-├── CLAUDE.md                    # Layer 2: High-frequency recall (Claude Code)
-├── AGENTS.md                    # Layer 2: High-frequency recall (Kiro CLI)
+├── CLAUDE.md                          # High-frequency recall (Claude Code)
+├── AGENTS.md                          # High-frequency recall (Kiro CLI / OpenCode)
 ├── .claude/
-│   └── settings.json            # Claude Code permissions
+│   └── settings.json                  # Claude Code permissions
 ├── .kiro/
 │   ├── rules/
-│   │   ├── enforcement.md       # Layer 1: What's enforced by code
-│   │   ├── reference.md         # Layer 3: Detailed on-demand docs
-│   │   └── commands.md          # Custom commands (@lint, @compact)
+│   │   ├── enforcement.md             # Layer 1: What's enforced by code
+│   │   ├── reference.md               # Layer 3: On-demand detailed docs
+│   │   └── commands.md                # Custom commands (@lint, @compact)
 │   ├── hooks/
-│   │   ├── three-rules-check.sh # Iron rules enforcement
-│   │   ├── enforce-research.sh  # Anti-hallucination guard
-│   │   └── check-persist.sh     # Persistence reminder
+│   │   ├── three-rules-check.sh       # 3 iron rules enforcement
+│   │   ├── enforce-research.sh        # Anti-hallucination guard
+│   │   └── check-persist.sh           # Persistence reminder
+│   ├── skills/
+│   │   ├── self-reflect/              # 🧠 Self-learning system
+│   │   │   ├── SKILL.md
+│   │   │   ├── reflect_utils.py
+│   │   │   └── commands/
+│   │   └── research/                  # 🔍 Multi-level research
+│   │       ├── SKILL.md
+│   │       └── scripts/research.sh
 │   └── agents/
-│       └── default.json         # Agent configuration
+│       └── default.json               # Agent configuration with hooks
 ├── knowledge/
-│   ├── INDEX.md                 # Knowledge routing table
-│   └── lessons-learned.md       # Episodic memory
-├── plans/                       # Task plans and specs
-├── tools/                       # Reusable scripts
-│   └── init-project.sh          # Initialize new projects
-└── templates/                   # Reusable templates
+│   ├── INDEX.md                       # Knowledge routing table
+│   └── lessons-learned.md             # Episodic memory
+├── plans/                             # Task plans and specs
+├── tools/
+│   └── init-project.sh                # Bootstrap new projects
+└── templates/                         # Reusable templates
 ```
 
 ## Quick Start
@@ -121,7 +169,6 @@ The agent always cites sources. No hallucinated references.
 git clone https://github.com/KaimingWan/oh-my-claude-code.git my-project
 cd my-project
 # Edit CLAUDE.md to define your agent's identity and roles
-# Add knowledge to knowledge/
 ```
 
 ### Option 2: Initialize in existing project
@@ -133,12 +180,13 @@ git clone https://github.com/KaimingWan/oh-my-claude-code.git /tmp/omcc
 
 ### Option 3: Cherry-pick what you need
 
-Just copy the specific files you want:
-- Only want hooks? Copy `.kiro/hooks/`
-- Only want the 3-layer structure? Copy `CLAUDE.md` + `.kiro/rules/`
-- Only want knowledge system? Copy `knowledge/`
+Just copy the specific pieces:
+- Only want hooks? → Copy `.kiro/hooks/`
+- Only want the 3-layer structure? → Copy `CLAUDE.md` + `.kiro/rules/`
+- Only want self-learning? → Copy `.kiro/skills/self-reflect/`
+- Only want knowledge system? → Copy `knowledge/`
 
-## Customization Guide
+## Customization
 
 ### Define Your Agent's Identity
 
@@ -166,7 +214,7 @@ mkdir -p knowledge/my-topic
 
 ### Add Custom Hooks
 
-Create a script in `.kiro/hooks/`, then register it in `.kiro/agents/default.json`:
+Create a script in `.kiro/hooks/`, register in `.kiro/agents/default.json`:
 
 ```json
 {
@@ -178,23 +226,14 @@ Create a script in `.kiro/hooks/`, then register it in `.kiro/agents/default.jso
 }
 ```
 
-### Custom Commands
-
-Built-in commands you can use in chat:
-
-| Command | Purpose |
-|---------|---------|
-| `@lint` | Health check — line count, rules that should be code |
-| `@compact` | Compress agent instructions, move low-freq rules to reference |
-
 ## Compatibility
 
-| Tool | Config File | Hooks | Status |
-|------|------------|-------|--------|
-| **Claude Code** | `CLAUDE.md` | `.claude/settings.json` | ✅ Full support |
-| **Kiro CLI** | `AGENTS.md` | `.kiro/hooks/` + `.kiro/agents/` | ✅ Full support |
-| **OpenCode** | `AGENTS.md` | — | ✅ Instructions work, no hooks |
-| **Others** | `CLAUDE.md` | — | ✅ Instructions work, no hooks |
+| Tool | Config File | Hooks | Skills | Status |
+|------|------------|-------|--------|--------|
+| **Claude Code** | `CLAUDE.md` | `.claude/settings.json` | ✅ | ✅ Full support |
+| **Kiro CLI** | `AGENTS.md` | `.kiro/hooks/` + `.kiro/agents/` | ✅ | ✅ Full support |
+| **OpenCode** | `AGENTS.md` | — | — | ✅ Instructions work |
+| **Others** | `CLAUDE.md` | — | — | ✅ Instructions work |
 
 ## Design Principles
 
@@ -202,22 +241,11 @@ Built-in commands you can use in chat:
 2. **Budget your context** — 200-line cap on high-frequency layer
 3. **Compound interest** — Every correction makes the agent permanently better
 4. **Research before action** — Never guess when you can verify
-5. **Structured output to files** — Don't let valuable output vanish in chat history
-
-## Real-World Origin
-
-This framework was built and refined through daily production use managing:
-- Sales & GTM operations
-- Technical content creation
-- Customer communications
-- Marketing automation
-- Competitive analysis
-
-Every rule exists because something went wrong without it.
+5. **Persist everything** — Structured output goes to files, not just chat
 
 ## Contributing
 
-PRs welcome! If you've discovered a pattern that makes AI coding agents better, open a PR. The bar for adding to Layer 2 (high-frequency) is high — see the meta rules above.
+PRs welcome! The bar for adding to Layer 2 (high-frequency) is intentionally high — see the meta rules. If you've discovered a pattern that makes AI coding agents better, we'd love to see it.
 
 ## License
 
