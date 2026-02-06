@@ -275,7 +275,7 @@ The complete software development lifecycle, from idea to merge:
 
 ## Quick Start
 
-### Option 1: Clone and customize
+### Option 1: Clone and customize (Recommended)
 
 ```bash
 git clone https://github.com/KaimingWan/oh-my-claude-code.git my-project
@@ -283,6 +283,14 @@ cd my-project
 # Edit CLAUDE.md — define your agent's identity, roles, and rules
 # Start chatting — the agent evolves from here
 ```
+
+**Pull upstream updates anytime:**
+
+```bash
+git pull origin main
+```
+
+Your customizations live in `CLAUDE.md`, `knowledge/`, and `plans/` — upstream updates to hooks, skills, and the framework won't conflict with your project-specific content.
 
 ### Option 2: Add to existing project
 
