@@ -5,7 +5,8 @@
   "allowedTools": ["*"],
   "resources": [
     "file://AGENTS.md",
-    "file://knowledge/INDEX.md"
+    "file://knowledge/INDEX.md",
+    "skill://.kiro/skills/**/SKILL.md"
   ],
   "hooks": {
     "userPromptSubmit": [
