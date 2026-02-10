@@ -35,7 +35,19 @@ Question → knowledge/INDEX.md → topic indexes → source docs
 
 **Must cite source files.**
 
-## 4. Workflow
+## 4. Security Red Lines (Non-negotiable)
+
+🚫 **NEVER execute without explicit user confirmation:**
+- `rm`, `rmdir`, `shred` — use `mv ~/.Trash/` instead
+- `git checkout` (without `-b`) — stash first, explain what will be lost
+- `git reset --hard`, `git clean -f` — show diff/list first
+- `git stash drop`, `git branch -D` — explain consequences first
+- `sudo`, `chmod -R 777`, `chown -R` — explain why needed
+- Piping curl/wget to shell — never
+
+**Enforced by**: `.kiro/hooks/block-dangerous-commands.sh` (preToolUse)
+
+## 5. Workflow
 
 ### 🚨 3 Iron Rules (Every task must pass)
 
@@ -52,13 +64,13 @@ Question → knowledge/INDEX.md → topic indexes → source docs
 2. **Before planning: interview** — Ask, don't assume
 3. **Verify first** — Execute → Verify → Correct
 
-## 5. Compound Interest
+## 6. Compound Interest
 
 1. **Structured output must be written to files** — Not just chat
 2. **Operations repeated ≥3 times** — Prompt to create template/tool
 3. **After task completion** — Check if indexes need updating
 
-## 6. Self-Learning
+## 7. Self-Learning
 
 **Correction detected → Write to target file immediately → No queue**
 

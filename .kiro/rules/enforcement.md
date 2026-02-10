@@ -9,6 +9,7 @@
 | 3 Iron Rules reminder | `.kiro/hooks/three-rules-check.sh` (userPromptSubmit) | ✅ |
 | Anti-hallucination guard | `.kiro/hooks/enforce-research.sh` (preToolUse) | ✅ |
 | Persistence check | `.kiro/hooks/check-persist.sh` (stop) | ✅ |
+| Dangerous command blocker | `.kiro/hooks/block-dangerous-commands.sh` (preToolUse) | ✅ |
 
 ## To Implement
 

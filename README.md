@@ -157,6 +157,12 @@ Level 2: Tavily Deep Research    → API credits, 30-120 seconds
 
 Supports structured JSON output schemas, multiple citation formats (numbered, MLA, APA, Chicago), and automatic model selection.
 
+### 🚫 Dangerous Command Blocker — Safety Net for Destructive Operations
+
+The `block-dangerous-commands.sh` hook runs before every bash execution. It intercepts destructive commands — `rm`, `git reset --hard`, `sudo`, piping curl to shell — and blocks them with safe alternatives. `git checkout` without `-b` is blocked too, preventing accidental loss of staged/unstaged work.
+
+This is a hard block (exit code 2), not a suggestion. The agent must explain the risk, get explicit confirmation, and use the safest alternative.
+
 ### 🛡️ Anti-Hallucination Guard — Catch Lies Before They're Written
 
 The `enforce-research.sh` hook runs before every file write. If the agent is about to write an unsupported negative claim — "doesn't support", "no mechanism", "not available" — the hook intercepts it and forces verification against official docs first.
@@ -253,6 +259,7 @@ The complete software development lifecycle, from idea to merge:
 │   ├── hooks/
 │   │   ├── three-rules-check.sh       # Iron rules enforcement
 │   │   ├── enforce-research.sh        # Anti-hallucination
+│   │   ├── block-dangerous-commands.sh # Dangerous command blocker
 │   │   └── check-persist.sh           # Auto-persist reminder
 │   ├── skills/                        # 21 pre-installed skills
 │   │   ├── self-reflect/              #   🧠 Self-learning system
