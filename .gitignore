@@ -13,5 +13,10 @@ tmp/
 .vscode/
 .idea/
 
+# Skills CLI auto-generated symlinks for other IDEs
+.agent/
+.cursor/
+.trae/
+
 # Cache
 .firecrawl/

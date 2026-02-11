@@ -59,10 +59,21 @@ Question → knowledge/INDEX.md → topic indexes → source docs
 
 **Execution order**: Research → Match Skill → Evaluate toolification → Execute
 
+### Mandatory Skill Chains (Enforced by `.kiro/hooks/enforce-skill-chain.sh`)
+
+| Intent | Required Skills (in order) |
+|--------|---------------------------|
+| 🏗️ Planning/Design | brainstorming → writing-plans → lessons-learned check |
+| ✅ Completion/Merge | verification-before-completion → code-review-expert → lessons-learned update |
+| 🐛 Debugging | systematic-debugging → lessons-learned check |
+
+**Skip = violation. Hook will remind you.**
+
 ### Standard Flow
 1. **Complex tasks: plan first** — Plan → Confirm → Execute
 2. **Before planning: interview** — Ask, don't assume
 3. **Verify first** — Execute → Verify → Correct
+4. **After every task** — Check & update `knowledge/lessons-learned.md`
 
 ## 6. Compound Interest
 

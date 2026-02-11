@@ -193,9 +193,9 @@ The framework maintains itself:
 | `@lint` | Audits your CLAUDE.md — checks line count against 200-line budget, finds rules that should be hooks instead of prose, suggests migrations |
 | `@compact` | Compresses Layer 2 — moves low-frequency rules to Layer 3, merges duplicates, tightens wording. Keeps your agent instructions sharp. |
 
-## 📦 21 Pre-installed Skills — Curated from the Best
+## 📦 23 Pre-installed Skills — Curated from the Best
 
-The framework ships with **21 battle-tested skills** from top sources in the Claude Code ecosystem:
+The framework ships with **23 battle-tested skills** from top sources in the Claude Code ecosystem:
 
 - 🏆 **[Superpowers](https://github.com/obra/superpowers)** by Jesse Vincent (Obra) — The most popular agentic skills framework for Claude Code. A proven software development methodology used by thousands of developers. Our dev workflow skills (brainstorming, TDD, debugging, code review, etc.) come from this collection.
 - 🧠 **Framework originals** — Self-reflect (self-learning system) and multi-level research are built specifically for this framework.
@@ -229,13 +229,15 @@ The complete software development lifecycle, from idea to merge:
 | `humanizer` | When editing text — removes AI-generated writing patterns |
 | `doc-coauthoring` | When writing docs/proposals — structured co-authoring workflow |
 
-### 🔍 Analysis & Quality (3 skills)
+### 🔍 Analysis & Quality (5 skills)
 
 | Skill | When It Activates |
 |-------|-------------------|
+| `code-review-expert` | When reviewing git changes — SOLID, security, actionable improvements |
 | `security-review` | At the end of every task — audits for vulnerabilities |
 | `mermaid-diagrams` | When visualizing architecture — class, sequence, flow, ER diagrams |
 | `find-skills` | When looking for capabilities — discovers installable skills |
+| `java-architect` | When building Java/Spring Boot apps — enterprise patterns, WebFlux, JPA |
 
 ### 🧠 Framework Core (3 skills)
 
@@ -258,8 +260,12 @@ The complete software development lifecycle, from idea to merge:
 │   │   └── commands.md                # @lint, @compact
 │   ├── hooks/
 │   │   ├── three-rules-check.sh       # Iron rules enforcement
+│   │   ├── enforce-skill-chain.sh     # Mandatory skill chain (Kiro)
+│   │   ├── enforce-skill-chain-cc.sh  # Mandatory skill chain (Claude Code)
 │   │   ├── enforce-research.sh        # Anti-hallucination
-│   │   ├── block-dangerous-commands.sh # Dangerous command blocker
+│   │   ├── block-dangerous-commands.sh    # Dangerous command blocker (Kiro)
+│   │   ├── block-dangerous-commands-cc.sh # Dangerous command blocker (Claude Code)
+│   │   ├── enforce-lessons.sh         # Lessons-learned check (stop)
 │   │   └── check-persist.sh           # Auto-persist reminder
 │   ├── skills/                        # 21 pre-installed skills
 │   │   ├── self-reflect/              #   🧠 Self-learning system

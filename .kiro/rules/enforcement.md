@@ -7,8 +7,10 @@
 | Rule | Implementation | Status |
 |------|---------------|--------|
 | 3 Iron Rules reminder | `.kiro/hooks/three-rules-check.sh` (userPromptSubmit) | ✅ |
+| Skill chain enforcement | `.kiro/hooks/enforce-skill-chain.sh` (userPromptSubmit) | ✅ |
 | Anti-hallucination guard | `.kiro/hooks/enforce-research.sh` (preToolUse) | ✅ |
 | Persistence check | `.kiro/hooks/check-persist.sh` (stop) | ✅ |
+| Lessons-learned check | `.kiro/hooks/enforce-lessons.sh` (stop) | ✅ |
 | Dangerous command blocker | `.kiro/hooks/block-dangerous-commands.sh` (preToolUse) | ✅ |
 
 ## To Implement

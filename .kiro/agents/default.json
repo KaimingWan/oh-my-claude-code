@@ -12,6 +12,9 @@
     "userPromptSubmit": [
       {
         "command": ".kiro/hooks/three-rules-check.sh"
+      },
+      {
+        "command": ".kiro/hooks/enforce-skill-chain.sh"
       }
     ],
     "preToolUse": [
@@ -27,6 +30,9 @@
     "stop": [
       {
         "command": ".kiro/hooks/check-persist.sh"
+      },
+      {
+        "command": ".kiro/hooks/enforce-lessons.sh"
       }
     ]
   }

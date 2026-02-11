@@ -1,6 +1,6 @@
 #!/bin/bash
-# Block dangerous commands — preToolUse hook (matcher: execute_bash)
-# Intercepts destructive commands before execution
+# Block dangerous commands — preToolUse hook (Kiro version)
+# Uses grep -E (ERE) for macOS compatibility
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name' 2>/dev/null)
@@ -11,35 +11,27 @@ fi
 
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
-# === Blocked commands (absolute deny) ===
 BLOCKED_PATTERNS=(
-  # Destructive file operations
   '\brm\b'
   '\brmdir\b'
   '\bmkfs\b'
-  '\bdd\b\s+.*of='
   '\bshred\b'
-  '>\s*/dev/sd'
-  # Dangerous git operations that discard work
-  '\bgit\s+checkout\b(?!.*-b)'   # git checkout (except -b for new branch)
-  '\bgit\s+clean\b'
-  '\bgit\s+reset\s+--hard\b'
-  '\bgit\s+stash\s+drop\b'
-  '\bgit\s+branch\s+-[dD]\b'
-  # System-level danger
-  '\bchmod\s+-R\s+777\b'
-  '\bchown\s+-R\b'
+  '\bgit +clean\b'
+  '\bgit +reset +--hard\b'
+  '\bgit +stash +drop\b'
+  '\bgit +branch +-[dD]\b'
+  '\bchmod +-R +777\b'
+  '\bchown +-R\b'
   '\bsudo\b'
-  '\bcurl\b.*\|\s*(ba)?sh'
-  '\bwget\b.*\|\s*(ba)?sh'
-  # Kill signals
-  '\bkill\s+-9\b'
+  'curl.*\| *(ba)?sh'
+  'wget.*\| *(ba)?sh'
+  '\bkill +-9\b'
   '\bkillall\b'
   '\bpkill\b'
 )
 
 for pattern in "${BLOCKED_PATTERNS[@]}"; do
-  if echo "$CMD" | grep -qPi "$pattern"; then
+  if echo "$CMD" | grep -qiE "$pattern"; then
     cat << EOF
 🚫 BLOCKED: Dangerous command detected.
 
