@@ -184,6 +184,23 @@ Unlike chat history that gets truncated, the knowledge system is a **permanent, 
 
 The knowledge base grows organically as you work. Research results, extracted data, plans — all automatically persisted and indexed.
 
+### 🗺️ Product Map — Keep Design Consistency Across Sessions (Optional)
+
+When building a product that evolves over time, the agent loses track of existing features, design decisions, and constraints between sessions. The Product Map solves this.
+
+`knowledge/product/PRODUCT.md` is a lightweight registry of your product's features — what exists, why it was designed that way, and what constraints must be respected. The agent reads it before feature/refactor/plan work, so it won't accidentally break existing functionality or contradict past design decisions.
+
+```markdown
+### User Auth — ✅ active
+- Path: `src/auth/`
+- What: Unified login via GitHub/Google OAuth
+- Why this design: JWT for stateless horizontal scaling; OAuth to avoid password maintenance
+- Constraints: Token format exposed to third-party plugins, cannot change
+- Design doc: → docs/designs/2026-01-15-auth.md
+```
+
+**This is opt-in.** If you don't need it, leave the file empty — the framework works the same without it. It's most useful for solo developers or small teams who need the agent to maintain design consistency across many sessions.
+
 ### 🔧 Self-Maintenance Commands
 
 The framework maintains itself:
@@ -279,8 +296,16 @@ The complete software development lifecycle, from idea to merge:
 │       └── default.json               # Agent config with hooks
 ├── knowledge/
 │   ├── INDEX.md                       # Knowledge routing table
-│   └── lessons-learned.md             # Episodic memory
-├── plans/                             # Persisted task plans
+│   ├── lessons-learned.md             # Episodic memory
+│   └── product/                       # Product context (optional)
+│       ├── INDEX.md                   # Product knowledge routing
+│       └── PRODUCT.md                 # Feature registry & design decisions
+├── docs/                              # All documentation outputs
+│   ├── INDEX.md                       # Docs routing table
+│   ├── designs/                       # Design docs from brainstorming
+│   ├── plans/                         # Implementation plans
+│   ├── research/                      # Research artifacts
+│   └── decisions/                     # Architecture decision records
 ├── tools/                             # Reusable scripts
 │   └── init-project.sh                # Bootstrap new projects
 └── templates/                         # Reusable templates

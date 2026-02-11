@@ -69,6 +69,10 @@ Question → knowledge/INDEX.md → topic indexes → source docs
 
 **Skip = violation. Hook will remind you.**
 
+### Product Context (Optional)
+
+If `knowledge/product/PRODUCT.md` exists and is non-empty, read it before feature/refactor/plan work.
+
 ### Standard Flow
 1. **Complex tasks: plan first** — Plan → Confirm → Execute
 2. **Before planning: interview** — Ask, don't assume

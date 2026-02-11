@@ -135,6 +135,8 @@ Then: Cleanup worktree (Step 5)
 
 ### Step 5: Cleanup Worktree
 
+**Before cleanup:** If `knowledge/product/PRODUCT.md` exists and is non-empty, check if features were added/changed/removed and update it.
+
 **For Options 1, 2, 4:**
 
 Check if in worktree:

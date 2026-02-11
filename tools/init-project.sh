@@ -15,7 +15,7 @@ fi
 
 echo "🚀 Initializing: $TARGET ($PROJECT_NAME)"
 
-mkdir -p "$TARGET"/{.claude,.kiro/rules,.kiro/hooks,.kiro/agents,knowledge,plans,tools,templates}
+mkdir -p "$TARGET"/{.claude,.kiro/rules,.kiro/hooks,.kiro/agents,knowledge/product,docs/{designs,plans,research,decisions},tools,templates}
 
 # Copy core files
 for f in CLAUDE.md AGENTS.md; do
@@ -30,6 +30,11 @@ cp "$TEMPLATE_DIR/.kiro/rules/"*.md "$TARGET/.kiro/rules/"
 cp "$TEMPLATE_DIR/.kiro/hooks/"*.sh "$TARGET/.kiro/hooks/"
 cp "$TEMPLATE_DIR/.kiro/agents/default.json" "$TARGET/.kiro/agents/"
 cp "$TEMPLATE_DIR/knowledge/"*.md "$TARGET/knowledge/"
+cp -r "$TEMPLATE_DIR/knowledge/product" "$TARGET/knowledge/"
+cp "$TEMPLATE_DIR/docs/INDEX.md" "$TARGET/docs/"
+for d in designs plans research decisions; do
+  touch "$TARGET/docs/$d/.gitkeep"
+done
 cp "$TEMPLATE_DIR/.gitignore" "$TARGET/" 2>/dev/null || true
 
 chmod +x "$TARGET/.kiro/hooks/"*.sh
@@ -56,7 +61,8 @@ echo "  .kiro/rules/           — Enforcement + Reference layers"
 echo "  .kiro/hooks/           — Automated guardrails"
 echo "  .kiro/skills/          — $SKILL_COUNT pre-installed skills"
 echo "  knowledge/INDEX.md     — Knowledge routing (empty, fill it in)"
-echo "  plans/                 — Task plans"
+echo "  knowledge/product/     — Product map (features, constraints)"
+echo "  docs/                  — Designs, plans, research, decisions"
 echo "  tools/                 — Reusable scripts"
 echo ""
 echo "👉 Next: Edit CLAUDE.md to define your agent's identity and roles"
