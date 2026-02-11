@@ -29,6 +29,10 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/.kiro/hooks/block-dangerous-commands-cc.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.kiro/hooks/block-secrets-cc.sh"
           }
         ]
       },

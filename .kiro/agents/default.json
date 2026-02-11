@@ -23,6 +23,10 @@
         "command": ".kiro/hooks/block-dangerous-commands.sh"
       },
       {
+        "matcher": "execute_bash",
+        "command": ".kiro/hooks/block-secrets.sh"
+      },
+      {
         "matcher": "fs_write",
         "command": ".kiro/hooks/enforce-research.sh"
       }

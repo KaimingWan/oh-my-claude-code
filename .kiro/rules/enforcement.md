@@ -12,13 +12,13 @@
 | Persistence check | `.kiro/hooks/check-persist.sh` (stop) | ✅ |
 | Lessons-learned check | `.kiro/hooks/enforce-lessons.sh` (stop) | ✅ |
 | Dangerous command blocker | `.kiro/hooks/block-dangerous-commands.sh` (preToolUse) | ✅ |
+| Secret leak blocker | `.kiro/hooks/block-secrets.sh` (preToolUse) | ✅ |
 
 ## To Implement
 
 | Rule | Planned Implementation | Priority |
 |------|----------------------|----------|
 | Markdown lint | `.markdownlint.json` | P2 |
-| Sensitive info check | `.githooks/pre-commit` | P1 |
 | Index integrity | `tests/test_index_integrity.py` | P2 |
 
 ## Adding New Rules
