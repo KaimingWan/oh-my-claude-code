@@ -2,8 +2,14 @@
   "name": "reviewer",
   "description": "Review expert. Plan review: challenge decisions, find gaps. Code review: check quality, security, SOLID. Read-only.",
   "prompt": "file://./prompts/reviewer-prompt.md",
-  "tools": ["read", "shell"],
-  "allowedTools": ["read", "shell"],
+  "tools": [
+    "read",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "shell"
+  ],
   "resources": [
     "file://AGENTS.md",
     "skill://.kiro/skills/code-review-expert/SKILL.md"
@@ -29,7 +35,12 @@
   "toolsSettings": {
     "shell": {
       "autoAllowReadonly": true,
-      "deniedCommands": ["git commit.*", "git push.*", "git checkout.*", "git reset.*"]
+      "deniedCommands": [
+        "git commit.*",
+        "git push.*",
+        "git checkout.*",
+        "git reset.*"
+      ]
     }
   }
 }

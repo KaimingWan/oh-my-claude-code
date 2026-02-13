@@ -14,7 +14,7 @@ esac
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
 # Detect sed/awk modifying .json files (in-place or redirect)
-if echo "$CMD" | grep -qE "(sed|awk).*\.json"; then
+if echo "$CMD" | grep -qE "(sed|awk|perl).*\.json"; then
   hook_block "🚫 BLOCKED: Do not use sed/awk on JSON files.
 Command: $CMD
 
