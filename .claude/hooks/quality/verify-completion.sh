@@ -75,8 +75,12 @@ fi
 
 if [ "$REFLECT_CHANGED" -eq 0 ]; then
   if [ -f "$CORRECTION_FLAG" ]; then
-    echo "⚠️ MANDATORY: Correction happened but no self-reflect target was updated."
-    echo "   Use self-reflect skill: write to the correct target file."
+    echo "🚨 MANDATORY: Correction was detected this session but you did NOT update any self-reflect target file."
+    echo "   You MUST use self-reflect skill NOW and write to the correct target:"
+    echo "   - Code-enforceable → .claude/rules/ or hooks"
+    echo "   - High-frequency rule → AGENTS.md"  
+    echo "   - Mistake/win → knowledge/lessons-learned.md"
+    echo "   Skipping this is a violation. DO NOT stop without writing the learning."
     rm -f "$CORRECTION_FLAG"
   elif [ "$DIFF_LINES" -gt 50 ] 2>/dev/null; then
     echo "💡 Large change ($CHANGED files). Consider recording wins/mistakes via self-reflect skill."

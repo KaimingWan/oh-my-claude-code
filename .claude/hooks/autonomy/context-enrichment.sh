@@ -36,7 +36,8 @@ fi
 
 # ===== Debug detection (deterministic) =====
 if echo "$USER_MSG" | grep -qiE 'bug|error|fail|报错|异常|crash|fix|debug|broken|not working|挂了|出错'; then
-  CONTEXT="${CONTEXT}🐛 PRE-CHECK: Bug/error detected. Use systematic-debugging skill (NO fixes without root cause).\n"
+  CONTEXT="${CONTEXT}🚨 MANDATORY: Bug/error detected. You MUST use systematic-debugging skill.\n"
+  CONTEXT="${CONTEXT}  DO NOT guess or apply random fixes without root cause investigation.\n"
   [ -f "knowledge/lessons-learned.md" ] && CONTEXT="${CONTEXT}📚 Check knowledge/lessons-learned.md for known issues.\n"
 fi
 

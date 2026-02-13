@@ -1,8 +1,12 @@
 {
   "name": "default",
   "description": "Main orchestrator agent with 6-layer architecture",
-  "tools": ["*"],
-  "allowedTools": ["*"],
+  "tools": [
+    "*"
+  ],
+  "allowedTools": [
+    "*"
+  ],
   "resources": [
     "file://AGENTS.md",
     "file://knowledge/INDEX.md",
@@ -30,12 +34,20 @@
       {
         "matcher": "fs_write",
         "command": ".claude/hooks/security/scan-skill-injection.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": ".claude/hooks/security/block-sed-json.sh"
       }
     ],
     "postToolUse": [
       {
         "matcher": "fs_write",
         "command": ".claude/hooks/quality/auto-test.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": ".claude/hooks/quality/auto-lint.sh"
       }
     ],
     "stop": [
@@ -46,8 +58,18 @@
   },
   "toolsSettings": {
     "subagent": {
-      "availableAgents": ["researcher", "implementer", "reviewer", "debugger"],
-      "trustedAgents": ["researcher", "implementer", "reviewer", "debugger"]
+      "availableAgents": [
+        "researcher",
+        "implementer",
+        "reviewer",
+        "debugger"
+      ],
+      "trustedAgents": [
+        "researcher",
+        "implementer",
+        "reviewer",
+        "debugger"
+      ]
     },
     "shell": {
       "autoAllowReadonly": true,
