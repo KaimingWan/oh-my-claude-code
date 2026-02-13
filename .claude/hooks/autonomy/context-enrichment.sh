@@ -41,7 +41,7 @@ if echo "$USER_MSG" | grep -qiE 'bug|error|fail|报错|异常|crash|fix|debug|br
 fi
 
 # ===== Complexity assessment (LLM, only for complex non-correction non-debug) =====
-HAS_COMPLEX=$(echo "$USER_MSG" | grep -ciE 'implement|实现|build|构建|refactor|重构|design|设计|migrate|迁移|integrate|集成|architect|oauth|auth|payment|deploy' 2>/dev/null || true)
+HAS_COMPLEX=$(echo "$USER_MSG" | grep -ciE 'implement|实现|build|构建|refactor|重构|design|设计|migrate|迁移|integrate|集成|architect|oauth|auth|payment|deploy|测试方案|test plan|subagent|并行|parallel|方案|framework|架构|端到端|e2e|end.to.end' 2>/dev/null || true)
 HAS_COMPLEX=${HAS_COMPLEX:-0}
 HAS_DEBUG=$(echo "$USER_MSG" | grep -ciE 'bug|error|fail|报错|异常|crash|fix|debug|broken|not working|挂了|出错' 2>/dev/null || true)
 HAS_DEBUG=${HAS_DEBUG:-0}
@@ -55,15 +55,49 @@ Answer ONE word: SIMPLE / NEEDS_RESEARCH / NEEDS_PLAN / NEEDS_BOTH")
 
   if [ "$EVAL" != "NO_LLM" ]; then
     if echo "$EVAL" | grep -qi "NEEDS_BOTH"; then
-      CONTEXT="${CONTEXT}🔬📋 PRE-CHECK: Research AND plan needed.\n"
+      CONTEXT="${CONTEXT}🚨 MANDATORY WORKFLOW — This is a complex task. You MUST follow this sequence:\n"
+      CONTEXT="${CONTEXT}  Step 1: brainstorming skill — explore intent, requirements, constraints with user\n"
+      CONTEXT="${CONTEXT}  Step 2: research skill — gather information needed\n"
+      CONTEXT="${CONTEXT}  Step 3: writing-plans skill — write plan to docs/plans/\n"
+      CONTEXT="${CONTEXT}  Step 4: spawn reviewer subagent — challenge the plan\n"
+      CONTEXT="${CONTEXT}  DO NOT read code, run commands, or start implementation before completing Step 1.\n"
+      CONTEXT="${CONTEXT}  Skipping this sequence is a violation. Your FIRST action must be brainstorming.\n\n"
     elif echo "$EVAL" | grep -qi "NEEDS_RESEARCH"; then
-      CONTEXT="${CONTEXT}🔬 PRE-CHECK: Research first. Use research skill.\n"
+      CONTEXT="${CONTEXT}🚨 MANDATORY: Research first before implementation. Use research skill.\n"
+      CONTEXT="${CONTEXT}  DO NOT start coding before research is complete.\n\n"
     elif echo "$EVAL" | grep -qi "NEEDS_PLAN"; then
-      CONTEXT="${CONTEXT}📋 PRE-CHECK: Plan needed. Use brainstorming → writing-plans.\n"
+      CONTEXT="${CONTEXT}🚨 MANDATORY WORKFLOW — This task needs a plan:\n"
+      CONTEXT="${CONTEXT}  Step 1: brainstorming skill — explore intent with user\n"
+      CONTEXT="${CONTEXT}  Step 2: writing-plans skill — write plan to docs/plans/\n"
+      CONTEXT="${CONTEXT}  DO NOT read code or start implementation before completing Step 1.\n\n"
+    elif echo "$EVAL" | grep -qi "SIMPLE"; then
+      : # Simple task, no action needed
+    else
+      # LLM returned unexpected format — fall back to keyword-based detection
+      if [ "$HAS_COMPLEX" -ge 2 ]; then
+        CONTEXT="${CONTEXT}🚨 MANDATORY WORKFLOW — Complex task detected. You MUST:\n"
+        CONTEXT="${CONTEXT}  Step 1: brainstorming skill — explore intent with user\n"
+        CONTEXT="${CONTEXT}  Step 2: writing-plans skill — write plan to docs/plans/\n"
+        CONTEXT="${CONTEXT}  DO NOT start implementation before completing Step 1.\n\n"
+      else
+        CONTEXT="${CONTEXT}📋 Complex task detected. Consider: brainstorming → writing-plans before implementation.\n"
+      fi
     fi
     if ! echo "$EVAL" | grep -qi "SIMPLE"; then
       [ -f "knowledge/lessons-learned.md" ] && CONTEXT="${CONTEXT}📚 Check knowledge/lessons-learned.md for past mistakes.\n"
     fi
+  else
+    # No LLM available — deterministic fallback for complex tasks
+    # Multiple complex keywords = likely needs planning
+    if [ "$HAS_COMPLEX" -ge 2 ]; then
+      CONTEXT="${CONTEXT}🚨 MANDATORY WORKFLOW — Complex task detected (multiple signals). You MUST:\n"
+      CONTEXT="${CONTEXT}  Step 1: brainstorming skill — explore intent with user\n"
+      CONTEXT="${CONTEXT}  Step 2: writing-plans skill — write plan to docs/plans/\n"
+      CONTEXT="${CONTEXT}  DO NOT start implementation before completing Step 1.\n\n"
+    else
+      CONTEXT="${CONTEXT}📋 Complex task detected. Consider: brainstorming → writing-plans before implementation.\n"
+    fi
+    [ -f "knowledge/lessons-learned.md" ] && CONTEXT="${CONTEXT}📚 Check knowledge/lessons-learned.md for past mistakes.\n"
   fi
 fi
 
