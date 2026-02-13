@@ -4,7 +4,7 @@
 
 Like oh-my-zsh for Zsh, but for AI coding agents. A framework that makes your agent learn from every interaction, persist valuable knowledge, and get stronger over time — automatically.
 
-Works with: **Claude Code** | **Kiro CLI** | **OpenCode** | Any CLAUDE.md-compatible agent
+Works with: **Claude Code** | **Kiro CLI**
 
 ---
 
@@ -76,7 +76,7 @@ Natural language instructions drift. Code doesn't. This framework uses **hooks**
 
 ## Architecture: 6-Layer Progressive Disclosure
 
-v2 upgrades from a 3-layer to a **6-layer architecture**, following the principle: *what can be enforced by hooks, don't say in CLAUDE.md; what can be said in CLAUDE.md, don't repeat in skills; what can be loaded on-demand by skills, don't put in CLAUDE.md.*
+The framework follows one core principle: *what can be enforced by hooks, don't say in CLAUDE.md; what can be said in CLAUDE.md, don't repeat in skills; what can be loaded on-demand by skills, don't put in CLAUDE.md.*
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -107,11 +107,11 @@ v2 upgrades from a 3-layer to a **6-layer architecture**, following the principl
 └─────────────────────────────────────────────────────────┘
 ```
 
-## What's New in v2
+## Key Features
 
 ### Hook-Enforced Constraints (Layer 0)
 
-v1 relied on prompt text to enforce rules — the agent could ignore them. v2 moves all critical constraints into **hooks** (automated scripts):
+Critical constraints are enforced by **hooks** (automated scripts), not prompt text — the agent can't ignore them:
 
 | Hook | Event | What It Does |
 |------|-------|-------------|
@@ -128,7 +128,7 @@ v1 relied on prompt text to enforce rules — the agent could ignore them. v2 mo
 
 ### Built-in Subagent System (Layer 4)
 
-v2 ships with 4 specialized subagents, each with their own hooks and tool constraints:
+4 specialized subagents ship with the framework, each with their own hooks and tool constraints:
 
 | Agent | Role | Tools | Key Constraint |
 |-------|------|-------|---------------|
@@ -139,7 +139,7 @@ v2 ships with 4 specialized subagents, each with their own hooks and tool constr
 
 ### Stop Hook — Verification Before Completion
 
-The most impactful v2 addition. Before the agent can claim work is done, the Stop hook runs a 3-phase check:
+The most impactful addition. Before the agent can claim work is done, the Stop hook runs a 3-phase check:
 
 - **Phase B (Deterministic):** Checks `.completion-criteria.md` for unchecked items, runs tests, verifies git state
 - **Phase A (LLM 6-Dimension Gate):** Evaluates COMPLETE / REVIEWED / TESTED / RESEARCHED / QUALITY / GROUNDED — with evidence required
@@ -149,12 +149,7 @@ On Claude Code, this can **block** the agent from stopping. On Kiro CLI, it inje
 
 ### Skill Chain Enforcement
 
-v1 suggested "plan before code" in text. v2 enforces it:
-
-- Creating a new source file without a plan in `docs/plans/` → **blocked** (exit 2)
-- Plan without a substantive `## Review` section (≥3 lines) → **blocked**
-- Editing existing files (str_replace/Edit) → allowed (hotfix-friendly)
-- Emergency bypass: create `.skip-plan` file
+Creating a new source file without a plan in `docs/plans/` → **blocked** (exit 2). Plan without a substantive `## Review` section (≥3 lines) → **blocked**. Editing existing files (str_replace/Edit) → allowed (hotfix-friendly). Emergency bypass: create `.skip-plan` file.
 
 ### Self-Learning with Hook Enforcement
 
@@ -178,7 +173,7 @@ The self-reflect skill now has hook backing:
 
 ### LLM-Powered Hook Evaluation
 
-Kiro CLI hooks only support shell scripts, not LLM evaluation. v2 bridges this gap with `_lib/llm-eval.sh` — a unified library that calls external LLMs from shell hooks:
+Kiro CLI hooks only support shell scripts, not native LLM evaluation. The framework bridges this gap with `_lib/llm-eval.sh` — a unified library that calls external LLMs from shell hooks:
 
 - Auto-detects: Gemini → Anthropic → OpenAI → Ollama (local) → graceful degradation
 - Used by Stop hook Phase A for semantic quality judgment
@@ -337,10 +332,8 @@ Skills are organized into 4 tiers:
 |------|--------|-------|--------|-----------|--------|
 | **Claude Code** | `CLAUDE.md` | ✅ 14 events, agent/prompt/command types | ✅ | ✅ Full | ~100% capability |
 | **Kiro CLI** | `AGENTS.md` | ✅ 5 events, command type only | ✅ | ✅ With constraints | ~91% capability |
-| **OpenCode** | `AGENTS.md` | — | — | — | Instructions work |
-| **Others** | `CLAUDE.md` | — | — | — | Instructions work |
 
-Kiro CLI's ~9% gap is concentrated in: Stop hook cannot block agent from stopping (~8%), no LLM hook evaluation natively (~4%, bridged by `llm-eval.sh`), subagents lack `web_search`/`code` tools (~1%).
+Kiro CLI's ~9% gap is concentrated in: Stop hook cannot block agent from stopping, no native LLM hook evaluation (bridged by `llm-eval.sh`), subagents lack `web_search`/`code` tools.
 
 ## Quick Start
 
