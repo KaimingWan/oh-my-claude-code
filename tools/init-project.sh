@@ -47,9 +47,9 @@ if [ -d "$TEMPLATE_DIR/.kiro/skills" ]; then
   echo "📦 Copied $SKILL_COUNT skills"
 fi
 
-# Replace project name in agent config
-sed -i '' "s/Default agent/$PROJECT_NAME agent/g" "$TARGET/.kiro/agents/default.json" 2>/dev/null || \
-sed -i "s/Default agent/$PROJECT_NAME agent/g" "$TARGET/.kiro/agents/default.json"
+# Replace project name in agent config (use jq for JSON)
+jq --arg name "$PROJECT_NAME agent" '.description = $name' "$TARGET/.kiro/agents/default.json" > "$TARGET/.kiro/agents/default.json.tmp" && \
+mv "$TARGET/.kiro/agents/default.json.tmp" "$TARGET/.kiro/agents/default.json"
 
 echo ""
 echo "✅ Done! Project initialized at: $TARGET"

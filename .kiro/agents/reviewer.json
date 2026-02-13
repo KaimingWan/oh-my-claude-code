@@ -1,0 +1,35 @@
+{
+  "name": "reviewer",
+  "description": "Review expert. Plan review: challenge decisions, find gaps. Code review: check quality, security, SOLID. Read-only.",
+  "prompt": "file://./prompts/reviewer-prompt.md",
+  "tools": ["read", "shell"],
+  "allowedTools": ["read", "shell"],
+  "resources": [
+    "file://AGENTS.md",
+    "skill://.kiro/skills/code-review-expert/SKILL.md"
+  ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "echo '🔍 REVIEWER RULES: 1) Run git diff first 2) Categorize: Critical/Warning/Suggestion 3) Be specific with code examples 4) Never rubber-stamp'"
+      }
+    ],
+    "preToolUse": [
+      {
+        "matcher": "execute_bash",
+        "command": ".claude/hooks/security/block-dangerous-commands.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".claude/hooks/quality/reviewer-stop-check.sh"
+      }
+    ]
+  },
+  "toolsSettings": {
+    "shell": {
+      "autoAllowReadonly": true,
+      "deniedCommands": ["git commit.*", "git push.*", "git checkout.*", "git reset.*"]
+    }
+  }
+}

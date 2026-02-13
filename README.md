@@ -74,68 +74,134 @@ You correct less and less over time
 
 Natural language instructions drift. Code doesn't. This framework uses **hooks** (automated scripts that run at key moments) to enforce rules that matter. Combined with a structured **knowledge base** for persistent memory, your agent evolves within guardrails — getting smarter without going off the rails.
 
-## Architecture: 3 Layers
+## Architecture: 6-Layer Progressive Disclosure
+
+v2 upgrades from a 3-layer to a **6-layer architecture**, following the principle: *what can be enforced by hooks, don't say in CLAUDE.md; what can be said in CLAUDE.md, don't repeat in skills; what can be loaded on-demand by skills, don't put in CLAUDE.md.*
 
 ```
-┌─────────────────────────────────────────┐
-│  Layer 1: Enforcement (Code)            │  ← Hooks, linters, tests
-│  Rules enforced automatically.          │    Zero drift. Zero forgetting.
-│  No reliance on the agent "remembering" │
-├─────────────────────────────────────────┤
-│  Layer 2: High-Frequency Recall         │  ← CLAUDE.md / AGENTS.md (≤200 lines)
-│  Core rules read EVERY conversation.    │    Strict budget forces discipline.
-│  The agent's "working memory."          │
-├─────────────────────────────────────────┤
-│  Layer 3: On-Demand Reference           │  ← Linked .md files, knowledge/
-│  Deep docs, templates, SOPs.            │    Loaded only when needed.
-│  The agent's "long-term memory."        │    No context window waste.
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│              Layer 0: Hooks (As Code)                    │
+│  Security (PreToolUse) · Quality Gate (Stop/Task)        │
+│  Autonomy Control (PermissionRequest)                    │
+│  Rules enforced automatically. Zero drift.               │
+├─────────────────────────────────────────────────────────┤
+│          Layer 1: CLAUDE.md / AGENTS.md (≤80 lines)      │
+│  Identity · Workflow · Verification · Skill Routing      │
+│  The agent's "working memory" — read every turn.         │
+├─────────────────────────────────────────────────────────┤
+│          Layer 2: .claude/rules/*.md (Conditional)       │
+│  security.md · code-quality.md · git-workflow.md         │
+│  Loaded by path glob or always-on.                       │
+├─────────────────────────────────────────────────────────┤
+│          Layer 3: Skills (On-Demand)                     │
+│  Core (6) · Domain (N) · Utility · Deprecated            │
+│  Loaded only when the task matches.                      │
+├─────────────────────────────────────────────────────────┤
+│          Layer 4: Subagents (Task Isolation)              │
+│  researcher · implementer · reviewer · debugger          │
+│  Each with own hooks, tools, and constraints.            │
+├─────────────────────────────────────────────────────────┤
+│          Layer 5: Knowledge (Persistent)                  │
+│  lessons-learned.md · product/ · INDEX.md routing        │
+│  5-layer knowledge stack with semantic search.           │
+└─────────────────────────────────────────────────────────┘
 ```
 
-Why 3 layers? Because a single flat file either wastes context window (too detailed) or misses important rules (too brief). This architecture gives you both precision and depth.
+## What's New in v2
+
+### Hook-Enforced Constraints (Layer 0)
+
+v1 relied on prompt text to enforce rules — the agent could ignore them. v2 moves all critical constraints into **hooks** (automated scripts):
+
+| Hook | Event | What It Does |
+|------|-------|-------------|
+| `block-dangerous-commands` | PreToolUse[Bash] | Blocks `rm -rf`, `sudo`, `curl\|bash`, force push, etc. |
+| `block-secrets` | PreToolUse[Bash] | Scans for API keys, private keys before git commit/push |
+| `enforce-skill-chain` | PreToolUse[Write] | Blocks new source files without a reviewed plan |
+| `scan-skill-injection` | PreToolUse[Write] | Detects prompt injection in skill files |
+| `context-enrichment` | UserPromptSubmit | Injects correction detection, complexity assessment, debug hints |
+| `verify-completion` | Stop | 3-phase check: deterministic (B) → LLM 6-dimension gate (A) → feedback loop (C) |
+| `auto-test` | PostToolUse[Write] | Runs tests after source file changes (with 30s debounce) |
+| `auto-lint` | PostToolUse[Write] | Async linting after file writes |
+| `auto-approve-safe` | PermissionRequest | Auto-approves non-dangerous commands (CC only) |
+| `inject-subagent-rules` | SubagentStart | Injects safety rules into subagents (CC only) |
+
+### Built-in Subagent System (Layer 4)
+
+v2 ships with 4 specialized subagents, each with their own hooks and tool constraints:
+
+| Agent | Role | Tools | Key Constraint |
+|-------|------|-------|---------------|
+| `researcher` | Codebase exploration & investigation | read, shell | Cannot modify files; web search delegated to main agent |
+| `implementer` | TDD coding & feature implementation | read, write, shell | Auto-test on every write; must verify before stopping |
+| `reviewer` | Plan review & code review (dual mode) | read, shell | Read-only; cannot rubber-stamp; must cite file:line |
+| `debugger` | Systematic root cause analysis | read, write, shell | Must reproduce first; checks lessons-learned for known issues |
+
+### Stop Hook — Verification Before Completion
+
+The most impactful v2 addition. Before the agent can claim work is done, the Stop hook runs a 3-phase check:
+
+- **Phase B (Deterministic):** Checks `.completion-criteria.md` for unchecked items, runs tests, verifies git state
+- **Phase A (LLM 6-Dimension Gate):** Evaluates COMPLETE / REVIEWED / TESTED / RESEARCHED / QUALITY / GROUNDED — with evidence required
+- **Phase C (Feedback Loop):** Reminds to update lessons-learned, check indexes, persist structured output
+
+On Claude Code, this can **block** the agent from stopping. On Kiro CLI, it injects results into context for the next turn.
+
+### Skill Chain Enforcement
+
+v1 suggested "plan before code" in text. v2 enforces it:
+
+- Creating a new source file without a plan in `docs/plans/` → **blocked** (exit 2)
+- Plan without a substantive `## Review` section (≥3 lines) → **blocked**
+- Editing existing files (str_replace/Edit) → allowed (hotfix-friendly)
+- Emergency bypass: create `.skip-plan` file
+
+### Self-Learning with Hook Enforcement
+
+The self-reflect skill now has hook backing:
+
+1. `UserPromptSubmit` hook detects correction patterns → injects "MUST write to lessons-learned.md"
+2. Agent executes task + writes learning
+3. `Stop` hook Phase C checks git diff → warns if lessons-learned wasn't updated after a correction
+
+### Long-Running Task Support
+
+5-layer strategy for tasks that outlast a single context window:
+
+| Layer | Strategy | Reliability |
+|-------|----------|------------|
+| L1 | Task decomposition → short subagent runs | ✅ High |
+| L2 | PostToolUse auto-test (in-flight verification) | ✅ High |
+| L3 | `.completion-criteria.md` as persistent state anchor | ✅ High |
+| L4 | Stop hook B+A+C (completion check + LLM eval + feedback) | ⚠️ Medium |
+| L5 | `delegate` background agent | ⚠️ Low (opaque mechanism) |
+
+### LLM-Powered Hook Evaluation
+
+Kiro CLI hooks only support shell scripts, not LLM evaluation. v2 bridges this gap with `_lib/llm-eval.sh` — a unified library that calls external LLMs from shell hooks:
+
+- Auto-detects: Gemini → Anthropic → OpenAI → Ollama (local) → graceful degradation
+- Used by Stop hook Phase A for semantic quality judgment
+- Used by UserPromptSubmit for task complexity assessment
+- Zero-config: works without any API key (falls back to deterministic checks only)
 
 ## Features
 
-### 🚨 3 Iron Rules (Hook-Enforced)
-
-Every task passes through these gates — not as suggestions, but as automated checks:
-
-| # | Rule | Why It Matters |
-|---|------|---------------|
-| 1 | **Research First** | Prevents hallucination. Check before answering. |
-| 2 | **Skill First** | Prevents reinventing the wheel. Reuse what exists. |
-| 3 | **Toolify First** | Prevents repetition. If done 3x, make it a tool. |
-
 ### 🧠 Self-Reflect — The Agent That Rewires Itself
 
-Most agents forget your corrections the moment the session ends. Self-Reflect changes that fundamentally.
-
-**How it works:** The agent monitors every message for correction patterns — explicit ("no, use X not Y"), implicit ("you missed..."), and even positive reinforcement ("perfect, keep doing this"). Each detection is scored by confidence (70-90%) and automatically routed to the right file in the 3-layer architecture.
+The agent monitors every message for correction patterns — explicit ("no, use X not Y"), implicit ("you missed..."), and positive reinforcement ("perfect, keep doing this"). Each detection is scored by confidence and automatically routed to the right file.
 
 ```
 User: don't add comments unless I ask
 Agent: 📝 Learning captured: 'don't add comments unless I ask'
        → Written to CLAUDE.md (high-frequency rule)
-       
-       Got it, no comments unless requested.
 ```
-
-**What gets captured and where:**
-
-| Pattern | Example | Confidence | Written To |
-|---------|---------|-----------|------------|
-| Explicit correction | "no, use gpt-5.1 not gpt-5" | 90% | Global config |
-| Implicit negation | "you missed the error handling" | 80% | Project CLAUDE.md |
-| Style preference | "remember: always use TypeScript" | 90% | Project CLAUDE.md |
-| Positive reinforcement | "perfect, keep doing this" | 70% | Reference layer |
 
 **The result:** Day 1, you correct the agent 20 times. Day 30, maybe twice. Day 100, it thinks like you.
 
-**Commands:** `/reflect` (review & sync) · `/view-queue` (see pending) · `/skip-reflect` (clear queue)
-
 ### 🔍 Multi-Level Research — Smart, Cost-Aware Information Gathering
 
-Most agents either never search (and hallucinate) or always search (and waste API credits). This skill implements a tiered strategy that picks the cheapest source that can answer the question:
+A tiered strategy that picks the cheapest source that can answer the question:
 
 ```
 Level 0: Built-in knowledge     → Free, instant
@@ -145,83 +211,25 @@ Level 1: Web search              → Free, 2-3 seconds
 Level 2: Tavily Deep Research    → API credits, 30-120 seconds
 ```
 
-**The agent is trained to stay at the lowest level possible.** Common knowledge? Level 0. Quick fact check? Level 1. Competitive analysis or deep technical comparison? Level 2.
-
-```bash
-# Deep research with structured output
-./scripts/research.sh '{"input": "React vs Vue in 2026", "model": "pro"}' report.md
-
-# Quick lookup
-./scripts/research.sh '{"input": "Next.js app router conventions", "model": "mini"}'
-```
-
-Supports structured JSON output schemas, multiple citation formats (numbered, MLA, APA, Chicago), and automatic model selection.
-
-### 🚫 Dangerous Command Blocker — Safety Net for Destructive Operations
-
-The `block-dangerous-commands.sh` hook runs before every bash execution. It intercepts destructive commands — `rm`, `git reset --hard`, `sudo`, piping curl to shell — and blocks them with safe alternatives. `git checkout` without `-b` is blocked too, preventing accidental loss of staged/unstaged work.
-
-This is a hard block (exit code 2), not a suggestion. The agent must explain the risk, get explicit confirmation, and use the safest alternative.
-
-### 🛡️ Anti-Hallucination Guard — Catch Lies Before They're Written
-
-The `enforce-research.sh` hook runs before every file write. If the agent is about to write an unsupported negative claim — "doesn't support", "no mechanism", "not available" — the hook intercepts it and forces verification against official docs first.
-
-This was born from a real mistake: an agent confidently wrote "this platform has no hook mechanism" into a doc — when it actually did. The hook ensures the agent proves its claims before committing them to files.
-
-### 📚 Knowledge System — Persistent Memory That Grows
+### 📚 Knowledge System — 5-Layer Knowledge Stack
 
 ```
-User question → knowledge/INDEX.md → topic indexes → source documents
+L1: file:// resource        → Loaded at startup (AGENTS.md, INDEX.md)
+L2: skill:// resource       → Metadata at startup, full text on demand
+L3: INDEX.md manual routing  → Question → index → topic → source doc
+L4: knowledgeBase resource   → Semantic search index (millions of tokens)
+L5: knowledge tool           → Cross-session memory (experimental)
 ```
 
-Unlike chat history that gets truncated, the knowledge system is a **permanent, structured, indexed memory**:
+### 🗺️ Product Map — Design Consistency Across Sessions (Optional)
 
-- **INDEX.md** acts as a routing table — the agent knows where to look before it looks
-- **Topic directories** organize knowledge by domain (you define the structure)
-- **lessons-learned.md** is episodic memory — mistakes and wins, so the agent never repeats errors
-- **Every piece of knowledge is citable** — the agent must reference its source, no hallucinated citations
+`knowledge/product/PRODUCT.md` is a lightweight registry of your product's features — what exists, why it was designed that way, and what constraints must be respected.
 
-The knowledge base grows organically as you work. Research results, extracted data, plans — all automatically persisted and indexed.
+## 📦 Skills — Curated from the Best
 
-### 🗺️ Product Map — Keep Design Consistency Across Sessions (Optional)
+Skills are organized into 4 tiers:
 
-When building a product that evolves over time, the agent loses track of existing features, design decisions, and constraints between sessions. The Product Map solves this.
-
-`knowledge/product/PRODUCT.md` is a lightweight registry of your product's features — what exists, why it was designed that way, and what constraints must be respected. The agent reads it before feature/refactor/plan work, so it won't accidentally break existing functionality or contradict past design decisions.
-
-```markdown
-### User Auth — ✅ active
-- Path: `src/auth/`
-- What: Unified login via GitHub/Google OAuth
-- Why this design: JWT for stateless horizontal scaling; OAuth to avoid password maintenance
-- Constraints: Token format exposed to third-party plugins, cannot change
-- Design doc: → docs/designs/2026-01-15-auth.md
-```
-
-**This is opt-in.** If you don't need it, leave the file empty — the framework works the same without it. It's most useful for solo developers or small teams who need the agent to maintain design consistency across many sessions.
-
-### 🔧 Self-Maintenance Commands
-
-The framework maintains itself:
-
-| Command | What It Does |
-|---------|-------------|
-| `@lint` | Audits your CLAUDE.md — checks line count against 200-line budget, finds rules that should be hooks instead of prose, suggests migrations |
-| `@compact` | Compresses Layer 2 — moves low-frequency rules to Layer 3, merges duplicates, tightens wording. Keeps your agent instructions sharp. |
-
-## 📦 23 Pre-installed Skills — Curated from the Best
-
-The framework ships with **23 battle-tested skills** from top sources in the Claude Code ecosystem:
-
-- 🏆 **[Superpowers](https://github.com/obra/superpowers)** by Jesse Vincent (Obra) — The most popular agentic skills framework for Claude Code. A proven software development methodology used by thousands of developers. Our dev workflow skills (brainstorming, TDD, debugging, code review, etc.) come from this collection.
-- 🧠 **Framework originals** — Self-reflect (self-learning system) and multi-level research are built specifically for this framework.
-
-Skills activate automatically based on what you're doing — no manual invocation needed.
-
-### 🔧 Development Workflow — from Superpowers (12 skills)
-
-The complete software development lifecycle, from idea to merge:
+### Core — Workflow Essentials (auto-invoked)
 
 | Skill | When It Activates |
 |-------|-------------------|
@@ -229,87 +237,110 @@ The complete software development lifecycle, from idea to merge:
 | `writing-plans` | When you have a spec — structured, reviewable plan |
 | `executing-plans` | When you have a plan — executes with review checkpoints |
 | `systematic-debugging` | When hitting a bug — root cause analysis, not random fixes |
-| `test-driven-development` | When implementing features — tests first, then code |
-| `requesting-code-review` | When work is done — structured self-review before merge |
-| `receiving-code-review` | When getting feedback — technical rigor, not blind agreement |
+| `code-review-expert` | When reviewing git changes — SOLID, security, actionable improvements |
 | `verification-before-completion` | Before claiming "done" — evidence before assertions |
-| `using-git-worktrees` | When starting feature work — isolated parallel development |
-| `finishing-a-development-branch` | When implementation is complete — merge, PR, or cleanup |
-| `dispatching-parallel-agents` | When facing 2+ independent tasks — parallel execution |
-| `subagent-driven-development` | When executing plans — delegate to subagents |
 
-### ✍️ Writing & Communication (3 skills)
+### Domain — Specialized Experts (auto-invoked when relevant)
 
 | Skill | When It Activates |
 |-------|-------------------|
-| `writing-clearly-and-concisely` | When writing prose — Strunk's rules for stronger writing |
+| `java-architect` | When building Java/Spring Boot apps — enterprise patterns, WebFlux, JPA |
+| `mermaid-diagrams` | When visualizing architecture — class, sequence, flow, ER diagrams |
+| `research` | When information is needed — multi-level search with cost awareness |
+
+### Utility — User-Invoked Tools
+
+| Skill | When It Activates |
+|-------|-------------------|
 | `humanizer` | When editing text — removes AI-generated writing patterns |
 | `doc-coauthoring` | When writing docs/proposals — structured co-authoring workflow |
-
-### 🔍 Analysis & Quality (5 skills)
-
-| Skill | When It Activates |
-|-------|-------------------|
-| `code-review-expert` | When reviewing git changes — SOLID, security, actionable improvements |
-| `security-review` | At the end of every task — audits for vulnerabilities |
-| `mermaid-diagrams` | When visualizing architecture — class, sequence, flow, ER diagrams |
+| `writing-clearly-and-concisely` | When writing prose — Strunk's rules for stronger writing |
 | `find-skills` | When looking for capabilities — discovers installable skills |
-| `java-architect` | When building Java/Spring Boot apps — enterprise patterns, WebFlux, JPA |
+| `skill-creator` | When creating new skills — guides skill design and structure |
+| `using-git-worktrees` | When starting feature work — isolated parallel development |
+| `finishing-a-development-branch` | When implementation is complete — merge, PR, or cleanup |
 
-### 🧠 Framework Core (3 skills)
+### Framework Core
 
 | Skill | When It Activates |
 |-------|-------------------|
 | `self-reflect` | When you correct the agent — captures and persists the learning |
-| `research` | When information is needed — multi-level search with cost awareness |
-| `skill-creator` | When creating new skills — guides skill design and structure |
+| `dispatching-parallel-agents` | When facing 2+ independent tasks — parallel execution |
+| `subagent-driven-development` | When executing plans — delegate to subagents |
+| `test-driven-development` | When implementing features — tests first, then code |
+| `requesting-code-review` | When work is done — structured self-review before merge |
+| `receiving-code-review` | When getting feedback — technical rigor, not blind agreement |
 
 ## Project Structure
 
 ```
 .
-├── CLAUDE.md                          # Layer 2: Working memory (Claude Code)
-├── AGENTS.md                          # Layer 2: Working memory (Kiro CLI)
+├── CLAUDE.md                              # Layer 1: Working memory (Claude Code)
+├── AGENTS.md                              # Layer 1: Working memory (Kiro CLI)
+├── .claude/
+│   ├── hooks/                             # Layer 0: Hook scripts (unified source)
+│   │   ├── security/
+│   │   │   ├── block-dangerous-commands.sh
+│   │   │   ├── block-secrets.sh
+│   │   │   └── scan-skill-injection.sh
+│   │   ├── quality/
+│   │   │   ├── verify-completion.sh       # Stop hook (B+A+C 3-phase)
+│   │   │   ├── auto-test.sh              # PostToolUse auto-test
+│   │   │   ├── auto-lint.sh
+│   │   │   ├── enforce-skill-chain.sh
+│   │   │   └── reviewer-stop-check.sh
+│   │   ├── autonomy/
+│   │   │   ├── context-enrichment.sh      # UserPromptSubmit
+│   │   │   ├── auto-approve-safe.sh       # PermissionRequest (CC only)
+│   │   │   └── inject-subagent-rules.sh   # SubagentStart (CC only)
+│   │   ├── lifecycle/
+│   │   │   ├── session-init.sh
+│   │   │   └── session-cleanup.sh
+│   │   └── _lib/
+│   │       ├── common.sh                  # Shared functions
+│   │       ├── patterns.sh               # Shared regex patterns
+│   │       └── llm-eval.sh              # Unified LLM evaluation library
+│   ├── rules/                             # Layer 2: Modular rules
+│   │   ├── security.md
+│   │   ├── git-workflow.md
+│   │   └── code-quality.md
+│   ├── settings.json                      # Claude Code hook registration
+│   └── skills/                            # Layer 3: Skills (symlink source)
 ├── .kiro/
-│   ├── rules/
-│   │   ├── enforcement.md             # Layer 1: Code-enforced rules
-│   │   ├── reference.md               # Layer 3: Long-term memory
-│   │   └── commands.md                # @lint, @compact
-│   ├── hooks/
-│   │   ├── three-rules-check.sh       # Iron rules enforcement
-│   │   ├── enforce-skill-chain.sh     # Mandatory skill chain (Kiro)
-│   │   ├── enforce-skill-chain-cc.sh  # Mandatory skill chain (Claude Code)
-│   │   ├── enforce-research.sh        # Anti-hallucination
-│   │   ├── block-dangerous-commands.sh    # Dangerous command blocker (Kiro)
-│   │   ├── block-dangerous-commands-cc.sh # Dangerous command blocker (Claude Code)
-│   │   ├── enforce-lessons.sh         # Lessons-learned check (stop)
-│   │   └── check-persist.sh           # Auto-persist reminder
-│   ├── skills/                        # 21 pre-installed skills
-│   │   ├── self-reflect/              #   🧠 Self-learning system
-│   │   ├── research/                  #   🔍 Multi-level research
-│   │   ├── brainstorming/             #   💡 Creative exploration
-│   │   ├── writing-plans/             #   📋 Plan before code
-│   │   ├── systematic-debugging/      #   🐛 Root cause analysis
-│   │   ├── security-review/           #   🔒 Vulnerability audit
-│   │   └── ... (15 more)             #   See full list above
-│   └── agents/
-│       └── default.json               # Agent config with hooks
-├── knowledge/
-│   ├── INDEX.md                       # Knowledge routing table
-│   ├── lessons-learned.md             # Episodic memory
-│   └── product/                       # Product context (optional)
-│       ├── INDEX.md                   # Product knowledge routing
-│       └── PRODUCT.md                 # Feature registry & design decisions
-├── docs/                              # All documentation outputs
-│   ├── INDEX.md                       # Docs routing table
-│   ├── designs/                       # Design docs from brainstorming
-│   ├── plans/                         # Implementation plans
-│   ├── research/                      # Research artifacts
-│   └── decisions/                     # Architecture decision records
-├── tools/                             # Reusable scripts
-│   └── init-project.sh                # Bootstrap new projects
-└── templates/                         # Reusable templates
+│   ├── agents/                            # Layer 4: Subagent configs
+│   │   ├── default.json
+│   │   ├── researcher.json
+│   │   ├── implementer.json
+│   │   ├── reviewer.json
+│   │   ├── debugger.json
+│   │   └── prompts/
+│   ├── hooks/ → ../.claude/hooks/         # Symlink to unified hooks
+│   ├── skills/ → ../.claude/skills/       # Symlink to unified skills
+│   └── rules/
+├── knowledge/                             # Layer 5: Persistent memory
+│   ├── INDEX.md                           # Knowledge routing table
+│   ├── lessons-learned.md                 # Episodic memory
+│   └── product/                           # Product context (optional)
+├── docs/
+│   ├── designs/                           # Design docs
+│   ├── plans/                             # Implementation plans
+│   ├── research/                          # Research artifacts
+│   ├── decisions/                         # Architecture decision records
+│   └── completed/                         # Archived completion criteria
+└── tools/
+    └── init-project.sh                    # Bootstrap new projects
 ```
+
+## Compatibility
+
+| Tool | Config | Hooks | Skills | Subagents | Status |
+|------|--------|-------|--------|-----------|--------|
+| **Claude Code** | `CLAUDE.md` | ✅ 14 events, agent/prompt/command types | ✅ | ✅ Full | ~100% capability |
+| **Kiro CLI** | `AGENTS.md` | ✅ 5 events, command type only | ✅ | ✅ With constraints | ~91% capability |
+| **OpenCode** | `AGENTS.md` | — | — | — | Instructions work |
+| **Others** | `CLAUDE.md` | — | — | — | Instructions work |
+
+Kiro CLI's ~9% gap is concentrated in: Stop hook cannot block agent from stopping (~8%), no LLM hook evaluation natively (~4%, bridged by `llm-eval.sh`), subagents lack `web_search`/`code` tools (~1%).
 
 ## Quick Start
 
@@ -328,8 +359,6 @@ cd my-project
 git pull origin main
 ```
 
-Your customizations live in `CLAUDE.md`, `knowledge/`, and `plans/` — upstream updates to hooks, skills, and the framework won't conflict with your project-specific content.
-
 ### Option 2: Add to existing project
 
 ```bash
@@ -341,32 +370,20 @@ git clone https://github.com/KaimingWan/oh-my-claude-code.git /tmp/omcc
 
 | Want | Copy |
 |------|------|
-| Just the 3-layer structure | `CLAUDE.md` + `.kiro/rules/` |
-| Just the hooks | `.kiro/hooks/` + `.kiro/agents/` |
+| Just the 6-layer structure | `CLAUDE.md` + `.claude/rules/` + `.claude/hooks/` |
+| Just the hooks | `.claude/hooks/` + `.claude/settings.json` |
 | Just self-learning | `.kiro/skills/self-reflect/` |
 | Just knowledge system | `knowledge/` |
+| Just subagents | `.kiro/agents/` |
 
 ### Troubleshooting
 
 **Kiro CLI: "user defined default not found"**
 
-If you see `Error: user defined default default not found` on startup, create a global default agent:
-
 ```bash
 mkdir -p ~/.kiro/agents
 echo '{"name":"default","description":"Global default","tools":["*"],"allowedTools":["*"]}' > ~/.kiro/agents/default.json
 ```
-
-The project-level `.kiro/agents/default.json` (with hooks) will override this automatically.
-
-## Compatibility
-
-| Tool | Config | Hooks | Skills | Status |
-|------|--------|-------|--------|--------|
-| **Claude Code** | `CLAUDE.md` | ✅ | ✅ | Full support |
-| **Kiro CLI** | `AGENTS.md` | ✅ | ✅ | Full support |
-| **OpenCode** | `AGENTS.md` | — | — | Instructions work |
-| **Others** | `CLAUDE.md` | — | — | Instructions work |
 
 ## Design Principles
 
@@ -374,12 +391,13 @@ The project-level `.kiro/agents/default.json` (with hooks) will override this au
 2. **Persist everything valuable** — Chat is ephemeral, files are forever
 3. **Closed-loop evolution** — Corrections → persistent rules → fewer corrections
 4. **Code over prose** — Hooks enforce, words suggest
-5. **Budget your context** — 200-line cap keeps Layer 2 sharp
-6. **Research before action** — Never guess when you can verify
+5. **Progressive disclosure** — 6 layers, each loaded only when needed
+6. **Verification first** — Evidence before claims, always
+7. **Plan as living document** — Plans are the single source of truth, not conversations
 
 ## Contributing
 
-PRs welcome! The bar for Layer 2 additions is intentionally high — if it can be a hook, make it a hook. If it's not needed every conversation, it belongs in Layer 3.
+PRs welcome! The bar for CLAUDE.md additions is intentionally high — if it can be a hook, make it a hook. If it's not needed every conversation, it belongs in a deeper layer.
 
 ## License
 

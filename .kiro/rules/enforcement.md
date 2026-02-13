@@ -1,29 +1,27 @@
-# Enforcement Layer
+# Enforcement Layer (v2)
 
 > If it can be enforced by code, don't enforce it with words.
 
-## Implemented
+## Hook Registry
 
-| Rule | Implementation | Status |
-|------|---------------|--------|
-| 3 Iron Rules reminder | `.kiro/hooks/three-rules-check.sh` (userPromptSubmit) | ✅ |
-| Skill chain enforcement | `.kiro/hooks/enforce-skill-chain.sh` (userPromptSubmit) | ✅ |
-| Anti-hallucination guard | `.kiro/hooks/enforce-research.sh` (preToolUse) | ✅ |
-| Persistence check | `.kiro/hooks/check-persist.sh` (stop) | ✅ |
-| Lessons-learned check | `.kiro/hooks/enforce-lessons.sh` (stop) | ✅ |
-| Dangerous command blocker | `.kiro/hooks/block-dangerous-commands.sh` (preToolUse) | ✅ |
-| Secret leak blocker | `.kiro/hooks/block-secrets.sh` (preToolUse) | ✅ |
+| Rule | Hook Path | Event | Type |
+|------|-----------|-------|------|
+| Context enrichment (replaces 3 Iron Rules + skill chain) | `.claude/hooks/autonomy/context-enrichment.sh` | userPromptSubmit | inject |
+| Dangerous command blocker | `.claude/hooks/security/block-dangerous-commands.sh` | preToolUse[bash] | block |
+| Secret leak blocker | `.claude/hooks/security/block-secrets.sh` | preToolUse[bash] | block |
+| Skill chain (plan required for new files) | `.claude/hooks/quality/enforce-skill-chain.sh` | preToolUse[write] | block |
+| Prompt injection scanner | `.claude/hooks/security/scan-skill-injection.sh` | preToolUse[write] | block |
+| Auto-test after write | `.claude/hooks/quality/auto-test.sh` | postToolUse[write] | feedback |
+| Auto-lint after write | `.claude/hooks/quality/auto-lint.sh` | postToolUse[write] | async |
+| Completion verification (B+A+C) | `.claude/hooks/quality/verify-completion.sh` | stop | feedback |
+| Reviewer stop check | `.claude/hooks/quality/reviewer-stop-check.sh` | stop (reviewer) | feedback |
 
-## To Implement
+## CC-Only Hooks
 
-| Rule | Planned Implementation | Priority |
-|------|----------------------|----------|
-| Markdown lint | `.markdownlint.json` | P2 |
-| Index integrity | `tests/test_index_integrity.py` | P2 |
-
-## Adding New Rules
-
-1. Confirm the rule can be enforced by code
-2. Choose implementation (linting / test / hook)
-3. Implement and test
-4. Move from "To Implement" to "Implemented"
+| Rule | Hook Path | Event |
+|------|-----------|-------|
+| Auto-approve safe commands | `.claude/hooks/autonomy/auto-approve-safe.sh` | PermissionRequest |
+| Inject subagent rules | `.claude/hooks/autonomy/inject-subagent-rules.sh` | SubagentStart |
+| Enforce tests on completion | `.claude/hooks/quality/enforce-tests.sh` | TaskCompleted |
+| Session init | `.claude/hooks/lifecycle/session-init.sh` | SessionStart |
+| Session cleanup | `.claude/hooks/lifecycle/session-cleanup.sh` | SessionEnd |

@@ -1,106 +1,59 @@
-# [Project Name] Agent
+# Agent Framework v2
 
-> **3-Layer Architecture**: Enforcement → High-Frequency Recall (this file) → On-Demand Reference
-> - Enforcement: [.kiro/rules/enforcement.md](.kiro/rules/enforcement.md)
-> - Reference: [.kiro/rules/reference.md](.kiro/rules/reference.md)
-> - Commands: [.kiro/rules/commands.md](.kiro/rules/commands.md)
+## Identity
+- Agent for [Project Name]. English unless user requests otherwise.
 
-## 0. Meta Rules
+## Verification First (最高优先级)
+- 任何完成声明前必须有验证证据（测试输出、构建结果）
+- 证据 → 声明，永远不反过来
+- Enforced by: Stop hook (CC: agent type / Kiro: command + LLM eval)
 
-**If it can be enforced by code, don't enforce it with words.**
+## Workflow
+1. Explore → Plan → Code (先调研，再计划，再编码)
+2. 复杂任务先 interview，不要假设
+3. 执行 → 验证 → 修正
 
-| Layer | Content | Limit |
-|-------|---------|-------|
-| Enforcement | Linting, tests, hooks | Unlimited |
-| High-Frequency | This file, read every turn | **≤200 lines** |
-| On-Demand | Linked .md files | Unlimited |
+## Skill Routing
+- 规划/设计 → brainstorming skill → writing-plans skill → reviewer 辩证
+- 执行 plan → executing-plans skill 或 dispatching-parallel-agents skill
+- 完成/合并 → verification-before-completion skill → reviewer 验收 → code-review-expert skill
+- 调试 → systematic-debugging skill (NO fixes without root cause)
+- 调研 → research skill (web search → structured findings)
+- 纠正/学习 → self-reflect skill (写入正确的目标文件)
 
-## 1. Identity & Language
-- **Identity**: [Project Name] Agent
-- **Language**: English (unless user requests otherwise)
+## Plan as Living Document
+- Plan 文件（docs/plans/*.md）是唯一事实来源，不是对话
+- 每次讨论产生的决策变更，必须立即更新到 plan 文件
+- 修改 plan 时标记 ~~废弃~~ 并说明原因，不要删除旧决策
+- Context 压缩后，重新读 plan 文件恢复上下文
 
-## 2. Roles (Switch as needed)
+## Knowledge Retrieval
+- Question → knowledge/INDEX.md → topic indexes → source docs
+- **必须引用来源文件**，不引用 = 幻觉
+- @knowledge/lessons-learned.md — 每次任务前后必查
+- Enforced by: context-enrichment hook + Stop hook
 
-| Role | Trigger | Knowledge Source |
-|------|---------|-----------------|
-| 🔧 Engineer | Technical tasks | `knowledge/` |
+## Compound Interest (自动沉淀)
+1. **结构化输出必须写入文件** — 不只是聊天输出
+2. **操作重复 ≥3 次** → 提示创建模板/工具 (Toolify First)
+3. **任务完成后** → 检查索引是否需要更新
 
-<!-- Add your own roles here -->
+## Self-Learning (自进化)
+- 检测到纠正 → **立即写入目标文件**，不排队
+- 输出: `📝 Learning captured: '[preview]'`
+- 同步目标: 可编码→hooks | 高频→本文件 | 低频→knowledge/
+- Enforced by: UserPromptSubmit hook (检测纠正模式 → 注入提醒)
 
-## 3. Knowledge Retrieval (Required)
+## Long-Running Tasks
+- 长任务开始时写 `.completion-criteria.md`（目标 + 检查清单）
+- 这是持久化状态，context 压缩后重新读取恢复上下文
+- 优先拆分为子 agent 短任务，而非单 agent 长跑
 
-```
-Question → knowledge/INDEX.md → topic indexes → source docs
-```
+## Shell Safety
+- 耗时命令加 timeout: `timeout 60 npm test`
+- 网络请求加 `--max-time`: `curl --max-time 30`
+- 禁止裸跑交互式命令，必须加 auto-answer flag
 
-**Must cite source files.**
-
-## 4. Security Red Lines (Non-negotiable)
-
-🚫 **NEVER execute without explicit user confirmation:**
-- `rm`, `rmdir`, `shred` — use `mv ~/.Trash/` instead
-- `git checkout` (without `-b`) — stash first, explain what will be lost
-- `git reset --hard`, `git clean -f` — show diff/list first
-- `git stash drop`, `git branch -D` — explain consequences first
-- `sudo`, `chmod -R 777`, `chown -R` — explain why needed
-- Piping curl/wget to shell — never
-
-**Enforced by**: `.kiro/hooks/block-dangerous-commands.sh` (preToolUse)
-
-## 5. Workflow
-
-### 🚨 3 Iron Rules (Every task must pass)
-
-| # | Rule | Checkpoint |
-|---|------|-----------|
-| 1️⃣ | **Research First** | Best practices? Check before answering |
-| 2️⃣ | **Skill First** | Existing skill/template available? |
-| 3️⃣ | **Toolify First** | Worth making reusable? |
-
-**Execution order**: Research → Match Skill → Evaluate toolification → Execute
-
-### Mandatory Skill Chains (Enforced by `.kiro/hooks/enforce-skill-chain.sh`)
-
-| Intent | Required Skills (in order) |
-|--------|---------------------------|
-| 🏗️ Planning/Design | brainstorming → writing-plans → lessons-learned check |
-| ✅ Completion/Merge | verification-before-completion → code-review-expert → lessons-learned update |
-| 🐛 Debugging | systematic-debugging → lessons-learned check |
-
-**Skip = violation. Hook will remind you.**
-
-### Product Context (Optional)
-
-If `knowledge/product/PRODUCT.md` exists and is non-empty, read it before feature/refactor/plan work.
-
-### Standard Flow
-1. **Complex tasks: plan first** — Plan → Confirm → Execute
-2. **Before planning: interview** — Ask, don't assume
-3. **Verify first** — Execute → Verify → Correct
-4. **After every task** — Check & update `knowledge/lessons-learned.md`
-
-## 6. Compound Interest
-
-1. **Structured output must be written to files** — Not just chat
-2. **Operations repeated ≥3 times** — Prompt to create template/tool
-3. **After task completion** — Check if indexes need updating
-
-## 7. Self-Learning
-
-**Correction detected → Write to target file immediately → No queue**
-
-Output: `📝 Learning captured: '[preview]'`
-
-### Sync targets
-- Can be coded → `.kiro/rules/enforcement.md`
-- High frequency → This file
-- Low frequency → `.kiro/rules/reference.md` or `knowledge/`
-
-## Custom Commands
-
-| Command | Purpose |
-|---------|---------|
-| `@lint` | Check instruction health |
-| `@compact` | Compress instructions |
-
-See: [.kiro/rules/commands.md](.kiro/rules/commands.md)
+## Rules
+- 详细规则见 .claude/rules/ 目录（自动加载）
+- 安全规则由 hooks 强制执行，不依赖 prompt 遵从

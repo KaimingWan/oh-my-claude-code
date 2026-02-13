@@ -1,0 +1,29 @@
+{
+  "name": "researcher",
+  "description": "Research specialist for codebase exploration. Can read files and run shell commands. Cannot do web search.",
+  "prompt": "file://./prompts/researcher-prompt.md",
+  "tools": ["read", "shell"],
+  "allowedTools": ["read", "shell"],
+  "resources": [
+    "file://AGENTS.md",
+    "skill://.kiro/skills/research/SKILL.md"
+  ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "echo '🔬 RESEARCHER RULES: 1) Cite sources (file paths) 2) Cross-verify claims 3) If info not found, say so explicitly'"
+      }
+    ],
+    "stop": [
+      {
+        "command": "echo '📝 Research complete. Did you: 1) Cite all sources? 2) Cross-verify claims? 3) Report gaps?'"
+      }
+    ]
+  },
+  "toolsSettings": {
+    "shell": {
+      "autoAllowReadonly": true,
+      "deniedCommands": ["git commit.*", "git push.*"]
+    }
+  }
+}

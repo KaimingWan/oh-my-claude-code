@@ -1,0 +1,32 @@
+{
+  "name": "oh-my-claude-code",
+  "version": "1.0.0",
+  "description": "**Turn your AI coding agent into a self-evolving, personalized super-intelligence.**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KaimingWan/oh-my-claude-code.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KaimingWan/oh-my-claude-code/issues"
+  },
+  "homepage": "https://github.com/KaimingWan/oh-my-claude-code#readme",
+  "dependencies": {
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "@types/ws": "^8.18.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

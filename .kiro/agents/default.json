@@ -1,6 +1,6 @@
 {
   "name": "default",
-  "description": "Default agent with 3-layer architecture",
+  "description": "Main orchestrator agent with 6-layer architecture",
   "tools": ["*"],
   "allowedTools": ["*"],
   "resources": [
@@ -11,33 +11,70 @@
   "hooks": {
     "userPromptSubmit": [
       {
-        "command": ".kiro/hooks/three-rules-check.sh"
-      },
-      {
-        "command": ".kiro/hooks/enforce-skill-chain.sh"
+        "command": ".claude/hooks/autonomy/context-enrichment.sh"
       }
     ],
     "preToolUse": [
       {
         "matcher": "execute_bash",
-        "command": ".kiro/hooks/block-dangerous-commands.sh"
+        "command": ".claude/hooks/security/block-dangerous-commands.sh"
       },
       {
         "matcher": "execute_bash",
-        "command": ".kiro/hooks/block-secrets.sh"
+        "command": ".claude/hooks/security/block-secrets.sh"
       },
       {
         "matcher": "fs_write",
-        "command": ".kiro/hooks/enforce-research.sh"
+        "command": ".claude/hooks/quality/enforce-skill-chain.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": ".claude/hooks/security/scan-skill-injection.sh"
+      }
+    ],
+    "postToolUse": [
+      {
+        "matcher": "fs_write",
+        "command": ".claude/hooks/quality/auto-test.sh"
       }
     ],
     "stop": [
       {
-        "command": ".kiro/hooks/check-persist.sh"
-      },
-      {
-        "command": ".kiro/hooks/enforce-lessons.sh"
+        "command": ".claude/hooks/quality/verify-completion.sh"
       }
     ]
+  },
+  "toolsSettings": {
+    "subagent": {
+      "availableAgents": ["researcher", "implementer", "reviewer", "debugger"],
+      "trustedAgents": ["researcher", "implementer", "reviewer", "debugger"]
+    },
+    "shell": {
+      "autoAllowReadonly": true,
+      "deniedCommands": [
+        "rm\\s+(-[rRf]|--recursive|--force).*",
+        "rmdir\\b.*",
+        "mkfs\\b.*",
+        "shred\\b.*",
+        "git\\s+push\\s+.*--force.*",
+        "git\\s+reset\\s+--hard.*",
+        "git\\s+clean\\s+-f.*",
+        "git\\s+stash\\s+drop.*",
+        "git\\s+branch\\s+-[dD].*",
+        "sudo\\b.*",
+        "chmod\\s+(-R\\s+)?777.*",
+        "chown\\s+-R.*",
+        "curl.*\\|\\s*(ba)?sh.*",
+        "wget.*\\|\\s*(ba)?sh.*",
+        "kill\\s+-9.*",
+        "killall\\b.*",
+        "shutdown\\b.*",
+        "reboot\\b.*",
+        "DROP\\s+(DATABASE|TABLE|SCHEMA).*",
+        "TRUNCATE\\b.*",
+        "find\\b.*-delete",
+        "find\\b.*-exec\\s+rm"
+      ]
+    }
   }
 }

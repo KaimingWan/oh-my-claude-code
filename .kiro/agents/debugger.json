@@ -1,0 +1,39 @@
+{
+  "name": "debugger",
+  "description": "Systematic debugging specialist. Reproduce → hypothesize → verify → fix.",
+  "prompt": "file://./prompts/debugger-prompt.md",
+  "tools": ["read", "write", "shell"],
+  "allowedTools": ["read", "write", "shell"],
+  "resources": [
+    "file://AGENTS.md",
+    "skill://.kiro/skills/systematic-debugging/SKILL.md",
+    "file://knowledge/lessons-learned.md"
+  ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "echo '🐛 DEBUGGER RULES: 1) Reproduce first 2) Form hypothesis 3) Verify with evidence 4) Check lessons-learned'"
+      }
+    ],
+    "preToolUse": [
+      {
+        "matcher": "execute_bash",
+        "command": ".claude/hooks/security/block-dangerous-commands.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".claude/hooks/quality/verify-completion.sh"
+      }
+    ]
+  },
+  "toolsSettings": {
+    "shell": {
+      "autoAllowReadonly": true,
+      "deniedCommands": [
+        "rm\\s+(-[rRf]|--recursive|--force).*",
+        "git\\s+reset\\s+--hard.*"
+      ]
+    }
+  }
+}
