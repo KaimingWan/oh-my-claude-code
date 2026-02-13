@@ -43,7 +43,7 @@ else
   HAS_TESTS=$(git diff --name-only 2>/dev/null | grep -ciE '(test|spec)' || true)
   HAS_TESTS=${HAS_TESTS:-0}
   HAS_PLAN=$(ls docs/plans/*.md .completion-criteria.md 2>/dev/null | head -1)
-  SRC_COUNT=$(git diff --name-only 2>/dev/null | grep -cE '\.(ts|js|py|java|rs|go)$' || true)
+  SRC_COUNT=$(git diff --name-only 2>/dev/null | grep -cE '\.(ts|js|py|java|rs|go|rb|swift|kt|sh)$' || true)
   SRC_COUNT=${SRC_COUNT:-0}
 
   PROMPT=$(jq -n --arg diff "$DIFF" --arg files "$CHANGED_FILES" --arg src "$SRC_COUNT" --arg tests "$HAS_TESTS" --arg plan "${HAS_PLAN:-none}" '
@@ -67,7 +67,7 @@ REFLECT_CHANGED=$(git diff --name-only 2>/dev/null | grep -cE 'lessons-learned|e
 REFLECT_CHANGED=${REFLECT_CHANGED:-0}
 CORRECTION_FLAG="/tmp/kiro-correction-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default').flag"
 
-SRC_CHANGED=$(git diff --name-only 2>/dev/null | grep -cE '\.(ts|js|py|java|rs|go)$' || true)
+SRC_CHANGED=$(git diff --name-only 2>/dev/null | grep -cE '\.(ts|js|py|java|rs|go|rb|swift|kt|sh)$' || true)
 SRC_CHANGED=${SRC_CHANGED:-0}
 if [ "$SRC_CHANGED" -gt 0 ]; then
   echo "⚠️ $SRC_CHANGED source files changed. Did you run code review? (code-review-expert skill)"

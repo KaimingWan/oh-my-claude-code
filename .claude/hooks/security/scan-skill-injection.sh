@@ -1,5 +1,6 @@
 #!/bin/bash
 # scan-skill-injection.sh — PreToolUse[Write|Edit] (Kiro + CC)
+# Scans written content for: 1) prompt injection in skills 2) secrets in any file
 source "$(dirname "$0")/../_lib/common.sh"
 source "$(dirname "$0")/../_lib/patterns.sh"
 
@@ -14,7 +15,16 @@ case "$TOOL_NAME" in
   *)              exit 0 ;;
 esac
 
-# Only check skill/command files
+# ===== Secret detection (all files) =====
+if echo "$CONTENT" | grep -qiE "$SECRET_PATTERNS"; then
+  # Allow patterns.sh itself (it defines the patterns) and test files
+  if ! echo "$FILE" | grep -qiE '(patterns\.sh|test|spec|e2e)'; then
+    hook_block "🚫 BLOCKED: Secret pattern detected in file content: $FILE
+Never write secrets directly into files. Use environment variables instead."
+  fi
+fi
+
+# ===== Prompt injection (skill/command files only) =====
 echo "$FILE" | grep -qiE '(skills|commands)/.*\.(md|yaml|yml)$' || exit 0
 
 if echo "$CONTENT" | grep -qiE "$INJECTION_PATTERNS"; then

@@ -17,9 +17,13 @@ fi
 touch "$LOCK"
 
 TEST_CMD=$(detect_test_command)
-if [ -n "$TEST_CMD" ] && ! eval "$TEST_CMD" 2>/dev/null; then
-  echo "⚠️ Tests failed after editing $FILE. Fix before continuing." >&2
-  exit 1
+if [ -n "$TEST_CMD" ]; then
+  TEST_OUTPUT=$(eval "$TEST_CMD" 2>&1)
+  if [ $? -ne 0 ]; then
+    echo "⚠️ Tests failed after editing $FILE:" >&2
+    echo "$TEST_OUTPUT" | tail -20 >&2
+    exit 1
+  fi
 fi
 
 exit 0

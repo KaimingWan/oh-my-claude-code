@@ -34,13 +34,18 @@ if [ -f ".skip-plan" ]; then
   exit 0
 fi
 
-# Check: plan file exists?
+# Check: plan file exists and is recent (within 24h)?
 PLAN_EXISTS=false
 PLAN_FILE=""
 if ls docs/plans/*.md &>/dev/null; then
-  PLAN_EXISTS=true
-  PLAN_FILE=$(ls -t docs/plans/*.md 2>/dev/null | head -1)
-elif [ -f ".completion-criteria.md" ]; then
+  LATEST_PLAN=$(ls -t docs/plans/*.md 2>/dev/null | head -1)
+  PLAN_AGE=$(( $(date +%s) - $(stat -f %m "$LATEST_PLAN" 2>/dev/null || stat -c %Y "$LATEST_PLAN" 2>/dev/null || echo 0) ))
+  if [ "$PLAN_AGE" -lt 86400 ]; then
+    PLAN_EXISTS=true
+    PLAN_FILE="$LATEST_PLAN"
+  fi
+fi
+if [ "$PLAN_EXISTS" = false ] && [ -f ".completion-criteria.md" ]; then
   PLAN_EXISTS=true
   PLAN_FILE=".completion-criteria.md"
 fi

@@ -11,9 +11,9 @@ CONTEXT=""
 CORRECTION_DETECTED=0
 if echo "$USER_MSG" | grep -qE '你.{0,5}(错了|不对|不是|忘了|应该)'; then
   CORRECTION_DETECTED=1
-elif echo "$USER_MSG" | grep -qE '(别用|不要用|换成|改成|用错了)'; then
+elif echo "$USER_MSG" | grep -qE '(别用|不要用|换成|改成|用错了|不是这样|这样不行|重新来|换个方式|不是我要的)'; then
   CORRECTION_DETECTED=1
-elif echo "$USER_MSG" | grep -qiE '(you (are|were|got it) wrong|you missed|I told you|you should have|that.s (wrong|incorrect)|no,? (use|do))'; then
+elif echo "$USER_MSG" | grep -qiE '(you (are|were|got it) wrong|you missed|I told you|you should have|that.s (wrong|incorrect)|no,? (use|do)|not what I|try again|wrong approach)'; then
   CORRECTION_DETECTED=1
 fi
 
