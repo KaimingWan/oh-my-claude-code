@@ -59,9 +59,10 @@ Answer ONE word: SIMPLE / NEEDS_RESEARCH / NEEDS_PLAN / NEEDS_BOTH")
       CONTEXT="${CONTEXT}  Step 1: brainstorming skill — explore intent, requirements, constraints with user\n"
       CONTEXT="${CONTEXT}  Step 2: research skill — gather information needed\n"
       CONTEXT="${CONTEXT}  Step 3: writing-plans skill — write plan to docs/plans/\n"
-      CONTEXT="${CONTEXT}  Step 4: spawn reviewer subagent — challenge the plan\n"
-      CONTEXT="${CONTEXT}  DO NOT read code, run commands, or start implementation before completing Step 1.\n"
-      CONTEXT="${CONTEXT}  Skipping this sequence is a violation. Your FIRST action must be brainstorming.\n\n"
+      CONTEXT="${CONTEXT}  Step 4: spawn reviewer subagent — reviewer MUST challenge the plan before you proceed\n"
+      CONTEXT="${CONTEXT}  Step 5: update plan with reviewer feedback, THEN proceed to implementation\n"
+      CONTEXT="${CONTEXT}  DO NOT read code, run commands, or start implementation before completing Step 4.\n"
+      CONTEXT="${CONTEXT}  DO NOT skip the reviewer. Writing a plan without review is a violation.\n\n"
     elif echo "$EVAL" | grep -qi "NEEDS_RESEARCH"; then
       CONTEXT="${CONTEXT}🚨 MANDATORY: Research first before implementation. Use research skill.\n"
       CONTEXT="${CONTEXT}  DO NOT start coding before research is complete.\n\n"
@@ -69,7 +70,9 @@ Answer ONE word: SIMPLE / NEEDS_RESEARCH / NEEDS_PLAN / NEEDS_BOTH")
       CONTEXT="${CONTEXT}🚨 MANDATORY WORKFLOW — This task needs a plan:\n"
       CONTEXT="${CONTEXT}  Step 1: brainstorming skill — explore intent with user\n"
       CONTEXT="${CONTEXT}  Step 2: writing-plans skill — write plan to docs/plans/\n"
-      CONTEXT="${CONTEXT}  DO NOT read code or start implementation before completing Step 1.\n\n"
+      CONTEXT="${CONTEXT}  Step 3: spawn reviewer subagent — reviewer MUST challenge the plan before you proceed\n"
+      CONTEXT="${CONTEXT}  Step 4: update plan with reviewer feedback, THEN proceed to implementation\n"
+      CONTEXT="${CONTEXT}  DO NOT skip the reviewer. Writing a plan without review is a violation.\n\n"
     elif echo "$EVAL" | grep -qi "SIMPLE"; then
       : # Simple task, no action needed
     else
@@ -78,7 +81,8 @@ Answer ONE word: SIMPLE / NEEDS_RESEARCH / NEEDS_PLAN / NEEDS_BOTH")
         CONTEXT="${CONTEXT}🚨 MANDATORY WORKFLOW — Complex task detected. You MUST:\n"
         CONTEXT="${CONTEXT}  Step 1: brainstorming skill — explore intent with user\n"
         CONTEXT="${CONTEXT}  Step 2: writing-plans skill — write plan to docs/plans/\n"
-        CONTEXT="${CONTEXT}  DO NOT start implementation before completing Step 1.\n\n"
+        CONTEXT="${CONTEXT}  Step 3: spawn reviewer subagent — reviewer MUST challenge the plan before you proceed\n"
+        CONTEXT="${CONTEXT}  DO NOT skip the reviewer. Writing a plan without review is a violation.\n\n"
       else
         CONTEXT="${CONTEXT}📋 Complex task detected. Consider: brainstorming → writing-plans before implementation.\n"
       fi
@@ -93,7 +97,8 @@ Answer ONE word: SIMPLE / NEEDS_RESEARCH / NEEDS_PLAN / NEEDS_BOTH")
       CONTEXT="${CONTEXT}🚨 MANDATORY WORKFLOW — Complex task detected (multiple signals). You MUST:\n"
       CONTEXT="${CONTEXT}  Step 1: brainstorming skill — explore intent with user\n"
       CONTEXT="${CONTEXT}  Step 2: writing-plans skill — write plan to docs/plans/\n"
-      CONTEXT="${CONTEXT}  DO NOT start implementation before completing Step 1.\n\n"
+      CONTEXT="${CONTEXT}  Step 3: spawn reviewer subagent — reviewer MUST challenge the plan before you proceed\n"
+      CONTEXT="${CONTEXT}  DO NOT skip the reviewer. Writing a plan without review is a violation.\n\n"
     else
       CONTEXT="${CONTEXT}📋 Complex task detected. Consider: brainstorming → writing-plans before implementation.\n"
     fi
