@@ -102,7 +102,7 @@ The framework follows one core principle: *what can be enforced by hooks, don't 
 │  Each with own hooks, tools, and constraints.            │
 ├─────────────────────────────────────────────────────────┤
 │          Layer 5: Knowledge (Persistent)                  │
-│  lessons-learned.md · product/ · INDEX.md routing        │
+│  lessons-learned.md · INDEX.md routing                    │
 │  5-layer knowledge stack with semantic search.           │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -216,10 +216,6 @@ L4: knowledgeBase resource   → Semantic search index (millions of tokens)
 L5: knowledge tool           → Cross-session memory (experimental)
 ```
 
-### 🗺️ Product Map — Design Consistency Across Sessions (Optional)
-
-`knowledge/product/PRODUCT.md` is a lightweight registry of your product's features — what exists, why it was designed that way, and what constraints must be respected.
-
 ## 📦 Skills — Curated from the Best
 
 Skills are organized into 4 tiers:
@@ -314,8 +310,7 @@ Skills are organized into 4 tiers:
 │   └── rules/
 ├── knowledge/                             # Layer 5: Persistent memory
 │   ├── INDEX.md                           # Knowledge routing table
-│   ├── lessons-learned.md                 # Episodic memory
-│   └── product/                           # Product context (optional)
+│   └── lessons-learned.md                 # Episodic memory
 ├── docs/
 │   ├── designs/                           # Design docs
 │   ├── plans/                             # Implementation plans
