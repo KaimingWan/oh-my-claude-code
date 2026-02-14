@@ -109,6 +109,18 @@ The framework follows one core principle: *what can be enforced by hooks, don't 
 
 ## Key Features
 
+### Custom Commands — Precise Skill Triggering (Kiro CLI)
+
+On Kiro CLI, the agent may skip skills or the reviewer step even when hooks inject reminders — soft prompts can be ignored. To guarantee the full workflow fires every time, the framework uses **custom commands** (`.kiro/prompts/*.md`) as explicit entry points:
+
+| Command | What It Does |
+|---------|-------------|
+| `@plan <requirement>` | Forces the full chain: brainstorming → writing-plans → reviewer challenge (loop until APPROVE) → user confirm → executing-plans |
+| `@rp` | Dispatches reviewer subagent to audit the latest plan in `docs/plans/` |
+| `@rc` | Dispatches reviewer subagent to review current git changes (P0–P3 severity) |
+
+This is a key architectural difference from Claude Code: instead of relying solely on hooks to nudge the agent, custom commands give the user **active, precise control** over which skills and subagents fire — turning "the agent should do X" into "the agent must do X".
+
 ### Hook-Enforced Constraints (Layer 0)
 
 Critical constraints are enforced by **hooks** (automated scripts), not prompt text — the agent can't ignore them:
@@ -307,6 +319,7 @@ Skills are organized into 4 tiers:
 │   │   └── prompts/
 │   ├── hooks/ → ../.claude/hooks/         # Symlink to unified hooks
 │   ├── skills/ → ../.claude/skills/       # Symlink to unified skills
+│   ├── prompts/                           # Custom commands (@plan, @rc, @rp)
 │   └── rules/
 ├── knowledge/                             # Layer 5: Persistent memory
 │   ├── INDEX.md                           # Knowledge routing table
