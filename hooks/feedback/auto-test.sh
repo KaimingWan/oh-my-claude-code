@@ -25,7 +25,7 @@ if [ -n "$TEST_CMD" ]; then
   TEST_OUTPUT=$(eval "$TEST_CMD" 2>&1)
   if [ $? -ne 0 ]; then
     echo "⚠️ Tests failed after editing $FILE:" >&2
-    echo "$TEST_OUTPUT" | tail -20 >&2
+    echo "$TEST_OUTPUT" | tail -10 >&2
     exit 1
   fi
 fi

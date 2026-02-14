@@ -27,13 +27,17 @@ if [ -f ".completion-criteria.md" ]; then
   [ "$UNCHECKED" -gt 0 ] && echo "⚠️ Unfinished task: .completion-criteria.md has $UNCHECKED unchecked items. Read it to resume."
 fi
 
-# 3. High-frequency lessons (hardcoded, always injected)
-cat << 'LESSONS'
+# 3. High-frequency lessons (only once per session)
+LESSONS_FLAG="/tmp/lessons-injected-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default').flag"
+if [ ! -f "$LESSONS_FLAG" ]; then
+  cat << 'LESSONS'
 📚 HIGH-FREQ LESSONS (from knowledge/lessons-learned.md):
   • JSON = jq, 无条件无例外。禁止 sed/awk/grep 修改 JSON。
   • macOS 用 stat -f, 禁止 stat -c (GNU-only)。
   • shell 脚本考虑跨平台: BSD vs GNU 工具链差异。
   • grep -c 无匹配时 exit 1 但仍输出 0, 不要和 || echo 0 组合。
 LESSONS
+  touch "$LESSONS_FLAG"
+fi
 
 exit 0
