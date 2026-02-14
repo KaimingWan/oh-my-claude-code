@@ -172,10 +172,11 @@ jq -n '{
   resources: [
     "file://AGENTS.md",
     "skill://skills/debugging/SKILL.md",
-    "file://knowledge/lessons-learned.md"
+    "file://knowledge/rules.md",
+    "file://knowledge/episodes.md"
   ],
   hooks: {
-    agentSpawn: [{command: "echo '\''🐛 DEBUGGER: 1) Reproduce first 2) Form hypothesis 3) Verify with evidence 4) Check lessons-learned'\''"}],
+    agentSpawn: [{command: "echo '\''🐛 DEBUGGER: 1) Reproduce first 2) Form hypothesis 3) Verify with evidence 4) Check rules.md + episodes.md'\''"}],
     preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}],
     stop: [{command: "hooks/feedback/verify-completion.sh"}]
   },

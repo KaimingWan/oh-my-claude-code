@@ -40,7 +40,7 @@ The agent captures corrections in real-time and writes them to persistent files.
 
 > If it's worth generating, it's worth saving.
 
-Research findings → `knowledge/`. Plans → `docs/plans/`. Lessons → `knowledge/lessons-learned.md`. Nothing valuable is lost in chat.
+Research findings → `knowledge/`. Plans → `docs/plans/`. Lessons → `knowledge/rules.md` + `knowledge/episodes.md`. Nothing valuable is lost in chat.
 
 ### 🧠 Feedback Loop → Self-Evolution
 
@@ -73,7 +73,7 @@ When you say "no, use X not Y", the agent captures the pattern and writes it to 
 │  researcher · implementer · reviewer · debugger          │
 ├─────────────────────────────────────────────────────────┤
 │  Knowledge (Persistent Memory)                           │
-│  lessons-learned.md · INDEX.md routing                   │
+│  rules.md · episodes.md · INDEX.md routing                 │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -85,7 +85,7 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 |---------|----------|
 | `@plan` | brainstorming → write plan (with checklist) → reviewer challenge → fix until APPROVE → user confirm |
 | `@execute` | load approved plan → Ralph Loop: bash outer loop checks checklist → fresh Kiro instance per iteration → no stops until all items checked off |
-| `@debug` | read debugging skill → check lessons-learned → reproduce → hypothesize → verify → fix |
+| `@debug` | read debugging skill → check rules.md + episodes.md → reproduce → hypothesize → verify → fix |
 | `@research` | L0 built-in knowledge → L1 web search → L2 deep research → write findings to file |
 | `@review` | dispatch reviewer subagent → categorize P0-P3 → cite file:line |
 | `@skill` | list all 9 skills with descriptions, match user need to closest skill |
@@ -165,7 +165,8 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 │   └── rules/                     # enforcement.md, commands.md, reference.md
 ├── knowledge/                     # Persistent memory
 │   ├── INDEX.md                   # Knowledge routing table
-│   ├── lessons-learned.md         # Mistakes and wins
+│   ├── rules.md                   # Proven DO/DON'T constraints
+│   ├── episodes.md                # Mistakes and wins (timeline)
 │   └── reference/                 # Archived skill content
 └── docs/
     ├── designs/                   # Design documents
@@ -205,7 +206,7 @@ git clone https://github.com/KaimingWan/oh-my-claude-code.git /tmp/omcc
 | Want | Copy |
 |------|------|
 | Just hooks | `hooks/` + run `scripts/generate-platform-configs.sh` |
-| Just self-learning | `skills/self-reflect/` + `knowledge/lessons-learned.md` |
+| Just self-learning | `skills/self-reflect/` + `knowledge/rules.md` + `knowledge/episodes.md` |
 | Just knowledge system | `knowledge/` |
 | Just subagents | `agents/` + `.kiro/agents/` |
 

@@ -1,11 +1,11 @@
 #!/bin/bash
 # context-enrichment.sh — UserPromptSubmit (Kiro + CC)
-# Stripped to 3 deterministic functions only. No soft prompts (proven ineffective).
+# 3 deterministic functions + auto-capture pipeline.
 
 INPUT=$(cat)
 USER_MSG=$(echo "$INPUT" | jq -r '.prompt // ""' 2>/dev/null)
 
-# 1. Correction detection → flag file for stop hook
+# 1. Correction detection → auto-capture + flag file for stop hook
 if echo "$USER_MSG" | grep -qE '你.{0,5}(错了|不对|不是|忘了|应该)'; then
   DETECTED=1
 elif echo "$USER_MSG" | grep -qE '(别用|不要用|换成|改成|用错了|不是这样|这样不行|重新来|换个方式|不是我要的)'; then
@@ -21,7 +21,12 @@ else
 fi
 
 if [ "$DETECTED" -eq 1 ]; then
-  echo "🚨 CORRECTION DETECTED. Use self-reflect skill: identify error → write to target file → output 📝 Learning captured."
+  # 自动落库（exit 0=已处理, exit 1=被过滤需要 self-reflect）
+  bash "$(dirname "$0")/auto-capture.sh" "$USER_MSG"
+  if [ $? -eq 1 ]; then
+    # 被过滤 = 复杂洞察，提醒 agent 用 self-reflect 或人用 @reflect
+    echo "🚨 CORRECTION DETECTED (complex). Use self-reflect skill or @reflect to capture."
+  fi
   touch "/tmp/agent-correction-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default').flag"
 fi
 
@@ -31,16 +36,29 @@ if [ -f ".completion-criteria.md" ]; then
   [ "$UNCHECKED" -gt 0 ] && echo "⚠️ Unfinished task: .completion-criteria.md has $UNCHECKED unchecked items. Read it to resume."
 fi
 
-# 3. High-frequency lessons (only once per session)
+# 3. Rules injection + health check (only once per session)
 LESSONS_FLAG="/tmp/lessons-injected-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default').flag"
 if [ ! -f "$LESSONS_FLAG" ]; then
-  cat << 'LESSONS'
-📚 HIGH-FREQ LESSONS (from knowledge/lessons-learned.md):
-  • JSON = jq, 无条件无例外。禁止 sed/awk/grep 修改 JSON。
-  • macOS 用 stat -f, 禁止 stat -c (GNU-only)。
-  • shell 脚本考虑跨平台: BSD vs GNU 工具链差异。
-  • grep -c 无匹配时 exit 1 但仍输出 0, 不要和 || echo 0 组合。
-LESSONS
+  if [ -f "knowledge/rules.md" ]; then
+    echo "📚 AGENT RULES (from knowledge/rules.md):"
+    grep '^[0-9]' "knowledge/rules.md" | head -10
+  else
+    cat << 'FALLBACK'
+📚 AGENT RULES (fallback):
+  • JSON = jq, 无条件无例外。
+  • macOS 用 stat -f, 禁止 stat -c。
+FALLBACK
+  fi
+  # 晋升候选提醒（实时计算，不依赖存储的 promote_candidate 状态）
+  if [ -f "knowledge/episodes.md" ]; then
+    PROMOTE=$(grep '| active |' "knowledge/episodes.md" 2>/dev/null | cut -d'|' -f3 | tr ',' '\n' | sed 's/^ *//;s/ *$//' | sort | uniq -c | awk '$1 >= 3' | wc -l | tr -d ' ')
+    [ "$PROMOTE" -gt 0 ] && echo "⬆️ $PROMOTE keyword patterns appear ≥3 times in episodes → consider promotion"
+  fi
+  # 质量报告提醒
+  if [ -f "knowledge/.health-report.md" ]; then
+    ISSUES=$(grep -cE '⬆️|⚠️|🧹' "knowledge/.health-report.md" 2>/dev/null || true)
+    [ "$ISSUES" -gt 0 ] && echo "📊 KB has $ISSUES issues → knowledge/.health-report.md"
+  fi
   touch "$LESSONS_FLAG"
 fi
 

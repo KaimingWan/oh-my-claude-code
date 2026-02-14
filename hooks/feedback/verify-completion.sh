@@ -25,4 +25,7 @@ if [ -n "$TEST_CMD" ]; then
   eval "$TEST_CMD" 2>/dev/null || { echo "⚠️ INCOMPLETE: Tests failing"; exit 0; }
 fi
 
+# KB health report (only if knowledge changed this session)
+bash "$(dirname "$0")/kb-health-report.sh" 2>/dev/null
+
 exit 0

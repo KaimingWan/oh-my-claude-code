@@ -28,10 +28,14 @@
 
 ## Knowledge Retrieval
 - Question → knowledge/INDEX.md → topic indexes → source docs
+- Rules: `knowledge/rules.md` (proven DO/DON'T constraints)
+- Episodes: `knowledge/episodes.md` (past mistakes & wins timeline)
 - **必须引用来源文件**，不引用 = 幻觉
 
 ## Self-Learning
-- 检测到纠正 → **立即写入目标文件**，不排队
+- 简单纠正 → auto-capture hook 自动写入 episodes.md（无需 agent 操作）
+- 复杂洞察 → `@reflect` 命令 或 self-reflect skill
+- 晋升（keyword ≥3 次）→ self-reflect skill 写入 rules.md
 - 输出: `📝 Learning captured: '[preview]' → [target file]`
 
 ## Shell Safety
