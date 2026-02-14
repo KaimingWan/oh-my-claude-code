@@ -111,4 +111,13 @@ if [ -n "$CONTEXT" ]; then
   echo -e "$CONTEXT"
 fi
 
+# ===== High-frequency lessons (always injected) =====
+cat << 'LESSONS'
+📚 HIGH-FREQ LESSONS (from knowledge/lessons-learned.md):
+  • JSON = jq, 无条件无例外。禁止 sed/awk/grep 修改 JSON。
+  • macOS 用 stat -f, 禁止 stat -c (GNU-only)。
+  • shell 脚本考虑跨平台: BSD vs GNU 工具链差异。
+  • grep -c 无匹配时 exit 1 但仍输出 0, 不要和 || echo 0 组合。
+LESSONS
+
 exit 0

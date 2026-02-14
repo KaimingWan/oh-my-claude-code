@@ -59,13 +59,27 @@ fi
 
 # Check: plan has substantive review (≥3 lines in ## Review section)?
 if [ -n "$PLAN_FILE" ]; then
-  REVIEW_LINES=$(sed -n '/^## Review/,/^## /p' "$PLAN_FILE" 2>/dev/null | tail -n +2 | grep -c '[a-zA-Z]' || true)
+  REVIEW_SECTION=$(sed -n '/^## Review/,/^## /p' "$PLAN_FILE" 2>/dev/null | tail -n +2)
+  REVIEW_LINES=$(echo "$REVIEW_SECTION" | grep -c '[a-zA-Z]' || true)
   REVIEW_LINES=${REVIEW_LINES:-0}
   if [ "$REVIEW_LINES" -lt 3 ]; then
-    hook_block "🚫 BLOCKED: Plan exists but review is missing or too brief.
+    hook_block "🚫 BLOCKED: Plan exists but reviewer has not reviewed it yet.
    The ## Review section in $PLAN_FILE needs substantive content (≥3 lines).
    Spawn reviewer subagent to challenge the plan first."
   fi
+
+  # Check verdict: REJECT or CONDITIONAL blocks execution
+  VERDICT=$(echo "$REVIEW_SECTION" | grep -oiE 'Verdict:\s*(REJECT|CONDITIONAL|APPROVE|REQUEST CHANGES)' | tail -1 | sed 's/.*: *//')
+  case "$(echo "$VERDICT" | tr '[:lower:]' '[:upper:]')" in
+    REJECT*|"REQUEST CHANGES"*)
+      hook_block "🚫 BLOCKED: Plan was REJECTED by reviewer.
+   Verdict: $VERDICT
+   Fix the issues noted in $PLAN_FILE ## Review, then re-review before coding." ;;
+    CONDITIONAL*)
+      hook_block "🚫 BLOCKED: Plan has CONDITIONAL approval.
+   Verdict: $VERDICT
+   Address the conditions in $PLAN_FILE ## Review before proceeding." ;;
+  esac
 
   # Check: plan references required skills for high-risk patterns?
   PLAN_CONTENT=$(cat "$PLAN_FILE" 2>/dev/null)

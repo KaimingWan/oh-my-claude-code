@@ -42,6 +42,7 @@
 | 2026-02-14 | 写完 plan 跳过 reviewer 辩证 | 按流程走了 brainstorming → writing-plans，但写完 plan 直接问用户确认，跳过 spawn reviewer subagent | context-enrichment 的 MANDATORY WORKFLOW 没有显式列出 reviewer 步骤；enforce-skill-chain 检查 `## Review` 但只在写源代码时触发，写 plan 时不触发；**没有 hook 强制的步骤 agent 就会跳过** | 1) context-enrichment 所有 plan 流程显式加 "Step N: spawn reviewer subagent — reviewer MUST challenge the plan" + "DO NOT skip the reviewer"；2) 这是第三次"无 hook = 跳过"的模式，应作为框架核心缺陷记录 |
 | 2026-02-13 | 再次 stat -c on macOS | 已有 `stat -c` 教训记录，仍在 macOS 上用了 `stat -c` 而非 `stat -f` | 教训记录了但生成命令时未主动检查目标平台。与 sed/JSON 同一模式：知道≠执行 | **生成 shell 命令前必须检查目标平台**。macOS → BSD 工具链（stat -f, sed 无 -i ''）。重复犯错 → 考虑升级为 hook 拦截 GNU-only 语法 |
 | 2026-02-13 | 第三次 stat -c on macOS | 第三次在 macOS 上用 `stat -c` 而非 `stat -f`，导致脚本不兼容 | 与 sed/JSON 完全相同的模式：教训记录了两次，仍未改变生成行为。知道≠执行，记录≠修复 | **macOS 上 stat 只用 `stat -f`，永远不用 `stat -c`**。这已是第三次，与 sed/JSON 同级别的执行纪律问题。应升级为 hook 拦截 `stat -c` on macOS |
+| 2026-02-14 | 第十次 sed 处理 JSON（Kiro 环境） | 再次用 sed 而非 jq 处理 JSON 文件 | 十次。跨环境、跨会话仍犯。根因不变：生成命令时未触发「JSON → jq」检查 | **JSON = jq，这是绝对铁律。不是建议，不是偏好，是唯一选项。** |
 
 ## Rules Extracted
 
