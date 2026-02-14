@@ -1,5 +1,5 @@
 #!/bin/bash
-# common.sh — Shared functions for all hooks
+# common.sh — Shared functions for all hooks (v3)
 
 HOOKS_DRY_RUN="${HOOKS_DRY_RUN:-false}"
 
@@ -10,6 +10,15 @@ hook_block() {
   fi
   echo "$1" >&2
   exit 2
+}
+
+file_mtime() {
+  local f="$1"
+  if [ "$(uname)" = "Darwin" ]; then
+    stat -f %m "$f" 2>/dev/null || echo 0
+  else
+    stat -c %Y "$f" 2>/dev/null || echo 0
+  fi
 }
 
 detect_test_command() {
@@ -23,20 +32,35 @@ detect_test_command() {
   else echo ""; fi
 }
 
-get_tool_file() {
-  local INPUT="$1"
-  local TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null)
-  case "$TOOL_NAME" in
-    fs_write|Write) echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null ;;
-    Edit)           echo "$INPUT" | jq -r '.tool_input.file_path // ""' 2>/dev/null ;;
-    *)              echo "" ;;
-  esac
-}
-
 is_source_file() {
   echo "$1" | grep -qE '\.(ts|js|py|java|rs|go|rb|swift|kt|sh|bash|zsh|yaml|yml|toml|tf|hcl)$'
 }
 
 is_test_file() {
   echo "$1" | grep -qiE '(test|spec|__test__)'
+}
+
+find_active_plan() {
+  local WINDOW="${WORKFLOW_PLAN_WINDOW:-14400}"
+  local NOW=$(date +%s)
+  local LATEST=""
+  local LATEST_MTIME=0
+
+  for f in docs/plans/*.md; do
+    [ -f "$f" ] || continue
+    local mt=$(file_mtime "$f")
+    if [ $((NOW - mt)) -lt "$WINDOW" ] && [ "$mt" -gt "$LATEST_MTIME" ]; then
+      LATEST="$f"
+      LATEST_MTIME="$mt"
+    fi
+  done
+
+  if [ -z "$LATEST" ] && [ -f ".completion-criteria.md" ]; then
+    local mt=$(file_mtime ".completion-criteria.md")
+    if [ $((NOW - mt)) -lt "$WINDOW" ]; then
+      LATEST=".completion-criteria.md"
+    fi
+  fi
+
+  echo "$LATEST"
 }
