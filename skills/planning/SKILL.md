@@ -13,8 +13,6 @@ One skill for the full plan lifecycle: write → review → execute.
 
 **Save to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
-**Before writing:** Read `knowledge/product/PRODUCT.md` if it exists. Note affected features.
-
 ### Plan Header (required)
 
 ```markdown
@@ -110,7 +108,6 @@ After all tasks done:
 1. Run full test suite
 2. Present options: merge locally / create PR / keep branch / discard
 3. Clean up worktree if applicable
-4. Update `knowledge/product/PRODUCT.md` if features changed
 
 ## When to Stop and Ask
 

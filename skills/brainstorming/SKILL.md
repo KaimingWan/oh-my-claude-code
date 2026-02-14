@@ -14,7 +14,6 @@ Start by understanding the current project context, then ask questions one at a 
 ## The Process
 
 **Understanding the idea:**
-- If `knowledge/product/PRODUCT.md` exists and is non-empty, read it first to understand existing features and constraints
 - Check out the current project state first (files, docs, recent commits)
 - Ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
@@ -38,7 +37,6 @@ Start by understanding the current project context, then ask questions one at a 
 **Documentation:**
 - Write the validated design to `docs/designs/YYYY-MM-DD-<topic>-design.md`
 - Update `docs/INDEX.md` with the new design entry
-- If `knowledge/product/PRODUCT.md` exists and is non-empty, update it with any new/changed features
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 

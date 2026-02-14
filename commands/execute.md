@@ -4,8 +4,8 @@ Execute an approved plan with Ralph Loop hard constraint. Agent stops don't matt
 
 Resolve which plan to execute:
 1. Read `docs/plans/.active` — if it exists, use that path
-2. If not found, check if there's only one plan in `docs/plans/` — use it
-3. If multiple plans exist, list them and ask the user to pick
+2. If not found, find the most recently modified `docs/plans/*.md` and write it to `docs/plans/.active`
+3. If multiple plans modified within the last hour, list them and ask the user to pick
 
 Verify the plan has reviewer APPROVE verdict. If not approved, tell the user to run @plan first.
 

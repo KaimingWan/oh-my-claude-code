@@ -10,7 +10,10 @@ if [ -n "$ACTIVE_PLAN" ] && [ -f "$ACTIVE_PLAN" ]; then
   UNCHECKED=$(grep -c '^\- \[ \]' "$ACTIVE_PLAN" 2>/dev/null || true)
   CHECKED=$(grep -c '^\- \[x\]' "$ACTIVE_PLAN" 2>/dev/null || true)
   if [ "${UNCHECKED:-0}" -gt 0 ]; then
-    echo "⚠️ INCOMPLETE: $UNCHECKED/$((CHECKED + UNCHECKED)) checklist items remaining in $ACTIVE_PLAN"
+    echo ""
+    echo "🚫 ═══════════════════════════════════════"
+    echo "🚫 INCOMPLETE: $UNCHECKED/$((CHECKED + UNCHECKED)) checklist items remaining in $ACTIVE_PLAN"
+    echo "🚫 ═══════════════════════════════════════"
     grep '^\- \[ \]' "$ACTIVE_PLAN"
     exit 0
   fi

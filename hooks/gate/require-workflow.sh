@@ -70,4 +70,11 @@ case "$(echo "$VERDICT" | tr '[:lower:]' '[:upper:]')" in
    Address conditions in $PLAN_FILE ## Review before proceeding." ;;
 esac
 
+# 8. Advisory: remind about unchecked items
+UNCHECKED=$(grep -c '^\- \[ \]' "$PLAN_FILE" 2>/dev/null || true)
+CHECKED=$(grep -c '^\- \[x\]' "$PLAN_FILE" 2>/dev/null || true)
+if [ "${UNCHECKED:-0}" -gt 0 ]; then
+  echo "📋 Progress: ${CHECKED:-0}/$((${CHECKED:-0} + UNCHECKED)) checklist items done in $PLAN_FILE" >&2
+fi
+
 exit 0

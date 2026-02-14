@@ -73,7 +73,7 @@ When you say "no, use X not Y", the agent captures the pattern and writes it to 
 │  researcher · implementer · reviewer · debugger          │
 ├─────────────────────────────────────────────────────────┤
 │  Knowledge (Persistent Memory)                           │
-│  lessons-learned.md · INDEX.md routing · product map     │
+│  lessons-learned.md · INDEX.md routing                   │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -166,7 +166,6 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 ├── knowledge/                     # Persistent memory
 │   ├── INDEX.md                   # Knowledge routing table
 │   ├── lessons-learned.md         # Mistakes and wins
-│   ├── product/PRODUCT.md         # Product feature map
 │   └── reference/                 # Archived skill content
 └── docs/
     ├── designs/                   # Design documents

@@ -65,10 +65,7 @@ description: "Self-learning system — detects corrections and writes to target 
 
 | Command | Purpose |
 |---------|---------|
-| `/reflect` | Review queue, sync to 3-layer architecture |
 | `/reflect-skills` | Discover repeated patterns, generate skills |
-| `/view-queue` | View pending learnings |
-| `/skip-reflect` | Clear queue |
 
 ## Examples
 
@@ -84,24 +81,4 @@ Agent: 📝 Learning captured: 'use gpt-5.1 not gpt-5'
 User: don't add comments unless I ask
 Agent: 📝 Learning captured: 'don't add comments unless I ask'
        Got it, no comments unless requested.
-```
-
-### Review & Sync
-```
-User: /reflect
-Agent:
-═══════════════════════════════════════
-LEARNINGS QUEUE (3 items)
-═══════════════════════════════════════
-
-1. [90%] "use gpt-5.1 not gpt-5"
-   → Suggested: ~/.kiro/AGENTS.md (global)
-
-2. [85%] "don't add comments unless I ask"
-   → Suggested: AGENTS.md (project)
-
-3. [80%] "filenames must use kebab-case"
-   → Suggested: .kiro/rules/enforcement.md (codifiable)
-
-Action: [A]pply all / [R]eview each / [S]kip
 ```
