@@ -18,3 +18,4 @@
 14. 用自定义 @plan 替代平台内置 /plan，确保走自定义 skill chain + reviewer。
 15. Kiro subagent 只能用 read/write/shell/MCP 四类工具。web_search/web_fetch/code/grep/glob/use_aws/introspect/thinking/todo_list 均不可用，配了也无效。但 MCP 可补回部分能力（ripgrep→grep, fetch→web_fetch）。resources（file://+skill://）是 spawn 时加载的 context，不受此限制。
 16. MCP 补能力已验证可行：ripgrep MCP 在 subagent 中完全可用（实测确认）。架构：workspace mcp.json 放 ripgrep（所有 subagent 继承），researcher agent JSON 放 fetch MCP。**必须在 agent JSON 中设 `includeMcpJson: true` 才能继承 workspace mcp.json**（默认 false）。code tool（LSP）无法通过 MCP 补回，需要 LSP 的任务永远不委派给 subagent。
+17. Workspace 边界防护是应用层 hook，只能拦截 tool call 层面的写入（fs_write 路径检查 + bash 正则模式检测）。无法拦截子进程内部行为（如 python script.py 内部写外部文件）。完全防护需 OS 级沙箱（macOS Seatbelt / Docker）。NVIDIA AI Red Team 三个 mandatory controls：网络出口控制、阻止 workspace 外写入、阻止配置文件写入。

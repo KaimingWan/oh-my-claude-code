@@ -32,6 +32,14 @@
         "command": "hooks/security/block-sed-json.sh"
       },
       {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-outside-workspace.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": "hooks/security/block-outside-workspace.sh"
+      },
+      {
         "matcher": "fs_write",
         "command": "hooks/gate/pre-write.sh"
       }

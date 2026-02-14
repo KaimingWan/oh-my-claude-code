@@ -34,12 +34,20 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/block-sed-json.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/block-outside-workspace.sh"
           }
         ]
       },
       {
         "matcher": "Write|Edit",
         "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/block-outside-workspace.sh"
+          },
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/pre-write.sh"
