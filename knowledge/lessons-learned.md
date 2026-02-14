@@ -45,6 +45,7 @@
 | 2026-02-14 | 第十次 sed 处理 JSON（Kiro 环境） | 再次用 sed 而非 jq 处理 JSON 文件 | 十次。跨环境、跨会话仍犯。根因不变：生成命令时未触发「JSON → jq」检查 | **JSON = jq，这是绝对铁律。不是建议，不是偏好，是唯一选项。** |
 
 | 2026-02-14 | Kiro /plan 模式不走自定义流程 | Kiro 自带的 /plan 是黑盒，plan 完不会自动触发 reviewer，也不走自定义 skill chain | 平台内置功能和自定义框架流程不兼容，无法在内置流程中插入 hook 点 | 用自定义命令 @plan 替代 /plan，硬编码完整步骤（brainstorming → writing-plans → reviewer → confirm → execute），确保每一步都走自定义 skill 和 reviewer |
+| 2026-02-14 | review-plan 命令冗余 | review-plan 和 review-code 两个命令，但 plan 流程自带 review 步骤 | plan 流程已包含 reviewer 环节，单独的 review-plan 命令多余 | 移除 review-plan，review-code 合并为 `@review` 单一命令 |
 
 ## Rules Extracted
 

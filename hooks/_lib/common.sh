@@ -41,6 +41,13 @@ is_test_file() {
 }
 
 find_active_plan() {
+  # Priority 1: explicit .active pointer
+  if [ -f "docs/plans/.active" ]; then
+    local ACTIVE=$(cat "docs/plans/.active" 2>/dev/null)
+    [ -f "$ACTIVE" ] && echo "$ACTIVE" && return
+  fi
+
+  # Priority 2: time-window fallback
   local WINDOW="${WORKFLOW_PLAN_WINDOW:-14400}"
   local NOW=$(date +%s)
   local LATEST=""

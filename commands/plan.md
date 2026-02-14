@@ -4,12 +4,15 @@ You MUST follow this exact sequence. Do NOT skip or reorder any step.
 Read skills/brainstorming/SKILL.md, then explore the user's intent, requirements, and constraints. Ask clarifying questions one at a time. Do NOT proceed until the user confirms the direction.
 
 ## Step 2: Writing Plan (skill: planning)
-Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, and an empty ## Review section.
+Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, an empty ## Review section, and a ## Checklist section with all acceptance criteria as `- [ ]` items. The checklist is the contract — @execute will not proceed without it.
 
-## Step 3: Reviewer Challenge (subagent: reviewer)
+## Step 3: Verify Checklist Exists
+Before dispatching reviewer, confirm the plan file contains a `## Checklist` section with at least one `- [ ]` item. If missing, add it NOW — do not proceed to review without it.
+
+## Step 4: Reviewer Challenge (subagent: reviewer)
 Dispatch a reviewer subagent (agent_name: "reviewer") with this query:
 
-"Review the plan at docs/plans/<filename>. Find gaps, risks, missing steps, and edge cases. Be adversarial — assume the plan has flaws. Output: Strengths / Weaknesses / Missing / Verdict (APPROVE or REQUEST CHANGES with required fixes). Write your review into the plan's ## Review section."
+"Review the plan at docs/plans/<filename>. Check: 1) Does ## Checklist exist with concrete `- [ ]` acceptance criteria? If missing → automatic REQUEST CHANGES. 2) Find gaps, risks, missing steps, edge cases. Be adversarial. Output: Strengths / Weaknesses / Missing / Verdict (APPROVE or REQUEST CHANGES). Write review into ## Review section."
 
 ## Step 4: Address Feedback
 If reviewer verdict is REQUEST CHANGES or REJECT:
@@ -21,8 +24,10 @@ If reviewer verdict is REQUEST CHANGES or REJECT:
 ## Step 5: User Confirmation
 Show the final plan with reviewer verdict. Ask user to confirm before any implementation.
 
-## Step 6: Execute (skill: planning)
-Only after explicit confirmation: read skills/planning/SKILL.md Phase 2, then execute the approved plan.
+## Step 6: Hand Off to Execute
+After user confirms:
+1. Write the plan file path to `docs/plans/.active` (e.g., `echo "docs/plans/2026-02-14-feature-x.md" > docs/plans/.active`)
+2. Tell the user to run `@execute` to start implementation with Ralph Loop discipline (no unnecessary stops, one task at a time, commit after each).
 
 ---
 User's requirement:

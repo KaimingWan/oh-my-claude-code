@@ -4,10 +4,12 @@
   "prompt": "file://../../agents/reviewer-prompt.md",
   "tools": [
     "read",
+    "write",
     "shell"
   ],
   "allowedTools": [
     "read",
+    "write",
     "shell"
   ],
   "resources": [

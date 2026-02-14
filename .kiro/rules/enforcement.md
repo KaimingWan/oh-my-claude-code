@@ -20,7 +20,7 @@
 
 | Layer | Mechanism | Certainty |
 |-------|-----------|-----------|
-| L1 Commands | `/plan` `/debug` `/research` `/review-code` `/review-plan` | 100% — user triggers |
+| L1 Commands | `@plan` `@execute` `@debug` `@research` `@review` | 100% — user triggers |
 | L2 Gate | `hooks/gate/require-workflow.sh` (exit 2 = block) | 100% — hard block |
 | L2 Security | `hooks/security/*` (exit 2 = block) | 100% — hard block |
 | L3 Feedback | `hooks/feedback/*` (exit 0 = info only) | ~50% — advisory |

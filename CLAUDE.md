@@ -16,10 +16,11 @@
 
 | 场景 | Skill | 触发方式 |
 |------|-------|---------|
-| 规划/设计 | brainstorming → planning | `/plan` 命令 |
-| Review | reviewing | `/review-code` `/review-plan` 命令 |
-| 调试 | debugging | `/debug` 命令 |
-| 调研 | research | `/research` 命令 |
+| 规划/设计 | brainstorming → planning | `@plan` 命令 |
+| 执行计划 | planning + ralph loop | `@execute` 命令 |
+| Review | reviewing | `@review` 命令 |
+| 调试 | debugging | `@debug` 命令 |
+| 调研 | research | `@research` 命令 |
 | 完成前验证 | verification | Stop hook 自动 |
 | 分支收尾 | finishing | planning 完成后 |
 | 纠正/学习 | self-reflect | context-enrichment 检测 |
