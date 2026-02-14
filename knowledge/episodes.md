@@ -20,3 +20,5 @@
 2026-02-14 | active | context-enrichment,soft-prompt | 软提醒被无视x2, 需升级为MANDATORY
 2026-02-14 | active | reviewer,skip,plan | 写完plan跳过reviewer, 无hook=跳过
 2026-02-14 | active | kiro,plan,builtin | Kiro内置/plan是黑盒, 不走自定义流程, 用@plan替代
+2026-02-15 | active | symlink,fs_read,directory | fs_read Directory模式不支持symlink目录, 用ls或execute_bash替代
+2026-02-15 | active | subagent,delegation,context | subagent选择性委派: 能力不降级/结果自包含/任务独立, 需要code/grep/web工具的不委派

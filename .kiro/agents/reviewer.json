@@ -26,6 +26,14 @@
       {
         "matcher": "execute_bash",
         "command": "hooks/security/block-dangerous.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-secrets.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-sed-json.sh"
       }
     ],
     "stop": [

@@ -20,6 +20,20 @@
         "command": "echo '🔬 RESEARCHER: 1) Cite sources 2) Cross-verify claims 3) Report gaps explicitly'"
       }
     ],
+    "preToolUse": [
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-dangerous.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-secrets.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-sed-json.sh"
+      }
+    ],
     "stop": [
       {
         "command": "echo '📝 Research complete. Did you: cite sources, cross-verify, report gaps?'"

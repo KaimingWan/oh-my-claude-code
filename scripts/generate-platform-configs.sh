@@ -121,7 +121,7 @@ jq -n '{
   ],
   hooks: {
     agentSpawn: [{command: "echo '\''🔍 REVIEWER: 1) Run git diff first 2) Categorize: Critical/Warning/Suggestion 3) Be specific 4) Never rubber-stamp'\''"}],
-    preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}],
+    preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}],
     stop: [{command: "echo '\''📋 Review checklist: correctness, security, edge cases, test coverage?'\''"}]
   },
   toolsSettings: {
@@ -148,7 +148,7 @@ jq -n '{
   ],
   hooks: {
     agentSpawn: [{command: "echo '\''🔧 IMPLEMENTER: 1) Write tests first 2) Run tests after every change 3) Commit when tests pass'\''"}],
-    preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}],
+    preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}],
     postToolUse: [{matcher: "fs_write", command: "hooks/feedback/post-write.sh"}],
     stop: [{command: "hooks/feedback/verify-completion.sh"}]
   },
@@ -177,7 +177,7 @@ jq -n '{
   ],
   hooks: {
     agentSpawn: [{command: "echo '\''🐛 DEBUGGER: 1) Reproduce first 2) Form hypothesis 3) Verify with evidence 4) Check rules.md + episodes.md'\''"}],
-    preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}],
+    preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}],
     stop: [{command: "hooks/feedback/verify-completion.sh"}]
   },
   toolsSettings: {
@@ -203,6 +203,7 @@ jq -n '{
   ],
   hooks: {
     agentSpawn: [{command: "echo '\''🔬 RESEARCHER: 1) Cite sources 2) Cross-verify claims 3) Report gaps explicitly'\''"}],
+    preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}],
     stop: [{command: "echo '\''📝 Research complete. Did you: cite sources, cross-verify, report gaps?'\''"}]
   },
   toolsSettings: {

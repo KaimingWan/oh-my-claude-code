@@ -93,6 +93,13 @@ Dispatch one agent per independent domain:
 2. Review after each task (spec compliance → code quality)
 3. Fix issues before next task
 
+**Subagent capability limits (do NOT delegate tasks that need these):**
+- `code` tool (LSP analysis, symbol search, goto_definition)
+- `grep` tool (structured regex search with context)
+- `web_search` / `web_fetch` (internet access)
+- `use_aws` (AWS CLI)
+- Cross-step context (subagents are stateless between invocations)
+
 ### Workspace Isolation (Git Worktrees)
 
 For non-trivial plans, create isolated workspace:

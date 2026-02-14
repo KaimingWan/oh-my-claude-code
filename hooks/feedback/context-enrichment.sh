@@ -54,6 +54,8 @@ FALLBACK
     PROMOTE=$(grep '| active |' "knowledge/episodes.md" 2>/dev/null | cut -d'|' -f3 | tr ',' '\n' | sed 's/^ *//;s/ *$//' | sort | uniq -c | awk '$1 >= 3' | wc -l | tr -d ' ')
     [ "$PROMOTE" -gt 0 ] && echo "⬆️ $PROMOTE keyword patterns appear ≥3 times in episodes → consider promotion"
   fi
+  # 委派提醒
+  echo "⚡ Delegation: >3 independent tasks → use subagent per task. Never delegate code/grep/web_search tasks."
   # 质量报告提醒
   if [ -f "knowledge/.health-report.md" ]; then
     ISSUES=$(grep -cE '⬆️|⚠️|🧹' "knowledge/.health-report.md" 2>/dev/null || true)
