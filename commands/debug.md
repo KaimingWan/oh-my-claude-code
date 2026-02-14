@@ -1,4 +1,4 @@
-You MUST read .kiro/skills/systematic-debugging/SKILL.md first, then follow its methodology.
+You MUST read skills/debugging/SKILL.md first, then follow its methodology.
 
 ## Rules
 1. REPRODUCE the bug first — do NOT guess or apply random fixes.

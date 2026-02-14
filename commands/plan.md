@@ -1,10 +1,10 @@
 You MUST follow this exact sequence. Do NOT skip or reorder any step.
 
 ## Step 1: Brainstorming (skill: brainstorming)
-Read .kiro/skills/brainstorming/SKILL.md, then use it to explore the user's intent, requirements, and constraints. Ask clarifying questions. Do NOT proceed until the user confirms the direction.
+Read skills/brainstorming/SKILL.md, then explore the user's intent, requirements, and constraints. Ask clarifying questions one at a time. Do NOT proceed until the user confirms the direction.
 
-## Step 2: Writing Plan (skill: writing-plans)
-Read .kiro/skills/writing-plans/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps, and an empty ## Review section.
+## Step 2: Writing Plan (skill: planning)
+Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, and an empty ## Review section.
 
 ## Step 3: Reviewer Challenge (subagent: reviewer)
 Dispatch a reviewer subagent (agent_name: "reviewer") with this query:
@@ -19,10 +19,10 @@ If reviewer verdict is REQUEST CHANGES or REJECT:
   - Repeat until APPROVE
 
 ## Step 5: User Confirmation
-Show me the final plan with reviewer verdict. Ask me to confirm before any implementation.
+Show the final plan with reviewer verdict. Ask user to confirm before any implementation.
 
-## Step 6: Execute (skill: executing-plans)
-Only after my explicit confirmation: read .kiro/skills/executing-plans/SKILL.md, then execute the approved plan.
+## Step 6: Execute (skill: planning)
+Only after explicit confirmation: read skills/planning/SKILL.md Phase 2, then execute the approved plan.
 
 ---
 User's requirement:
