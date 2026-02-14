@@ -1,6 +1,6 @@
 {
   "name": "reviewer",
-  "description": "Review expert. Plan review: challenge decisions, find gaps. Code review: check quality, security, SOLID. Read-only.",
+  "description": "Review expert. Plan review: challenge decisions, find gaps. Code review: check quality, security, SOLID.",
   "prompt": "file://../../agents/reviewer-prompt.md",
   "tools": [
     "read",
@@ -42,6 +42,7 @@
       }
     ]
   },
+  "includeMcpJson": true,
   "toolsSettings": {
     "shell": {
       "autoAllowReadonly": true,

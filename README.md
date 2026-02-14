@@ -69,8 +69,8 @@ When you say "no, use X not Y", the agent captures the pattern and writes it to 
 │  verification · finishing · self-reflect · research      │
 │  find-skills                                             │
 ├─────────────────────────────────────────────────────────┤
-│  Subagents (Task Isolation, 4 specialists)               │
-│  researcher · implementer · reviewer · debugger          │
+│  Subagents (Task Isolation, 2 specialists + MCP)         │
+│  reviewer · researcher (+ ripgrep MCP · fetch MCP)       │
 ├─────────────────────────────────────────────────────────┤
 │  Knowledge (Persistent Memory)                           │
 │  rules.md · episodes.md · INDEX.md routing                 │
@@ -127,14 +127,14 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 | `research` | Multi-level: built-in → web search → deep research |
 | `find-skills` | Discover available skills and match to user needs |
 
-## Subagents (4 Specialists)
+## Subagents (2 Specialists + MCP)
 
-| Agent | Role | Tools | Constraint |
-|-------|------|-------|-----------|
-| `researcher` | Codebase exploration | read, shell | Cannot modify files |
-| `implementer` | TDD coding | read, write, shell | Auto-test on every write |
-| `reviewer` | Plan & code review | read, write, shell | Must cite file:line |
-| `debugger` | Root cause analysis | read, write, shell | Must reproduce first |
+| Agent | Role | Tools | MCP | Constraint |
+|-------|------|-------|-----|-----------|
+| `reviewer` | Plan & code review | read, write, shell | — | Must cite file:line, never rubber-stamp |
+| `researcher` | Web research + code search | read, shell | ripgrep, fetch | Cite sources, cross-verify |
+
+Implementation/debugging tasks use ralph-loop (independent kiro-cli process with full tools including LSP) or main agent. Verification tasks use default subagent (read + shell). See AGENTS.md for delegation rules.
 
 ## Project Structure
 

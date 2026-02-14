@@ -89,14 +89,13 @@ Dispatch one agent per independent domain:
 
 **When:** Tasks are independent, want fresh context per task.
 
-1. Dispatch implementer subagent per task
+1. Dispatch default subagent per task（自动继承 workspace ripgrep MCP）
 2. Review after each task (spec compliance → code quality)
 3. Fix issues before next task
 
 **Subagent capability limits (do NOT delegate tasks that need these):**
 - `code` tool (LSP analysis, symbol search, goto_definition)
-- `grep` tool (structured regex search with context)
-- `web_search` / `web_fetch` (internet access)
+- `web_search` / `web_fetch` (internet access — use main agent instead, it's free)
 - `use_aws` (AWS CLI)
 - Cross-step context (subagents are stateless between invocations)
 

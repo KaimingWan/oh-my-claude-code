@@ -1,14 +1,28 @@
 {
   "name": "researcher",
-  "description": "Research specialist. Codebase exploration, web search, structured findings.",
+  "description": "Research specialist. Web research via fetch MCP + code search via ripgrep MCP + Tavily via shell.",
   "prompt": "file://../../agents/researcher-prompt.md",
+  "mcpServers": {
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "--with",
+        "socksio",
+        "mcp-server-fetch"
+      ]
+    }
+  },
   "tools": [
     "read",
-    "shell"
+    "shell",
+    "@ripgrep",
+    "@fetch"
   ],
   "allowedTools": [
     "read",
-    "shell"
+    "shell",
+    "@ripgrep",
+    "@fetch"
   ],
   "resources": [
     "file://AGENTS.md",
@@ -40,6 +54,7 @@
       }
     ]
   },
+  "includeMcpJson": true,
   "toolsSettings": {
     "shell": {
       "autoAllowReadonly": true,

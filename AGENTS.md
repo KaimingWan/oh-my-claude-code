@@ -39,14 +39,14 @@
 - 输出: `📝 Learning captured: '[preview]' → [target file]`
 
 ## Subagent Delegation
+- 两个 subagent：reviewer（review）、researcher（web 调研）
 - 三原则：能力不降级 / 结果自包含 / 任务独立
-- 决策方式：主 agent 自行判断，不自动检测
-- 需要 code tool、grep tool、web_search、AWS CLI 的任务 → 主 agent 自己做
-- 需要原始数据做后续决策的读取 → 主 agent 自己做
-- 混合任务（部分需要主 agent 工具）→ 整个任务留在主 agent，不拆分
+- MCP 补能力：ripgrep（workspace 级，所有 subagent 继承）、fetch（researcher 专用）
+- 实现/调试任务 → ralph-loop 独立进程（完整工具含 LSP）或主 agent
+- 验证任务 → default subagent（read + shell 足够）
+- Web 调研 → 日常用主 agent（免费 web_search），并行/隔离场景用 researcher subagent
 - Plan review → reviewer subagent
-- 独立 task 执行（>3 tasks）→ implementer subagent per task
-- 批量验证 → subagent
+- code tool（LSP）无法通过 MCP 补回，需要 LSP 的任务永远不委派
 
 ## Shell Safety
 - 耗时命令加 timeout: `timeout 60 npm test`

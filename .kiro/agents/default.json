@@ -52,15 +52,11 @@
     "subagent": {
       "availableAgents": [
         "researcher",
-        "implementer",
-        "reviewer",
-        "debugger"
+        "reviewer"
       ],
       "trustedAgents": [
         "researcher",
-        "implementer",
-        "reviewer",
-        "debugger"
+        "reviewer"
       ]
     },
     "shell": {

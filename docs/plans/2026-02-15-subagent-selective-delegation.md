@@ -1,3 +1,5 @@
+> ⚠️ SUPERSEDED by 2026-02-15-subagent-architecture-optimization.md
+
 # Subagent Selective Delegation Plan
 
 **Goal:** Establish clear delegation rules + fix subagent security gaps + optimize main agent context usage. Zero capability degradation.

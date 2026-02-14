@@ -22,3 +22,8 @@
 2026-02-14 | active | kiro,plan,builtin | Kiro内置/plan是黑盒, 不走自定义流程, 用@plan替代
 2026-02-15 | active | symlink,fs_read,directory | fs_read Directory模式不支持symlink目录, 用ls或execute_bash替代
 2026-02-15 | active | subagent,delegation,context | subagent选择性委派: 能力不降级/结果自包含/任务独立, 需要code/grep/web工具的不委派
+2026-02-15 | active | kiro,subagent,tools,boundary | Kiro subagent工具硬限制(官方文档确认): 可用=read/write/shell/MCP; 不可用=web_search/web_fetch/introspect/thinking/todo_list/use_aws/grep/glob/code. 配了也没用, 运行时直接不可用. resources(file://+skill://)是agent spawn时加载到context的, 不受工具限制影响. 来源: kiro.dev/docs/cli/chat/subagents + kiro.dev/docs/cli/custom-agents/configuration-reference
+2026-02-15 | active | kiro,subagent,mcp,capability | MCP补能力方案: ripgrep(grep替代), filesystem(glob替代), brave-search(web_search替代), fetch(web_fetch替代). code tool(LSP)无MCP替代. 已验证: subagent spawn时mcpServers正确启动, ripgrep MCP工具完全可用(search/advanced-search/count-matches/list-files等). agent JSON修改即时生效, 但default.json的availableAgents白名单是session级别的
+2026-02-15 | active | kiro,subagent,architecture | 4 agent→2 agent优化: 删除implementer/debugger(ralph-loop独立进程更强), 保留reviewer+researcher(MCP补能力). workspace mcp.json加ripgrep, researcher加fetch MCP
+2026-02-15 | active | kiro,mcp,includeMcpJson | workspace mcp.json不会自动被subagent继承! 必须在agent JSON中设置`includeMcpJson: true`才能继承workspace和global mcp.json中的MCP servers(默认false). 来源: kiro.dev/docs/cli/custom-agents/configuration-reference + kiro.dev/docs/cli/mcp
+2026-02-15 | active | fetch,mcp,socksio,proxy | fetch MCP(mcp-server-fetch)在SOCKS代理环境下需要socksio包. 修复: uvx args改为["--with", "socksio", "mcp-server-fetch"]. MCP server进程在session内不会自动重启, 配置变更需新session生效

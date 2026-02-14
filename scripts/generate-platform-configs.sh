@@ -77,8 +77,8 @@ jq -n '{
   },
   toolsSettings: {
     subagent: {
-      availableAgents: ["researcher", "implementer", "reviewer", "debugger"],
-      trustedAgents: ["researcher", "implementer", "reviewer", "debugger"]
+      availableAgents: ["researcher", "reviewer"],
+      trustedAgents: ["researcher", "reviewer"]
     },
     shell: {
       autoAllowReadonly: true,
@@ -111,10 +111,10 @@ echo "  ✅ .kiro/agents/default.json"
 # --- reviewer agent ---
 jq -n '{
   name: "reviewer",
-  description: "Review expert. Plan review: challenge decisions, find gaps. Code review: check quality, security, SOLID. Read-only.",
+  description: "Review expert. Plan review: challenge decisions, find gaps. Code review: check quality, security, SOLID.",
   prompt: "file://../../agents/reviewer-prompt.md",
-  tools: ["read", "shell"],
-  allowedTools: ["read", "shell"],
+  tools: ["read", "write", "shell"],
+  allowedTools: ["read", "write", "shell"],
   resources: [
     "file://AGENTS.md",
     "skill://skills/reviewing/SKILL.md"
@@ -124,6 +124,7 @@ jq -n '{
     preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}],
     stop: [{command: "echo '\''📋 Review checklist: correctness, security, edge cases, test coverage?'\''"}]
   },
+  includeMcpJson: true,
   toolsSettings: {
     shell: {
       autoAllowReadonly: true,
@@ -134,69 +135,19 @@ jq -n '{
 
 echo "  ✅ .kiro/agents/reviewer.json"
 
-# --- implementer agent ---
-jq -n '{
-  name: "implementer",
-  description: "Implementation specialist. TDD, coding, feature implementation.",
-  prompt: "file://../../agents/implementer-prompt.md",
-  tools: ["read", "write", "shell"],
-  allowedTools: ["read", "write", "shell"],
-  resources: [
-    "file://AGENTS.md",
-    "skill://skills/planning/SKILL.md",
-    "skill://skills/verification/SKILL.md"
-  ],
-  hooks: {
-    agentSpawn: [{command: "echo '\''🔧 IMPLEMENTER: 1) Write tests first 2) Run tests after every change 3) Commit when tests pass'\''"}],
-    preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}],
-    postToolUse: [{matcher: "fs_write", command: "hooks/feedback/post-write.sh"}],
-    stop: [{command: "hooks/feedback/verify-completion.sh"}]
-  },
-  toolsSettings: {
-    shell: {
-      autoAllowReadonly: true,
-      deniedCommands: ["rm\\s+(-[rRf]|--recursive|--force).*", "git\\s+push\\s+.*--force.*", "git\\s+reset\\s+--hard.*"]
-    }
-  }
-}' > .kiro/agents/implementer.json
-
-echo "  ✅ .kiro/agents/implementer.json"
-
-# --- debugger agent ---
-jq -n '{
-  name: "debugger",
-  description: "Systematic debugging specialist. Reproduce → hypothesize → verify → fix.",
-  prompt: "file://../../agents/debugger-prompt.md",
-  tools: ["read", "write", "shell"],
-  allowedTools: ["read", "write", "shell"],
-  resources: [
-    "file://AGENTS.md",
-    "skill://skills/debugging/SKILL.md",
-    "file://knowledge/rules.md",
-    "file://knowledge/episodes.md"
-  ],
-  hooks: {
-    agentSpawn: [{command: "echo '\''🐛 DEBUGGER: 1) Reproduce first 2) Form hypothesis 3) Verify with evidence 4) Check rules.md + episodes.md'\''"}],
-    preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}],
-    stop: [{command: "hooks/feedback/verify-completion.sh"}]
-  },
-  toolsSettings: {
-    shell: {
-      autoAllowReadonly: true,
-      deniedCommands: ["rm\\s+(-[rRf]|--recursive|--force).*", "git\\s+reset\\s+--hard.*"]
-    }
-  }
-}' > .kiro/agents/debugger.json
-
-echo "  ✅ .kiro/agents/debugger.json"
-
 # --- researcher agent ---
 jq -n '{
   name: "researcher",
-  description: "Research specialist. Codebase exploration, web search, structured findings.",
+  description: "Research specialist. Web research via fetch MCP + code search via ripgrep MCP + Tavily via shell.",
   prompt: "file://../../agents/researcher-prompt.md",
-  tools: ["read", "shell"],
-  allowedTools: ["read", "shell"],
+  mcpServers: {
+    fetch: {
+      command: "uvx",
+      args: ["--with", "socksio", "mcp-server-fetch"]
+    }
+  },
+  tools: ["read", "shell", "@ripgrep", "@fetch"],
+  allowedTools: ["read", "shell", "@ripgrep", "@fetch"],
   resources: [
     "file://AGENTS.md",
     "skill://skills/research/SKILL.md"
@@ -206,6 +157,7 @@ jq -n '{
     preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}],
     stop: [{command: "echo '\''📝 Research complete. Did you: cite sources, cross-verify, report gaps?'\''"}]
   },
+  includeMcpJson: true,
   toolsSettings: {
     shell: {
       autoAllowReadonly: true,
