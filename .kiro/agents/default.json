@@ -33,29 +33,13 @@
       },
       {
         "matcher": "fs_write",
-        "command": "hooks/gate/require-workflow.sh"
-      },
-      {
-        "matcher": "fs_write",
-        "command": "hooks/security/scan-skill-injection.sh"
-      },
-      {
-        "matcher": "fs_write",
-        "command": "hooks/feedback/inject-plan-context.sh"
+        "command": "hooks/gate/pre-write.sh"
       }
     ],
     "postToolUse": [
       {
         "matcher": "fs_write",
-        "command": "hooks/feedback/auto-test.sh"
-      },
-      {
-        "matcher": "fs_write",
-        "command": "hooks/feedback/auto-lint.sh"
-      },
-      {
-        "matcher": "fs_write",
-        "command": "hooks/feedback/remind-update-progress.sh"
+        "command": "hooks/feedback/post-write.sh"
       }
     ],
     "stop": [

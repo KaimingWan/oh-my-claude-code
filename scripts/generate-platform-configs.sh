@@ -30,18 +30,14 @@ jq -n '{
       {
         matcher: "Write|Edit",
         hooks: [
-          {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/require-workflow.sh"},
-          {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/scan-skill-injection.sh"},
-          {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/inject-plan-context.sh"}
+          {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/pre-write.sh"}
         ]
       }
     ],
     PostToolUse: [{
       matcher: "Write|Edit",
       hooks: [
-        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/auto-test.sh"},
-        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/auto-lint.sh"},
-        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/remind-update-progress.sh"}
+        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/post-write.sh"}
       ]
     }],
     Stop: [{
@@ -72,14 +68,10 @@ jq -n '{
       {matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"},
       {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"},
       {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"},
-      {matcher: "fs_write", command: "hooks/gate/require-workflow.sh"},
-      {matcher: "fs_write", command: "hooks/security/scan-skill-injection.sh"},
-      {matcher: "fs_write", command: "hooks/feedback/inject-plan-context.sh"}
+      {matcher: "fs_write", command: "hooks/gate/pre-write.sh"}
     ],
     postToolUse: [
-      {matcher: "fs_write", command: "hooks/feedback/auto-test.sh"},
-      {matcher: "fs_write", command: "hooks/feedback/auto-lint.sh"},
-      {matcher: "fs_write", command: "hooks/feedback/remind-update-progress.sh"}
+      {matcher: "fs_write", command: "hooks/feedback/post-write.sh"}
     ],
     stop: [{command: "hooks/feedback/verify-completion.sh"}]
   },
@@ -157,7 +149,7 @@ jq -n '{
   hooks: {
     agentSpawn: [{command: "echo '\''🔧 IMPLEMENTER: 1) Write tests first 2) Run tests after every change 3) Commit when tests pass'\''"}],
     preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}],
-    postToolUse: [{matcher: "fs_write", command: "hooks/feedback/auto-test.sh"}],
+    postToolUse: [{matcher: "fs_write", command: "hooks/feedback/post-write.sh"}],
     stop: [{command: "hooks/feedback/verify-completion.sh"}]
   },
   toolsSettings: {

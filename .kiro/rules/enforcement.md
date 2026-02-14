@@ -9,10 +9,8 @@
 | Dangerous command blocker | `hooks/security/block-dangerous.sh` | preToolUse[bash] | block |
 | Secret leak blocker | `hooks/security/block-secrets.sh` | preToolUse[bash] | block |
 | sed/awk on JSON blocker | `hooks/security/block-sed-json.sh` | preToolUse[bash] | block |
-| Prompt injection scanner | `hooks/security/scan-skill-injection.sh` | preToolUse[write] | block |
-| Workflow gate (plan + review required) | `hooks/gate/require-workflow.sh` | preToolUse[write] | block |
-| Auto-test after write | `hooks/feedback/auto-test.sh` | postToolUse[write] | feedback |
-| Auto-lint after write | `hooks/feedback/auto-lint.sh` | postToolUse[write] | feedback |
+| Pre-write gate (workflow + injection scan + plan context) | `hooks/gate/pre-write.sh` | preToolUse[write] | block + inject |
+| Post-write feedback (lint + test + progress remind) | `hooks/feedback/post-write.sh` | postToolUse[write] | feedback |
 | Context enrichment (correction + lessons) | `hooks/feedback/context-enrichment.sh` | userPromptSubmit | inject |
 | Completion verification | `hooks/feedback/verify-completion.sh` | stop | feedback |
 
@@ -21,7 +19,7 @@
 | Layer | Mechanism | Certainty |
 |-------|-----------|-----------|
 | L1 Commands | `@plan` `@execute` `@debug` `@research` `@review` | 100% — user triggers |
-| L2 Gate | `hooks/gate/require-workflow.sh` (exit 2 = block) | 100% — hard block |
+| L2 Gate | `hooks/gate/pre-write.sh` (exit 2 = block) | 100% — hard block |
 | L2 Security | `hooks/security/*` (exit 2 = block) | 100% — hard block |
 | L3 Feedback | `hooks/feedback/*` (exit 0 = info only) | ~50% — advisory |
 

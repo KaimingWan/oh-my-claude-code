@@ -59,7 +59,13 @@ Rules: exact file paths, complete code (not "add validation"), exact commands wi
 
 ## Phase 2: Execution
 
-After plan is reviewed and approved, choose execution strategy:
+After plan is reviewed and approved, choose execution strategy based on checklist size:
+
+| Checklist Items | Strategy | Rationale |
+|----------------|----------|-----------|
+| ≤3 | A: Sequential in main conversation | Low overhead, not worth subagent spawn cost |
+| >3 | C: Subagent per task | Isolates context, prevents conversation bloat |
+| 2+ independent tasks | B: Parallel agents | No shared state, can run simultaneously |
 
 ### Strategy A: Sequential (default)
 

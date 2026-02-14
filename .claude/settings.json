@@ -42,11 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/require-workflow.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/scan-skill-injection.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/pre-write.sh"
           }
         ]
       }
@@ -57,11 +53,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/auto-test.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/auto-lint.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/post-write.sh"
           }
         ]
       }

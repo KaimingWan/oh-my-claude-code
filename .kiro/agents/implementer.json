@@ -32,7 +32,7 @@
     "postToolUse": [
       {
         "matcher": "fs_write",
-        "command": "hooks/feedback/auto-test.sh"
+        "command": "hooks/feedback/post-write.sh"
       }
     ],
     "stop": [
