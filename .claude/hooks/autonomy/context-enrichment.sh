@@ -1,12 +1,12 @@
 #!/bin/bash
 # context-enrichment.sh — UserPromptSubmit (Kiro + CC)
-# Lightweight context injection: correction detection + debug detection + resume + high-freq lessons
+# Correction detection (with flag for stop hook) + resume detection + high-freq lessons
 
 INPUT=$(cat)
 USER_MSG=$(echo "$INPUT" | jq -r '.prompt // ""' 2>/dev/null)
 CONTEXT=""
 
-# ===== Correction detection =====
+# ===== Correction detection (has stop hook backstop via flag file) =====
 CORRECTION_DETECTED=0
 if echo "$USER_MSG" | grep -qE '你.{0,5}(错了|不对|不是|忘了|应该)'; then
   CORRECTION_DETECTED=1
@@ -24,7 +24,7 @@ if [ "$CORRECTION_DETECTED" -eq 1 ]; then
   touch "/tmp/kiro-correction-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default').flag"
 fi
 
-# ===== Resume detection =====
+# ===== Resume detection (low cost, occasionally useful) =====
 if [ -f ".completion-criteria.md" ]; then
   UNCHECKED=$(grep -c '^\- \[ \]' ".completion-criteria.md" 2>/dev/null || true)
   UNCHECKED=${UNCHECKED:-0}
@@ -33,17 +33,11 @@ if [ -f ".completion-criteria.md" ]; then
   fi
 fi
 
-# ===== Debug detection =====
-if echo "$USER_MSG" | grep -qiE 'bug|error|fail|报错|异常|crash|fix|debug|broken|not working|挂了|出错'; then
-  CONTEXT="${CONTEXT}🚨 MANDATORY: Bug/error detected. You MUST use systematic-debugging skill.\n"
-  CONTEXT="${CONTEXT}  DO NOT guess or apply random fixes without root cause investigation.\n"
-fi
-
 if [ -n "$CONTEXT" ]; then
   echo -e "$CONTEXT"
 fi
 
-# ===== High-frequency lessons (always injected) =====
+# ===== High-frequency lessons (has hard hook backstops: block-sed-json etc.) =====
 cat << 'LESSONS'
 📚 HIGH-FREQ LESSONS (from knowledge/lessons-learned.md):
   • JSON = jq, 无条件无例外。禁止 sed/awk/grep 修改 JSON。
