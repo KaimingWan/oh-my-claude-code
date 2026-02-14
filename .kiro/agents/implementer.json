@@ -1,35 +1,43 @@
 {
   "name": "implementer",
-  "description": "Implementation specialist. TDD, coding, feature implementation. Full file access.",
-  "prompt": "file://./prompts/implementer-prompt.md",
-  "tools": ["read", "write", "shell"],
-  "allowedTools": ["read", "write", "shell"],
+  "description": "Implementation specialist. TDD, coding, feature implementation.",
+  "prompt": "file://../../agents/implementer-prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "write",
+    "shell"
+  ],
   "resources": [
     "file://AGENTS.md",
-    "skill://.kiro/skills/test-driven-development/SKILL.md",
-    "skill://.kiro/skills/verification-before-completion/SKILL.md"
+    "skill://skills/planning/SKILL.md",
+    "skill://skills/verification/SKILL.md"
   ],
   "hooks": {
     "agentSpawn": [
       {
-        "command": "echo '🔧 IMPLEMENTER RULES: 1) Write tests first 2) Run tests after every change 3) Commit only when tests pass'"
+        "command": "echo '🔧 IMPLEMENTER: 1) Write tests first 2) Run tests after every change 3) Commit when tests pass'"
       }
     ],
     "preToolUse": [
       {
         "matcher": "execute_bash",
-        "command": ".claude/hooks/security/block-dangerous-commands.sh"
+        "command": "hooks/security/block-dangerous.sh"
       }
     ],
     "postToolUse": [
       {
         "matcher": "fs_write",
-        "command": ".claude/hooks/quality/auto-test.sh"
+        "command": "hooks/feedback/auto-test.sh"
       }
     ],
     "stop": [
       {
-        "command": ".claude/hooks/quality/verify-completion.sh"
+        "command": "hooks/feedback/verify-completion.sh"
       }
     ]
   },

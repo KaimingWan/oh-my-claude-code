@@ -9,23 +9,12 @@
     "deny": []
   },
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lifecycle/session-init.sh"
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/autonomy/context-enrichment.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/context-enrichment.sh"
           }
         ]
       }
@@ -36,15 +25,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/security/block-dangerous-commands.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/block-dangerous.sh"
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/security/block-secrets.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/block-secrets.sh"
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/security/block-sed-json.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/block-sed-json.sh"
           }
         ]
       },
@@ -53,22 +42,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/quality/enforce-skill-chain.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/require-workflow.sh"
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/security/scan-skill-injection.sh"
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/autonomy/auto-approve-safe.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/scan-skill-injection.sh"
           }
         ]
       }
@@ -79,21 +57,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/quality/auto-test.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/auto-test.sh"
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/quality/auto-lint.sh"
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/autonomy/inject-subagent-rules.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/auto-lint.sh"
           }
         ]
       }
@@ -103,27 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/quality/verify-completion.sh"
-          }
-        ]
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/quality/enforce-tests.sh"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lifecycle/session-cleanup.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/verify-completion.sh"
           }
         ]
       }

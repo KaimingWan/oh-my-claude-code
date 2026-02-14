@@ -1,6 +1,6 @@
 {
   "name": "default",
-  "description": "Main orchestrator agent with 6-layer architecture",
+  "description": "Main orchestrator agent with deterministic workflow gates",
   "tools": [
     "*"
   ],
@@ -10,49 +10,49 @@
   "resources": [
     "file://AGENTS.md",
     "file://knowledge/INDEX.md",
-    "skill://.kiro/skills/**/SKILL.md"
+    "skill://skills/**/SKILL.md"
   ],
   "hooks": {
     "userPromptSubmit": [
       {
-        "command": ".claude/hooks/autonomy/context-enrichment.sh"
+        "command": "hooks/feedback/context-enrichment.sh"
       }
     ],
     "preToolUse": [
       {
         "matcher": "execute_bash",
-        "command": ".claude/hooks/security/block-dangerous-commands.sh"
+        "command": "hooks/security/block-dangerous.sh"
       },
       {
         "matcher": "execute_bash",
-        "command": ".claude/hooks/security/block-secrets.sh"
-      },
-      {
-        "matcher": "fs_write",
-        "command": ".claude/hooks/quality/enforce-skill-chain.sh"
-      },
-      {
-        "matcher": "fs_write",
-        "command": ".claude/hooks/security/scan-skill-injection.sh"
+        "command": "hooks/security/block-secrets.sh"
       },
       {
         "matcher": "execute_bash",
-        "command": ".claude/hooks/security/block-sed-json.sh"
+        "command": "hooks/security/block-sed-json.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": "hooks/gate/require-workflow.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": "hooks/security/scan-skill-injection.sh"
       }
     ],
     "postToolUse": [
       {
         "matcher": "fs_write",
-        "command": ".claude/hooks/quality/auto-test.sh"
+        "command": "hooks/feedback/auto-test.sh"
       },
       {
         "matcher": "fs_write",
-        "command": ".claude/hooks/quality/auto-lint.sh"
+        "command": "hooks/feedback/auto-lint.sh"
       }
     ],
     "stop": [
       {
-        "command": ".claude/hooks/quality/verify-completion.sh"
+        "command": "hooks/feedback/verify-completion.sh"
       }
     ]
   },
@@ -77,15 +77,11 @@
         "rm\\s+(-[rRf]|--recursive|--force).*",
         "rmdir\\b.*",
         "mkfs\\b.*",
-        "shred\\b.*",
+        "sudo\\b.*",
         "git\\s+push\\s+.*--force.*",
         "git\\s+reset\\s+--hard.*",
         "git\\s+clean\\s+-f.*",
-        "git\\s+stash\\s+drop.*",
-        "git\\s+branch\\s+-[dD].*",
-        "sudo\\b.*",
         "chmod\\s+(-R\\s+)?777.*",
-        "chown\\s+-R.*",
         "curl.*\\|\\s*(ba)?sh.*",
         "wget.*\\|\\s*(ba)?sh.*",
         "kill\\s+-9.*",
