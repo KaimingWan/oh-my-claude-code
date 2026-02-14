@@ -55,8 +55,11 @@ if [ "$REVIEW_LINES" -lt 3 ]; then
    Dispatch reviewer subagent to challenge the plan first."
 fi
 
-# 7. Check verdict
-VERDICT=$(echo "$REVIEW_SECTION" | grep -oiE 'Verdict:\s*(REJECT|CONDITIONAL|APPROVE|REQUEST CHANGES)' | tail -1)
+# 7. Check verdict — find the LAST verdict in review section
+VERDICT=$(echo "$REVIEW_SECTION" | grep -oiE '(Verdict:?\s*|FINAL VERDICT:?\s*|\*\*)(REJECT|CONDITIONAL|APPROVE|REQUEST CHANGES)' | tail -1)
+case "$(echo "$VERDICT" | tr '[:lower:]' '[:upper:]')" in
+  *APPROVE*) exit 0 ;;  # Approved — pass through
+esac
 case "$(echo "$VERDICT" | tr '[:lower:]' '[:upper:]')" in
   *REJECT*|*"REQUEST CHANGES"*)
     hook_block "🚫 BLOCKED: Plan was rejected by reviewer.
