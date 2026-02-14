@@ -26,3 +26,4 @@ Only after my explicit confirmation: read .kiro/skills/executing-plans/SKILL.md,
 
 ---
 User's requirement:
+(If no requirement provided below, ask the user what they want to plan before proceeding.)

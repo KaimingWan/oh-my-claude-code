@@ -8,3 +8,4 @@ You MUST read .kiro/skills/research/SKILL.md first, then follow its search level
 5. Cite sources for any factual claims.
 
 ## Research topic:
+(If no topic provided below, ask the user what they want to research before proceeding.)
