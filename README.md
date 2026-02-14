@@ -108,6 +108,8 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 |------|-------------|
 | `feedback/auto-test.sh` | Runs tests after source file changes (30s debounce) |
 | `feedback/auto-lint.sh` | Runs linter after file writes |
+| `feedback/inject-plan-context.sh` | PreToolUse[write]: injects plan checklist into context (Read Before Decide) |
+| `feedback/remind-update-progress.sh` | PostToolUse[write]: reminds to update progress.md after file changes |
 | `feedback/verify-completion.sh` | Stop hook: checks plan checklist for unchecked items |
 | `feedback/context-enrichment.sh` | Correction detection + unfinished task resume + high-freq lessons |
 

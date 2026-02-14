@@ -31,7 +31,8 @@ jq -n '{
         matcher: "Write|Edit",
         hooks: [
           {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/require-workflow.sh"},
-          {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/scan-skill-injection.sh"}
+          {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/scan-skill-injection.sh"},
+          {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/inject-plan-context.sh"}
         ]
       }
     ],
@@ -39,7 +40,8 @@ jq -n '{
       matcher: "Write|Edit",
       hooks: [
         {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/auto-test.sh"},
-        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/auto-lint.sh"}
+        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/auto-lint.sh"},
+        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/remind-update-progress.sh"}
       ]
     }],
     Stop: [{
@@ -71,11 +73,13 @@ jq -n '{
       {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"},
       {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"},
       {matcher: "fs_write", command: "hooks/gate/require-workflow.sh"},
-      {matcher: "fs_write", command: "hooks/security/scan-skill-injection.sh"}
+      {matcher: "fs_write", command: "hooks/security/scan-skill-injection.sh"},
+      {matcher: "fs_write", command: "hooks/feedback/inject-plan-context.sh"}
     ],
     postToolUse: [
       {matcher: "fs_write", command: "hooks/feedback/auto-test.sh"},
-      {matcher: "fs_write", command: "hooks/feedback/auto-lint.sh"}
+      {matcher: "fs_write", command: "hooks/feedback/auto-lint.sh"},
+      {matcher: "fs_write", command: "hooks/feedback/remind-update-progress.sh"}
     ],
     stop: [{command: "hooks/feedback/verify-completion.sh"}]
   },

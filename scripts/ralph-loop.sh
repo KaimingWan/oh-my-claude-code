@@ -69,19 +69,35 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
     git stash push -m "ralph-loop-iter-$i" 2>/dev/null || true
   fi
 
+  # --- Derive memory files from plan directory ---
+  PLAN_DIR="$(dirname "$PLAN_FILE")"
+  PROGRESS_FILE="$PLAN_DIR/progress.md"
+  FINDINGS_FILE="$PLAN_DIR/findings.md"
+
   # --- Build prompt with next unchecked items ---
   NEXT_ITEMS=$(grep '^\- \[ \]' "$PLAN_FILE" | head -3)
 
-  PROMPT="You are executing a plan. Read the plan file at $PLAN_FILE.
+  PROMPT="You are executing a plan. Read these files first:
+1. Plan: $PLAN_FILE
+2. Progress log: $PROGRESS_FILE (if exists — contains learnings from previous iterations)
+3. Findings: $FINDINGS_FILE (if exists — contains research discoveries and decisions)
 
 Next unchecked items:
 $NEXT_ITEMS
 
-Implement the FIRST unchecked item above. Verify it works (run tests/typecheck).
-Then update the plan file: change that item from '- [ ]' to '- [x]'.
-Commit with message: feat: <item description>.
-Then continue with the next unchecked item. Do NOT stop while unchecked items remain.
-If stuck after 3 attempts on one item, change it to '- [SKIP] <reason>' and move to next."
+Rules:
+1. Implement the FIRST unchecked item. Verify it works (run tests/typecheck).
+2. Update the plan: change that item from '- [ ]' to '- [x]'.
+3. Append to $PROGRESS_FILE with format:
+   ## Iteration $i — \$(date)
+   - **Task:** <what you did>
+   - **Files changed:** <list>
+   - **Learnings:** <gotchas, patterns discovered>
+   - **Status:** done / skipped
+4. If you discover reusable patterns or make technical decisions, write to $FINDINGS_FILE.
+5. Commit: feat: <item description>.
+6. Continue with next unchecked item. Do NOT stop while unchecked items remain.
+7. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next."
 
   # --- Launch fresh Kiro instance ---
   kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 || true

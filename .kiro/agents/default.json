@@ -38,6 +38,10 @@
       {
         "matcher": "fs_write",
         "command": "hooks/security/scan-skill-injection.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": "hooks/feedback/inject-plan-context.sh"
       }
     ],
     "postToolUse": [
@@ -48,6 +52,10 @@
       {
         "matcher": "fs_write",
         "command": "hooks/feedback/auto-lint.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": "hooks/feedback/remind-update-progress.sh"
       }
     ],
     "stop": [
