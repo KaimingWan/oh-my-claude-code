@@ -6,18 +6,25 @@
 
 | Question Type | Jump To | Example |
 |--------------|---------|---------|
-| Proven rules & constraints | `knowledge/rules.md` (keyword sections, injected by topic match) | "What's the rule for JSON?" |
-| Past mistakes & wins | `knowledge/episodes.md` | "Have we seen this before?" |
-| Framework design & architecture | `docs/designs/2026-02-13-framework-v2-upgrade.md` | "How does the hook system work?" |
+| Shell/JSON/platform rules | `.claude/rules/shell.md` | "What's the rule for JSON?" |
+| Workflow/plan/test rules | `.claude/rules/workflow.md` | "How should I commit?" |
+| Subagent/MCP rules | `.claude/rules/subagent.md` | "Can subagent use grep?" |
+| Debugging rules | `.claude/rules/debugging.md` | "How to fix a bug?" |
 | Security rules | `.claude/rules/security.md` | "What's blocked?" |
 | Git workflow | `.claude/rules/git-workflow.md` | "How to branch?" |
+| Agent-learned rules (staging) | `knowledge/rules.md` | "Any new patterns?" |
+| Past mistakes & wins | `knowledge/episodes.md` | "Have we seen this before?" |
+| Framework design & architecture | `docs/designs/2026-02-13-framework-v2-upgrade.md` | "How does the hook system work?" |
 | Reference materials (archived skills) | `knowledge/reference/` | "Mermaid syntax?" |
 
 ## Quick Links
-- [Rules](rules.md) — Long-term memory, keyword sections (shell/security/workflow/platform), no cap
+- [Rules (staging)](rules.md) — Agent-discovered rules, candidates for promotion to `.claude/rules/`
 - [Episodes](episodes.md) — Mistakes and wins (timeline)
+- [Shell Rules](../.claude/rules/shell.md) — JSON, bash, platform compatibility
+- [Workflow Rules](../.claude/rules/workflow.md) — Plans, reviews, testing, commits
+- [Security Rules](../.claude/rules/security.md) — Hooks, injection, workspace boundaries
 - [Framework v2 Design](../docs/designs/2026-02-13-framework-v2-upgrade.md) — Architecture & hooks
 - [Reference Materials](reference/) — Archived skill content (writing style, mermaid, java, etc.)
 
 ---
-*Index version: 5.0 — Updated for keyword section rules (v2 knowledge system)*
+*Index version: 6.0 — Updated for three-layer instruction governance*

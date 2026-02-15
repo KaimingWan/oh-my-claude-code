@@ -87,3 +87,10 @@ Supported: `numbered` (default), `mla`, `apa`, `chicago`
 ```bash
 ./scripts/research.sh '{"input": "climate impacts", "citation_format": "apa"}'
 ```
+
+## Post-Research 沉淀 Checkpoint
+
+After completing research, before moving on:
+1. Record key findings in `docs/plans/findings.md` (if working on a plan)
+2. If findings reveal reusable patterns → write to `knowledge/episodes.md`
+3. Cite sources with URLs — no hallucinated references

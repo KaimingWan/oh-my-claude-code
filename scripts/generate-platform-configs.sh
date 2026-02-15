@@ -16,7 +16,11 @@ jq -n '{
   permissions: {allow: ["Bash(*)", "Read(*)", "Write(*)", "Edit(*)"], deny: []},
   hooks: {
     UserPromptSubmit: [{
-      hooks: [{type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/context-enrichment.sh"}]
+      hooks: [
+        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/correction-detect.sh"},
+        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/session-init.sh"},
+        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/context-enrichment.sh"}
+      ]
     }],
     PreToolUse: [
       {
@@ -73,7 +77,11 @@ jq -n '{
     "skill://skills/**/SKILL.md"
   ],
   hooks: {
-    userPromptSubmit: [{command: "hooks/feedback/context-enrichment.sh"}],
+    userPromptSubmit: [
+      {command: "hooks/feedback/correction-detect.sh"},
+      {command: "hooks/feedback/session-init.sh"},
+      {command: "hooks/feedback/context-enrichment.sh"}
+    ],
     preToolUse: [
       {matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"},
       {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"},

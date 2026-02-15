@@ -230,3 +230,10 @@
 - **Files changed:** `hooks/feedback/correction-detect.sh` (new), `hooks/feedback/session-init.sh` (new), `hooks/feedback/context-enrichment.sh` (slimmed)
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 34 — 2026-02-16T04:48
+
+- **Task:** Task 6 — Updated config generation (3 userPromptSubmit hooks), enforcement.md (hook registry + new hooks), INDEX.md (routing table for .claude/rules/), research skill (沉淀 checkpoint).
+- **Files changed:** `scripts/generate-platform-configs.sh`, `.kiro/rules/enforcement.md`, `knowledge/INDEX.md`, `skills/research/SKILL.md`, `.claude/settings.json` (regenerated), `.kiro/agents/default.json` (regenerated)
+- **Learnings:** None new.
+- **Status:** done

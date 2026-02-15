@@ -15,6 +15,12 @@
   "hooks": {
     "userPromptSubmit": [
       {
+        "command": "hooks/feedback/correction-detect.sh"
+      },
+      {
+        "command": "hooks/feedback/session-init.sh"
+      },
+      {
         "command": "hooks/feedback/context-enrichment.sh"
       }
     ],
@@ -42,14 +48,6 @@
       {
         "matcher": "fs_write",
         "command": "hooks/gate/pre-write.sh"
-      },
-      {
-        "matcher": "execute_bash",
-        "command": "hooks/gate/enforce-ralph-loop.sh"
-      },
-      {
-        "matcher": "fs_write",
-        "command": "hooks/gate/enforce-ralph-loop.sh"
       }
     ],
     "postToolUse": [
