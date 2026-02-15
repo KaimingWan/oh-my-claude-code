@@ -213,6 +213,10 @@ git clone https://github.com/KaimingWan/oh-my-claude-code.git /tmp/omcc
 | Just knowledge system | `knowledge/` |
 | Just subagents | `agents/` + `.kiro/agents/` |
 
+## Tips
+
+- **Adversarial review costs tokens.** Phase 1.5 dispatches 3-7 parallel reviewer subagents per round, up to 5 rounds. For simple plans (single file, clear scope), consider using `@review` with a single reviewer instead. Reserve the full adversarial review for multi-file features and architecture changes.
+
 ## Design Principles
 
 1. **Deterministic over hopeful** — Commands and hard blocks, not soft prompts
