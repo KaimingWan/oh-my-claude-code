@@ -125,3 +125,10 @@
 - **Files changed:** `knowledge/rules.md`
 - **Learnings:** Items 2 & 3 in checklist both covered by the same edit — efficient to batch.
 - **Status:** done
+
+## Iteration 19 — 2026-02-15T23:54
+
+- **Task:** Added research keyword detection (CN+EN) to `hooks/feedback/context-enrichment.sh`
+- **Files changed:** `hooks/feedback/context-enrichment.sh`
+- **Learnings:** None new.
+- **Status:** done

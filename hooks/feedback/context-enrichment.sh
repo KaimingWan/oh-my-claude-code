@@ -30,6 +30,13 @@ if [ "$DETECTED" -eq 1 ]; then
   touch "/tmp/agent-correction-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default').flag"
 fi
 
+# Research skill reminder
+if echo "$USER_MSG" | grep -qE '(调研|研究一下|查一下|了解一下|对比.*方案)'; then
+  echo "🔍 Research detected → read skills/research/SKILL.md for search level strategy (L0→L1→L2)."
+elif echo "$USER_MSG" | grep -qiE '(research|investigate|look into|compare.*options|find out)'; then
+  echo "🔍 Research detected → read skills/research/SKILL.md for search level strategy (L0→L1→L2)."
+fi
+
 # 2. Unfinished task resume
 if [ -f ".completion-criteria.md" ]; then
   UNCHECKED=$(grep '^\- \[ \]' ".completion-criteria.md" 2>/dev/null | wc -l | tr -d ' ')
