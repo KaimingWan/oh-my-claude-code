@@ -28,3 +28,8 @@
 ## [subagent, mcp, kiro, delegate, capability, tool]
 1. Kiro subagent 只能用 read/write/shell/MCP 四类工具。web_search/web_fetch/code/grep/glob/use_aws/introspect/thinking/todo_list 均不可用，配了也无效。但 MCP 可补回部分能力（ripgrep→grep, fetch→web_fetch）。resources（file://+skill://）是 spawn 时加载的 context，不受此限制。
 2. MCP 补能力已验证可行：ripgrep MCP 在 subagent 中完全可用（实测确认）。架构：workspace mcp.json 放 ripgrep（所有 subagent 继承），researcher agent JSON 放 fetch MCP。**必须在 agent JSON 中设 `includeMcpJson: true` 才能继承 workspace mcp.json**（默认 false）。code tool（LSP）无法通过 MCP 补回，需要 LSP 的任务永远不委派给 subagent。
+
+## [debugging, bug, error, failure, fix, broken]
+1. 修 bug 前必须先复现、定位根因，禁止猜测性修复。NO FIX WITHOUT ROOT CAUSE。
+2. 遇到测试失败：先读完整错误信息和堆栈，再行动。
+3. 连续修 3 次不成功 → 停下来，重新从复现开始。

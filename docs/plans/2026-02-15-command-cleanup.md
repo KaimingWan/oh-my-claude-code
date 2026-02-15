@@ -126,8 +126,8 @@ Skill routing 表中，将：
 ## Checklist
 
 - [x] commands/debug.md 已删除 | `! test -f commands/debug.md`
-- [ ] rules.md 有 debugging keyword section | `grep -q '## \[debugging' knowledge/rules.md`
-- [ ] debugging rules 包含根因原则 | `grep -q 'ROOT CAUSE' knowledge/rules.md`
+- [x] rules.md 有 debugging keyword section | `grep -q '## \[debugging' knowledge/rules.md`
+- [x] debugging rules 包含根因原则 | `grep -q 'ROOT CAUSE' knowledge/rules.md`
 - [ ] context-enrichment 有 research 检测 | `grep -q 'Research detected' hooks/feedback/context-enrichment.sh`
 - [ ] research 检测覆盖中英文 | `grep -q '调研' hooks/feedback/context-enrichment.sh && grep -qi 'research' hooks/feedback/context-enrichment.sh`
 - [ ] AGENTS.md 无 @debug 引用 | `! grep -q '@debug' AGENTS.md`

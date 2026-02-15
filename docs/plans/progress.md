@@ -118,3 +118,10 @@
 - **Files changed:** `commands/debug.md` (deleted)
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 18 — 2026-02-15T23:53
+
+- **Task:** Added `## [debugging, bug, error, failure, fix, broken]` keyword section to `knowledge/rules.md` with 3 rules (root cause, read errors first, 3-strike restart)
+- **Files changed:** `knowledge/rules.md`
+- **Learnings:** Items 2 & 3 in checklist both covered by the same edit — efficient to batch.
+- **Status:** done
