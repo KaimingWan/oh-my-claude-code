@@ -76,3 +76,10 @@
 - **Files changed:** `tests/ralph-loop/test-enforcement.sh` (new), `docs/plans/2026-02-15-ralph-loop-enforcement.md` (3 items checked)
 - **Learnings:** Background processes (`bash -c 'sleep 5' &`) in tests cause hangs — use current shell PID (`$$`) for live lock tests instead. macOS lacks `timeout` command (need `gtimeout` from coreutils or avoid it).
 - **Status:** done
+
+## Iteration 12 — 2026-02-15T19:43
+
+- **Task:** Created 5 reference files (copied 4 from archive, created output-format.md from reference-skill.md sections 6+7), rewrote SKILL.md with 7-step code review flow, removed plan review content, enhanced receiving review with YAGNI check and implementation order
+- **Files changed:** `skills/reviewing/SKILL.md` (rewritten), `skills/reviewing/references/solid-checklist.md` (new), `skills/reviewing/references/security-checklist.md` (new), `skills/reviewing/references/code-quality-checklist.md` (new), `skills/reviewing/references/removal-plan.md` (new), `skills/reviewing/references/output-format.md` (new)
+- **Learnings:** Tackling dependent checklist items together (reference files + SKILL.md rewrite) is more efficient than one-at-a-time when they share the same task scope.
+- **Status:** done

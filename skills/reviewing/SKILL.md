@@ -1,6 +1,6 @@
 ---
 name: reviewing
-description: "Code and plan review — covers requesting, executing, and receiving reviews."
+description: "Code review — covers requesting, executing, and receiving code reviews."
 ---
 
 # Reviewing — Request, Execute, Receive
@@ -14,39 +14,54 @@ Dispatch reviewer subagent with:
 - Plan/requirements reference
 - Git diff range (BASE_SHA..HEAD_SHA)
 
-## Executing Review (for reviewer agent)
+## Executing Code Review (for reviewer agent)
 
-### Plan Review Mode
-1. Read plan completely
-2. Challenge every decision: "What if X fails?" / "Why not Y?" / "What's missing?"
-3. Play devil's advocate
-4. Output: Strengths / Weaknesses / Missing / Verdict (APPROVE or REQUEST CHANGES)
+### 1) Preflight context
 
-### Angle-Based Plan Review
+- Run `git diff --stat` then `git diff` to understand scope
+- If diff > 500 lines, batch by file/module — review each batch separately
+- Note: file renames, new files, deleted files
 
-When dispatched with a specific review angle, follow this protocol:
+### 2) SOLID + architecture check
 
-1. Read the review packet (plan header + checklist + context summary)
-2. Review ONLY from your assigned angle — go deep, not broad
-3. Challenge aggressively from that angle: find real problems, not theoretical ones
-4. Output in this exact format:
+- Load `references/solid-checklist.md` for coverage
+- Check SRP, OCP, LSP, ISP, DIP violations
+- Flag common code smells: long methods, feature envy, data clumps, dead code
+- Apply refactor heuristics where applicable
 
-```
-- Mission: [your assigned angle]
-- Findings: [list each specific finding]
-- Verdict: APPROVE or REJECT with specific reasons
-```
+### 3) Security scan
 
-**Calibration:** REJECT only for issues that would cause the plan to fail or produce wrong results. Do NOT reject for style preferences, theoretical risks unlikely in practice, or nice-to-have features. The bar is "would this plan produce a 90/100 result?" — not perfection.
+- Load `references/security-checklist.md` for coverage
+- Check: input/output safety (XSS, injection, SSRF, path traversal), auth gaps, secrets in code
+- Check: race conditions (concurrent access, check-then-act, TOCTOU, missing locks)
+- Call out both **exploitability** and **impact**
 
-**Mission / Findings / Verdict** — every review must contain all three. Missing any = malformed output.
+### 4) Code quality scan
 
-### Code Review Mode
-1. Run `git diff --stat` then `git diff`
-2. Categorize: P0 Critical / P1 High / P2 Medium / P3 Low
-3. Check: correctness, security, SOLID, test coverage, edge cases
-4. Be specific — cite file:line, show code examples
-5. Never rubber-stamp
+- Load `references/code-quality-checklist.md` for coverage
+- Check: error handling (swallowed exceptions, overly broad catch, async errors)
+- Check: performance (N+1 queries, CPU-intensive ops in hot paths, missing cache, unbounded memory)
+- Check: boundary conditions (null/undefined, empty collections, numeric boundaries, off-by-one)
+- Flag issues that may cause silent failures or production incidents
+
+### 5) Removal candidates
+
+- Load `references/removal-plan.md` for template
+- Identify dead code, unused imports, deprecated patterns
+- Categorize: safe to remove now vs defer with plan
+
+### 6) Output
+
+- Load `references/output-format.md` for structure
+- Categorize findings: P0 Critical / P1 High / P2 Medium / P3 Low
+- Be specific — cite file:line, show code examples
+- Never rubber-stamp
+
+### 7) Next steps confirmation
+
+- Present findings summary with issue counts by priority
+- Ask user how to proceed (fix all / P0-P1 only / specific items / no changes)
+- Do NOT implement changes until user explicitly confirms
 
 ## Receiving Review
 
@@ -59,8 +74,23 @@ When dispatched with a specific review angle, follow this protocol:
 5. RESPOND — technical acknowledgment or reasoned pushback
 6. IMPLEMENT one item at a time, test each
 
-**If feedback is unclear:** STOP. Ask for clarification on ALL unclear items before implementing any.
+### YAGNI Check
 
-**Push back when reviewer is wrong** — with technical reasoning and evidence.
+Before implementing any suggestion, ask: "Does this solve a real problem we have now?" Reject speculative generality, premature abstractions, and features for hypothetical future needs.
+
+### Implementation Order
+
+When implementing accepted feedback:
+1. **Blocking issues first** — anything that breaks build/tests
+2. **Simple fixes** — typos, naming, formatting (quick wins)
+3. **Complex changes** — refactors, architecture changes (highest risk, do last)
+
+### Push Back
+
+Push back when reviewer is wrong — with technical reasoning and evidence. Show code, show tests, show docs.
+
+### Acknowledging Correct Feedback
+
+When feedback is correct, acknowledge briefly and implement: "Agreed, fixing." No flattery.
 
 **Never:** "You're absolutely right!" / "Great point!" / implement before verifying.
