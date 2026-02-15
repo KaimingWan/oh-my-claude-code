@@ -34,7 +34,7 @@ LOG_FILE=".ralph-loop.log"
 LOCK_FILE=".ralph-loop.lock"
 
 # --- Lock file: signals to hooks that ralph-loop is active ---
-touch "$LOCK_FILE"
+echo "$$" > "$LOCK_FILE"
 cleanup_lock() { rm -f "$LOCK_FILE"; }
 trap cleanup_lock EXIT
 
