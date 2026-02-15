@@ -188,3 +188,10 @@
 - **Files changed:** `tests/block-recovery/test-block-recovery.sh` (new)
 - **Learnings:** Tests that invoke hooks directly share the same count file as live hooks when run from the same workspace. Fix: `cd` into a temp dir before invoking hooks so `pwd | shasum` produces a unique hash. This isolates test counts from live session counts.
 - **Status:** done
+
+## Iteration 28 — 2026-02-16T04:27
+
+- **Task:** Pre-migration backup — committed current state and tagged `pre-governance-redesign`
+- **Files changed:** git tag created
+- **Learnings:** None new.
+- **Status:** done

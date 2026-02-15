@@ -346,7 +346,7 @@ Declined changes (by design):
 
 ## Checklist
 
-- [ ] Pre-migration backup tagged | `git tag | grep -q pre-governance-redesign`
+- [x] Pre-migration backup tagged | `git tag | grep -q pre-governance-redesign`
 - [ ] CLAUDE.md write blocked by hook | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"CLAUDE.md","command":"str_replace","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
 - [ ] .claude/rules/ write blocked by hook | `echo '{"tool_name":"fs_write","tool_input":{"file_path":".claude/rules/security.md","command":"create","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
 - [ ] episodes.md NOT blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"knowledge/episodes.md","command":"str_replace","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 0`
