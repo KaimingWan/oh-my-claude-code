@@ -436,5 +436,5 @@ The Round 1 blocking issues have been adequately addressed through design decisi
 - [x] verify-completion stop hook 重跑 verify 命令 | `grep -q 'VERIFY FAILED\|verify commands' hooks/feedback/verify-completion.sh`
 - [x] reviewer prompt 包含 Checklist Coverage 要求 | `grep -c 'Checklist Coverage' agents/reviewer-prompt.md`
 - [x] default.json 包含 post-bash hook | `jq -e '.hooks.postToolUse[] | select(.command | contains("post-bash"))' .kiro/agents/default.json`
-- [ ] planning skill 包含新 checklist 格式说明 | `grep -c 'verify command' skills/planning/SKILL.md`
+- [x] planning skill 包含新 checklist 格式说明 | `grep -c 'verify command' skills/planning/SKILL.md`
 - [ ] knowledge 已记录 | `grep -c 'tdd-checklist' knowledge/episodes.md`

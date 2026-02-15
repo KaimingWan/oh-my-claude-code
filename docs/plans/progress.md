@@ -41,3 +41,10 @@
 - **Files changed:** `.kiro/agents/default.json`, `.kiro/agents/reviewer.json`, `.kiro/agents/researcher.json`, `scripts/generate-platform-configs.sh`, `.claude/settings.json` (regenerated)
 - **Learnings:** Always update generate-platform-configs.sh AND run it — it's the source of truth and will overwrite manual JSON edits.
 - **Status:** done
+
+## Iteration 7 — 2026-02-15T13:04
+
+- **Task:** Added Checklist Format section to `skills/planning/SKILL.md` with format spec, examples, and rules
+- **Files changed:** `skills/planning/SKILL.md` (modified)
+- **Learnings:** None new.
+- **Status:** done

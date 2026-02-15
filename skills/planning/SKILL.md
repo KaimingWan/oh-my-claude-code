@@ -26,6 +26,26 @@ One skill for the full plan lifecycle: write → review → execute.
 <!-- Reviewer writes here -->
 ```
 
+### Checklist Format (enforced by hook)
+
+Every plan must have a `## Checklist` section. Every checklist item MUST include an executable verify command:
+
+```markdown
+- [ ] description | `verify command`
+```
+
+Examples:
+- `- [ ] hook 语法正确 | \`bash -n hooks/security/my-hook.sh\``
+- `- [ ] config 包含新 hook | \`jq '.hooks' .kiro/agents/default.json | grep -q my-hook\``
+- `- [ ] 外部路径被拦截 | \`echo '{"tool_name":"fs_write","tool_input":{"file_path":"/tmp/evil.txt"}}' | bash hooks/security/my-hook.sh 2>&1; test $? -eq 2\``
+
+Rules:
+- verify command must be executable (no "手动测试", no "目视检查")
+- verify command must return exit 0 on success
+- Each Task must have at least 1 checklist item
+- Cover: happy path + edge case + integration (where applicable)
+- Hook enforces: checking off `- [x]` requires recent successful execution of the verify command
+
 ### Task Structure (TDD)
 
 Each task follows red-green-refactor:
