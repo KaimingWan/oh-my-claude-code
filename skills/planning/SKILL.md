@@ -129,6 +129,24 @@ Expected: PASS
 
 Rules: exact file paths, complete code (not "add validation"), exact commands with expected output.
 
+### Errors Section (required)
+
+Every plan must have an `## Errors` section at the bottom. During execution, log every error encountered:
+
+```markdown
+## Errors
+
+| Error | Task | Attempt | Resolution |
+|-------|------|---------|------------|
+```
+
+Rules:
+- Log immediately when error occurs, don't wait
+- Include which Task triggered the error
+- Track attempt number — if same error appears at attempt 3, trigger 3-Strike Protocol (see Phase 2)
+- This section is append-only during execution — never delete entries
+- Cap: keep most recent 20 entries; if exceeded, summarize older entries into a single "Earlier errors: N resolved" row
+
 ## Phase 1.5: Plan Review
 
 After writing the plan, run multi-perspective plan review before execution.

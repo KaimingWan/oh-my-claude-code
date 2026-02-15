@@ -149,7 +149,7 @@ Rules:
 ## Checklist
 
 - [x] Non-Goals 在 Plan Header 区域 | `sed -n '/^### Plan Header/,/^###[^#]/p' skills/planning/SKILL.md | grep -q '\*\*Non-Goals:\*\*'`
-- [ ] Errors Section 在 Phase 1 区域内 | `sed -n '/^## Phase 1: Writing/,/^## Phase 1.5/p' skills/planning/SKILL.md | grep -q 'Errors Section'`
+- [x] Errors Section 在 Phase 1 区域内 | `sed -n '/^## Phase 1: Writing/,/^## Phase 1.5/p' skills/planning/SKILL.md | grep -q 'Errors Section'`
 - [ ] Findings Section 在 Phase 1 区域内 | `sed -n '/^## Phase 1: Writing/,/^## Phase 1.5/p' skills/planning/SKILL.md | grep -q 'Findings Section'`
 - [ ] Execution Disciplines 在 Phase 2 区域内 | `sed -n '/^## Phase 2/,/^## Phase 3/p' skills/planning/SKILL.md | grep -q 'Execution Disciplines'`
 - [ ] Session Resume Protocol 存在 | `sed -n '/^## Phase 2/,/^## Phase 3/p' skills/planning/SKILL.md | grep -q 'Session Resume Protocol'`
