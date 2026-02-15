@@ -223,3 +223,10 @@
 - **Files changed:** `hooks/gate/pre-write.sh` (modified), `tests/instruction-guard/test-brainstorm-gate.sh` (new), `commands/plan.md` (modified)
 - **Learnings:** Brainstorm gate test can't use exit code 0 for "allowed" case because plan structure gate still blocks minimal content. Test verifies brainstorm-specific message presence/absence instead.
 - **Status:** done
+
+## Iteration 33 — 2026-02-16T04:44
+
+- **Task:** Task 5 — Split context-enrichment.sh into 3 scripts: correction-detect.sh (correction detection + auto-capture), session-init.sh (rules injection + episode cleanup + reminders), context-enrichment.sh (research reminder + unfinished task resume).
+- **Files changed:** `hooks/feedback/correction-detect.sh` (new), `hooks/feedback/session-init.sh` (new), `hooks/feedback/context-enrichment.sh` (slimmed)
+- **Learnings:** None new.
+- **Status:** done
