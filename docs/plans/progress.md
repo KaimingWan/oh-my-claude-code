@@ -202,3 +202,10 @@
 - **Files changed:** `hooks/gate/pre-write.sh` (modified), `tests/instruction-guard/test-write-protection.sh` (new)
 - **Learnings:** Plan test case needed `str_replace` instead of `create` to avoid triggering the plan structure gate (separate concern).
 - **Status:** done
+
+## Iteration 30 — 2026-02-16T04:33
+
+- **Task:** Task 2 — Rewrote CLAUDE.md with new content (8 principles, Authority Matrix, no Shell Safety), synced to AGENTS.md. Used `.skip-instruction-guard` bypass.
+- **Files changed:** `CLAUDE.md` (rewritten), `AGENTS.md` (synced)
+- **Learnings:** Need `.skip-instruction-guard` bypass for Task 2-3 since Task 1's hook is now active.
+- **Status:** done

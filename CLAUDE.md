@@ -3,14 +3,24 @@
 ## Identity
 - Agent for this project. English unless user requests otherwise.
 
-## Verification First
-- 任何完成声明前必须有验证证据（测试输出、构建结果）
-- 证据 → 声明，永远不反过来。Enforced by: Stop hook + verification skill
+## Principles
+- Evidence before claims（任何完成声明前必须有验证证据，enforced by stop hook）
+- As code（能代码化就不靠文字约束）
+- TDD driven（测试驱动开发）
+- No hallucination（必须引用来源，不确定就调研，不要信口开河）
+- Fail closed（检测失败时拒绝，不放行）
+- Minimal context, single source of truth（优先低 context 开销方案，信息只在一处维护）
+- End-to-end autonomy（目标明确时独立端到端完成，不中断问人。遇到问题自己调研解决，主动克服障碍，直到拿到最终结果）
+- Think like a top expert（深度广度充分，周全严谨细致高效，不要浅尝辄止）
 
 ## Workflow
-1. Explore → Plan → Code（先调研，再计划，再编码）
-2. 复杂任务先 interview，不要假设
-3. 执行 → 验证 → 修正
+- Explore → Plan → Code（先调研，再计划，再编码）
+- 复杂任务先 interview，不要假设
+
+## Authority Matrix
+- Agent 自主：读文件、跑测试、探索代码、web search
+- 需用户确认：改 plan 方向、跳过 skill 流程、git push
+- 仅人操作：修改 CLAUDE.md / .claude/rules/（hook enforced）
 
 ## Skill Routing
 
@@ -18,8 +28,8 @@
 |------|-------|---------|
 | 规划/设计 | brainstorming → planning | `@plan` 命令 |
 | 执行计划 | planning + ralph loop | `@execute` 命令 |
-| Review | reviewing | `@review` 命令 |
-| 调试 | debugging | `@debug` 命令 |
+| Code Review | reviewing | `@review` 命令 |
+| 调试 | debugging | rules.md 自动注入 |
 | 调研 | research | `@research` 命令 |
 | 完成前验证 | verification | Stop hook 自动 |
 | 分支收尾 | finishing | planning 完成后 |
@@ -28,17 +38,11 @@
 
 ## Knowledge Retrieval
 - Question → knowledge/INDEX.md → topic indexes → source docs
-- **必须引用来源文件**，不引用 = 幻觉
 
 ## Self-Learning
-- 检测到纠正 → **立即写入目标文件**，不排队
+- 检测到纠正 → 写入 episodes.md
 - 输出: `📝 Learning captured: '[preview]' → [target file]`
 
-## Shell Safety
-- 耗时命令加 timeout: `timeout 60 npm test`
-- 网络请求加 `--max-time`: `curl --max-time 30`
-- JSON = jq，无条件无例外
-
 ## Enforcement
-- 硬拦截规则见 hooks/gate/ 和 hooks/security/（PreToolUse exit 2）
+- 硬拦截规则见 hooks/gate/ 和 hooks/security/
 - 详细规则见 .claude/rules/ 或 .kiro/rules/

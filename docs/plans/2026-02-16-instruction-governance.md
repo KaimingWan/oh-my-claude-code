@@ -350,10 +350,10 @@ Declined changes (by design):
 - [x] CLAUDE.md write blocked by hook | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"CLAUDE.md","command":"str_replace","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
 - [x] .claude/rules/ write blocked by hook | `echo '{"tool_name":"fs_write","tool_input":{"file_path":".claude/rules/security.md","command":"create","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
 - [x] episodes.md NOT blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"knowledge/episodes.md","command":"str_replace","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 0`
-- [ ] CLAUDE.md has Principles with 8 items | `sed -n '/^## Principles/,/^## /p' CLAUDE.md | grep -c '^- ' | grep -q 8`
-- [ ] CLAUDE.md has Authority Matrix | `grep -q '## Authority Matrix' CLAUDE.md`
-- [ ] CLAUDE.md has no Shell Safety section | `! grep -q '## Shell Safety' CLAUDE.md`
-- [ ] CLAUDE.md and AGENTS.md in sync | `bash scripts/generate-platform-configs.sh && diff CLAUDE.md AGENTS.md`
+- [x] CLAUDE.md has Principles with 8 items | `sed -n '/^## Principles/,/^## /p' CLAUDE.md | grep -c '^- ' | grep -q 8`
+- [x] CLAUDE.md has Authority Matrix | `grep -q '## Authority Matrix' CLAUDE.md`
+- [x] CLAUDE.md has no Shell Safety section | `! grep -q '## Shell Safety' CLAUDE.md`
+- [x] CLAUDE.md and AGENTS.md in sync | `bash scripts/generate-platform-configs.sh && diff CLAUDE.md AGENTS.md`
 - [ ] .claude/rules/shell.md exists with header | `for f in .claude/rules/shell.md .claude/rules/workflow.md .claude/rules/subagent.md .claude/rules/debugging.md .claude/rules/security.md; do grep -q 'Layer: Agent Rule' "$f" || exit 1; done`
 - [ ] .claude/rules/workflow.md exists | `test -f .claude/rules/workflow.md`
 - [ ] .claude/rules/subagent.md exists | `test -f .claude/rules/subagent.md`
