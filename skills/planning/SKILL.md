@@ -231,6 +231,53 @@ When reviewers give contradictory feedback:
 
 After plan is reviewed and approved, choose execution strategy based on checklist size:
 
+### Execution Disciplines
+
+These rules apply regardless of which execution strategy is chosen.
+
+#### Session Resume Protocol
+
+When starting or resuming execution (including new sessions):
+1. Read the plan's Goal + Architecture + Non-Goals
+2. Run `git diff --stat` to see what's already changed
+3. Check checklist: which items are `[x]` done, which `[ ]` remain
+4. Write a one-line status summary to the plan's `## Findings` section
+
+This ensures the agent has full context before making any changes.
+
+#### Read Before Decide
+
+Before any of these actions, re-read the plan's **Goal** and **Non-Goals**:
+- Changing implementation approach mid-task
+- Deciding to skip or reorder a task
+- Encountering a blocker and choosing a workaround
+- Adding scope not in the original plan
+
+This pushes the original intent back into the attention window, preventing drift after many tool calls.
+
+#### Periodic Re-orientation
+
+Every 3 completed tasks, re-read the plan's **Goal** paragraph. No writing needed — purely attention refresh. This counters gradual context decay in long execution sessions.
+
+#### 3-Strike Error Protocol
+
+When an error occurs during execution:
+
+**Strike 1 — Diagnose & Fix:** Read error carefully, identify root cause, apply targeted fix. Log to `## Errors`.
+
+**Strike 2 — Alternative Approach:** Same error? Try a fundamentally different method. Different tool, different algorithm, different angle. Log to `## Errors`.
+
+**Strike 3 — Broader Rethink:** Question assumptions. Search for solutions. Consider whether the plan itself needs revision. Log to `## Errors`.
+
+**After 3 strikes:** Stop and escalate to user. Explain what was tried, share the specific errors, ask for guidance. Do NOT attempt a 4th time with the same approach.
+
+Rules:
+- `next_action != failed_action` — never repeat the exact same failing approach
+- Each strike must be logged in the plan's `## Errors` table with attempt number
+- Strike count is per-error-type, not global (different errors get their own 3 strikes)
+
+### Strategy Selection
+
 | Checklist Items | Strategy | Rationale |
 |----------------|----------|-----------|
 | ≤3 | A: Sequential in main conversation | Low overhead, not worth subagent spawn cost |
