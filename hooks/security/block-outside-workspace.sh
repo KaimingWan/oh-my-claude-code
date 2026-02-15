@@ -2,6 +2,9 @@
 # block-outside-workspace.sh — PreToolUse[fs_write + execute_bash]
 # Blocks file writes outside the workspace boundary.
 source "$(dirname "$0")/../_lib/common.sh"
+if ! source "$(dirname "$0")/../_lib/block-recovery.sh" 2>/dev/null; then
+  hook_block_with_recovery() { hook_block "$1"; }
+fi
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null)
@@ -38,10 +41,10 @@ case "$TOOL_NAME" in
       "$WORKSPACE"/*|"$WORKSPACE") exit 0 ;;
     esac
 
-    hook_block "🚫 BLOCKED: Write outside workspace.
+    hook_block_with_recovery "🚫 BLOCKED: Write outside workspace.
 Target: $FILE → $RESOLVED
 Workspace: $WORKSPACE
-Agent may only write files inside the workspace."
+Agent may only write files inside the workspace." "$FILE"
     ;;
 
   execute_bash|Bash)
@@ -67,11 +70,11 @@ Agent may only write files inside the workspace."
 
     for pattern in "${OUTSIDE_WRITE_PATTERNS[@]}"; do
       if echo "$CMD" | grep -qiE "$pattern"; then
-        hook_block "🚫 BLOCKED: Bash command writes outside workspace.
+        hook_block_with_recovery "🚫 BLOCKED: Bash command writes outside workspace.
 Command: $CMD
 Matched: $pattern
 Workspace: $WORKSPACE
-Use paths inside the workspace instead."
+Use paths inside the workspace instead." "$CMD"
       fi
     done
     ;;

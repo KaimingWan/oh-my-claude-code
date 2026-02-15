@@ -2,6 +2,9 @@
 # block-dangerous-commands.sh — PreToolUse[Bash] (Kiro + CC)
 source "$(dirname "$0")/../_lib/common.sh"
 source "$(dirname "$0")/../_lib/patterns.sh"
+if ! source "$(dirname "$0")/../_lib/block-recovery.sh" 2>/dev/null; then
+  hook_block_with_recovery() { hook_block "$1"; }
+fi
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null)
@@ -15,14 +18,14 @@ CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
 for pattern in "${DANGEROUS_BASH_PATTERNS[@]}"; do
   if echo "$CMD" | grep -qiE "$pattern"; then
-    hook_block "🚫 BLOCKED: Dangerous command detected.
+    hook_block_with_recovery "🚫 BLOCKED: Dangerous command detected.
 Command: $CMD
 Matched: $pattern
 
 Use safer alternatives:
 - rm → mv to ~/.Trash/
 - git reset --hard → git stash first
-- git clean → list with -n first"
+- git clean → list with -n first" "$CMD"
   fi
 done
 
