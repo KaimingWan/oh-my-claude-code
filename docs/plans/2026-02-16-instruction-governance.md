@@ -347,9 +347,9 @@ Declined changes (by design):
 ## Checklist
 
 - [x] Pre-migration backup tagged | `git tag | grep -q pre-governance-redesign`
-- [ ] CLAUDE.md write blocked by hook | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"CLAUDE.md","command":"str_replace","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
-- [ ] .claude/rules/ write blocked by hook | `echo '{"tool_name":"fs_write","tool_input":{"file_path":".claude/rules/security.md","command":"create","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
-- [ ] episodes.md NOT blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"knowledge/episodes.md","command":"str_replace","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 0`
+- [x] CLAUDE.md write blocked by hook | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"CLAUDE.md","command":"str_replace","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
+- [x] .claude/rules/ write blocked by hook | `echo '{"tool_name":"fs_write","tool_input":{"file_path":".claude/rules/security.md","command":"create","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
+- [x] episodes.md NOT blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"knowledge/episodes.md","command":"str_replace","new_str":"x"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 0`
 - [ ] CLAUDE.md has Principles with 8 items | `sed -n '/^## Principles/,/^## /p' CLAUDE.md | grep -c '^- ' | grep -q 8`
 - [ ] CLAUDE.md has Authority Matrix | `grep -q '## Authority Matrix' CLAUDE.md`
 - [ ] CLAUDE.md has no Shell Safety section | `! grep -q '## Shell Safety' CLAUDE.md`

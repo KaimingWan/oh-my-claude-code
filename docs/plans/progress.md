@@ -195,3 +195,10 @@
 - **Files changed:** git tag created
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 29 — 2026-02-16T04:30
+
+- **Task:** Task 1 — Write protection hook for instruction files (CLAUDE.md, AGENTS.md, knowledge/rules.md, .claude/rules/*, .kiro/rules/*). Added `gate_instruction_files` as Phase 0 in pre-write.sh. episodes.md exempted. `.skip-instruction-guard` bypass for humans.
+- **Files changed:** `hooks/gate/pre-write.sh` (modified), `tests/instruction-guard/test-write-protection.sh` (new)
+- **Learnings:** Plan test case needed `str_replace` instead of `create` to avoid triggering the plan structure gate (separate concern).
+- **Status:** done

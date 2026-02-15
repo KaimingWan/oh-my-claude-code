@@ -19,6 +19,23 @@ case "$TOOL_NAME" in
 esac
 
 # ============================================================
+# Phase 0: Instruction File Write Protection
+# ============================================================
+gate_instruction_files() {
+  case "$FILE" in
+    CLAUDE.md|./CLAUDE.md|AGENTS.md|./AGENTS.md) ;;
+    knowledge/rules.md|./knowledge/rules.md) ;;
+    .claude/rules/*|.kiro/rules/*) ;;
+    *) return 0 ;;
+  esac
+  # episodes.md is agent-writable
+  case "$FILE" in *episodes.md) return 0 ;; esac
+  [ -f ".skip-instruction-guard" ] && return 0
+  hook_block "🚫 BLOCKED: Cannot modify instruction file: $FILE
+Human-maintained only. Use @reflect for learnings → episodes.md."
+}
+
+# ============================================================
 # Phase 1: Workflow Gate (from require-workflow.sh)
 # ============================================================
 gate_check() {
@@ -210,6 +227,7 @@ Run the command and confirm it passes before checking off."
 }
 
 # --- Execute phases in order ---
+gate_instruction_files
 gate_check
 gate_plan_structure
 gate_checklist
