@@ -366,5 +366,5 @@ Declined changes (by design):
 - [x] context-enrichment.sh no longer has inject_rules | `! grep -q 'inject_rules' hooks/feedback/context-enrichment.sh`
 - [x] enforcement.md updated | `grep -q 'instruction' .kiro/rules/enforcement.md`
 - [x] research skill has sedimentation step | `grep -q '沉淀' skills/research/SKILL.md`
-- [ ] @lint command exists | `test -f commands/lint.md`
-- [ ] Config generation succeeds | `bash scripts/generate-platform-configs.sh`
+- [x] @lint command exists | `test -f commands/lint.md`
+- [x] Config generation succeeds | `bash scripts/generate-platform-configs.sh`

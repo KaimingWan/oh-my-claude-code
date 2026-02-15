@@ -237,3 +237,10 @@
 - **Files changed:** `scripts/generate-platform-configs.sh`, `.kiro/rules/enforcement.md`, `knowledge/INDEX.md`, `skills/research/SKILL.md`, `.claude/settings.json` (regenerated), `.kiro/agents/default.json` (regenerated)
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 35 — 2026-02-16T04:50
+
+- **Task:** Task 7 — Created @lint health check command (CLAUDE.md line count, .claude/rules/ sizes, layer headers, sync check, duplication check).
+- **Files changed:** `commands/lint.md` (new)
+- **Learnings:** None new.
+- **Status:** done
