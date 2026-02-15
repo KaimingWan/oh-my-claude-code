@@ -104,3 +104,10 @@
 - **Files changed:** `commands/plan.md`
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 16 — 2026-02-15T19:47
+
+- **Task:** Renamed planning skill Phase 1.5 title from "Adversarial Review" to "Plan Review", updated description text
+- **Files changed:** `skills/planning/SKILL.md`
+- **Learnings:** None new.
+- **Status:** done

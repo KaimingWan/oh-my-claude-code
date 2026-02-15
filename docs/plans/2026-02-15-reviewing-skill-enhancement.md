@@ -51,7 +51,7 @@ Used old Strengths/Weaknesses/Missing format instead of Phase 1.5 adversarial re
 - [x] AGENTS.md review entry updated | `grep -i "code review" AGENTS.md`
 - [x] commands/plan.md Step 4 references Phase 1.5 | `grep -q "Phase 1.5\|adversarial review\|planning skill" commands/plan.md`
 - [x] commands/plan.md no longer has hardcoded review format | `! grep -q "Strengths.*Weaknesses.*Missing.*Verdict" commands/plan.md`
-- [ ] planning skill Phase 1.5 title says "Plan Review" | `grep -q "## Phase 1.5: Plan Review" skills/planning/SKILL.md`
+- [x] planning skill Phase 1.5 title says "Plan Review" | `grep -q "## Phase 1.5: Plan Review" skills/planning/SKILL.md`
 
 ---
 

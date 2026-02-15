@@ -128,9 +128,9 @@ Expected: PASS
 
 Rules: exact file paths, complete code (not "add validation"), exact commands with expected output.
 
-## Phase 1.5: Adversarial Review
+## Phase 1.5: Plan Review
 
-After writing the plan, run multi-perspective adversarial review before execution.
+After writing the plan, run multi-perspective plan review before execution.
 
 ### Angle Pool
 
