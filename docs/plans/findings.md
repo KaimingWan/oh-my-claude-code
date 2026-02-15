@@ -22,3 +22,9 @@
 - `case "$TOOL_NAME" in ... MODE="bash" / MODE="write"` for tool dispatch
 - Path-based allowlist via `case "$FILE" in` for fs_write (simpler than regex)
 - Strict read-only allowlist + chain rejection for execute_bash (no `&&`, `||`, `;`, `|`, `>`, backticks, `$(`)
+
+## Workspace Hash Isolation for Hook Tests
+
+**Problem:** Integration tests that invoke security hooks directly share the same `/tmp/block-count-<hash>.jsonl` file as live hooks, because both run from the same workspace directory. Counts accumulate across the interactive session and test runs, causing flaky assertions.
+
+**Solution:** Run hook invocations from a `mktemp -d` directory. The `pwd | shasum` in `block-recovery.sh` produces a unique hash, isolating test counts from live session counts. Cleanup via `trap 'rm -rf "$TEST_DIR"' EXIT`.

@@ -153,3 +153,38 @@
 - **Files changed:** `docs/plans/2026-02-15-command-cleanup.md` (checklist update only)
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 23 — 2026-02-16T01:30
+
+- **Task:** Created `hooks/_lib/block-recovery.sh` with `hook_block_with_recovery()` — shared count+retry/skip logic for security hooks
+- **Files changed:** `hooks/_lib/block-recovery.sh` (new)
+- **Learnings:** None new.
+- **Status:** done
+
+## Iteration 24 — 2026-02-16T01:31
+
+- **Task:** Integrated block-recovery into all 4 security hooks (block-dangerous, block-outside-workspace, block-secrets, block-sed-json) with fallback to `hook_block` if block-recovery.sh is missing
+- **Files changed:** `hooks/security/block-dangerous.sh`, `hooks/security/block-outside-workspace.sh`, `hooks/security/block-secrets.sh`, `hooks/security/block-sed-json.sh`
+- **Learnings:** The workspace-root-detection `hook_block` in block-outside-workspace.sh should NOT use recovery (no safe alternative exists), only the actual blocking calls should.
+- **Status:** done
+
+## Iteration 25 — 2026-02-16T01:32
+
+- **Task:** Verified first block outputs RETRY, 3rd block outputs SKIP
+- **Files changed:** `tests/block-recovery/test-retry-output.sh` (new), `tests/block-recovery/test-skip-output.sh` (new)
+- **Learnings:** Live hooks intercept test commands containing dangerous patterns as string literals — use wrapper scripts to avoid live hook interference.
+- **Status:** done
+
+## Iteration 26 — 2026-02-16T01:33
+
+- **Task:** Added security hook recovery rule (rule 8) to ralph-loop.sh prompt
+- **Files changed:** `scripts/ralph-loop.sh`
+- **Learnings:** None new.
+- **Status:** done
+
+## Iteration 27 — 2026-02-16T01:35
+
+- **Task:** Created integration test suite with 6 tests (retry, skip, independent counts, cross-hook recovery, block preserved). Used temp dir for workspace hash isolation to avoid live hook count file interference.
+- **Files changed:** `tests/block-recovery/test-block-recovery.sh` (new)
+- **Learnings:** Tests that invoke hooks directly share the same count file as live hooks when run from the same workspace. Fix: `cd` into a temp dir before invoking hooks so `pwd | shasum` produces a unique hash. This isolates test counts from live session counts.
+- **Status:** done
