@@ -251,3 +251,10 @@
 - **Files changed:** `skills/planning/SKILL.md` (modified), `docs/plans/2026-02-16-planning-execution-resilience.md` (checklist updated)
 - **Learnings:** Items 4-9 were all part of one logical edit (Task 4 — Execution Disciplines block). Batching the insert + verification + checklist update is more efficient than 6 separate iterations.
 - **Status:** done
+
+## Iteration 37 — 2026-02-16T05:18
+
+- **Task:** Added per-iteration timeout and heartbeat to ralph-loop.sh. Added env var overrides (PLAN_POINTER_OVERRIDE, RALPH_TASK_TIMEOUT, RALPH_HEARTBEAT_INTERVAL, RALPH_KIRO_CMD), run_with_timeout function with background watchdog + heartbeat processes, cleanup trap chaining, and KIRO_CMD override for testing.
+- **Files changed:** `scripts/ralph-loop.sh` (modified), `tests/ralph-loop/test-timeout-heartbeat.sh` (new)
+- **Learnings:** The script's `git stash push` stashes uncommitted changes to the script itself, causing self-revert during test runs. Must commit changes before running integration tests that invoke the script. Also, str_replace operations that appear to succeed may silently fail if the old_str doesn't match exactly — always verify with `head`/`grep` after each edit.
+- **Status:** done

@@ -28,3 +28,11 @@
 **Problem:** Integration tests that invoke security hooks directly share the same `/tmp/block-count-<hash>.jsonl` file as live hooks, because both run from the same workspace directory. Counts accumulate across the interactive session and test runs, causing flaky assertions.
 
 **Solution:** Run hook invocations from a `mktemp -d` directory. The `pwd | shasum` in `block-recovery.sh` produces a unique hash, isolating test counts from live session counts. Cleanup via `trap 'rm -rf "$TEST_DIR"' EXIT`.
+
+## Git Stash Self-Revert in ralph-loop.sh
+
+**Problem:** `ralph-loop.sh` runs `git stash push` before each iteration to save dirty state. When testing the script with uncommitted changes to the script itself, the stash reverts those changes mid-execution. The script then runs the old (pre-edit) version.
+
+**Solution:** Always commit changes to `ralph-loop.sh` before running integration tests that invoke it. The `git stash push` inside the script is by design (protects against dirty state during agent runs), so the fix is in the workflow, not the code.
+
+**Rule:** When modifying ralph-loop.sh, commit before testing.

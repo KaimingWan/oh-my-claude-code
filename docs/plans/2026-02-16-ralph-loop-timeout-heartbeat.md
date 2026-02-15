@@ -174,12 +174,12 @@ Expected: PASS
 
 ## Checklist
 
-- [ ] stuck iteration killed within RALPH_TASK_TIMEOUT seconds | `TMPDIR=$(mktemp -d); printf '# T\n\n## Checklist\n\n- [ ] x | \x60echo ok\x60\n' > "$TMPDIR/p.md"; echo "$TMPDIR/p.md" > "$TMPDIR/.active"; printf '#!/bin/bash\nsleep 60\n' > "$TMPDIR/fk.sh"; chmod +x "$TMPDIR/fk.sh"; START=$(date +%s); RALPH_TASK_TIMEOUT=3 RALPH_KIRO_CMD="$TMPDIR/fk.sh" PLAN_POINTER_OVERRIDE="$TMPDIR/.active" bash scripts/ralph-loop.sh 1 >/dev/null 2>&1 || true; ELAPSED=$(( $(date +%s) - START )); rm -rf "$TMPDIR"; test "$ELAPSED" -lt 15`
-- [ ] timeout message printed to stdout | `TMPDIR=$(mktemp -d); printf '# T\n\n## Checklist\n\n- [ ] x | \x60echo ok\x60\n' > "$TMPDIR/p.md"; echo "$TMPDIR/p.md" > "$TMPDIR/.active"; printf '#!/bin/bash\nsleep 60\n' > "$TMPDIR/fk.sh"; chmod +x "$TMPDIR/fk.sh"; OUT=$(RALPH_TASK_TIMEOUT=3 RALPH_KIRO_CMD="$TMPDIR/fk.sh" PLAN_POINTER_OVERRIDE="$TMPDIR/.active" bash scripts/ralph-loop.sh 1 2>&1 || true); rm -rf "$TMPDIR"; echo "$OUT" | grep -q "timed out"`
-- [ ] heartbeat printed every RALPH_HEARTBEAT_INTERVAL seconds | `TMPDIR=$(mktemp -d); printf '# T\n\n## Checklist\n\n- [ ] x | \x60echo ok\x60\n' > "$TMPDIR/p.md"; echo "$TMPDIR/p.md" > "$TMPDIR/.active"; printf '#!/bin/bash\nsleep 60\n' > "$TMPDIR/fk.sh"; chmod +x "$TMPDIR/fk.sh"; OUT=$(RALPH_TASK_TIMEOUT=6 RALPH_HEARTBEAT_INTERVAL=2 RALPH_KIRO_CMD="$TMPDIR/fk.sh" PLAN_POINTER_OVERRIDE="$TMPDIR/.active" bash scripts/ralph-loop.sh 1 2>&1 || true); rm -rf "$TMPDIR"; echo "$OUT" | grep -q "💓"`
-- [ ] default timeout is 1800s (30min) | `grep -q 'RALPH_TASK_TIMEOUT:-1800' scripts/ralph-loop.sh`
-- [ ] default heartbeat is 180s (3min) | `grep -q 'RALPH_HEARTBEAT_INTERVAL:-180' scripts/ralph-loop.sh`
-- [ ] existing tests still pass | `bash tests/ralph-loop/test-enforcement.sh 2>&1 | tail -1 | grep -q "全部通过"`
+- [x] stuck iteration killed within RALPH_TASK_TIMEOUT seconds | `TMPDIR=$(mktemp -d); printf '# T\n\n## Checklist\n\n- [ ] x | \x60echo ok\x60\n' > "$TMPDIR/p.md"; echo "$TMPDIR/p.md" > "$TMPDIR/.active"; printf '#!/bin/bash\nsleep 60\n' > "$TMPDIR/fk.sh"; chmod +x "$TMPDIR/fk.sh"; START=$(date +%s); RALPH_TASK_TIMEOUT=3 RALPH_KIRO_CMD="$TMPDIR/fk.sh" PLAN_POINTER_OVERRIDE="$TMPDIR/.active" bash scripts/ralph-loop.sh 1 >/dev/null 2>&1 || true; ELAPSED=$(( $(date +%s) - START )); rm -rf "$TMPDIR"; test "$ELAPSED" -lt 15`
+- [x] timeout message printed to stdout | `TMPDIR=$(mktemp -d); printf '# T\n\n## Checklist\n\n- [ ] x | \x60echo ok\x60\n' > "$TMPDIR/p.md"; echo "$TMPDIR/p.md" > "$TMPDIR/.active"; printf '#!/bin/bash\nsleep 60\n' > "$TMPDIR/fk.sh"; chmod +x "$TMPDIR/fk.sh"; OUT=$(RALPH_TASK_TIMEOUT=3 RALPH_KIRO_CMD="$TMPDIR/fk.sh" PLAN_POINTER_OVERRIDE="$TMPDIR/.active" bash scripts/ralph-loop.sh 1 2>&1 || true); rm -rf "$TMPDIR"; echo "$OUT" | grep -q "timed out"`
+- [x] heartbeat printed every RALPH_HEARTBEAT_INTERVAL seconds | `TMPDIR=$(mktemp -d); printf '# T\n\n## Checklist\n\n- [ ] x | \x60echo ok\x60\n' > "$TMPDIR/p.md"; echo "$TMPDIR/p.md" > "$TMPDIR/.active"; printf '#!/bin/bash\nsleep 60\n' > "$TMPDIR/fk.sh"; chmod +x "$TMPDIR/fk.sh"; OUT=$(RALPH_TASK_TIMEOUT=6 RALPH_HEARTBEAT_INTERVAL=2 RALPH_KIRO_CMD="$TMPDIR/fk.sh" PLAN_POINTER_OVERRIDE="$TMPDIR/.active" bash scripts/ralph-loop.sh 1 2>&1 || true); rm -rf "$TMPDIR"; echo "$OUT" | grep -q "💓"`
+- [x] default timeout is 1800s (30min) | `grep -q 'RALPH_TASK_TIMEOUT:-1800' scripts/ralph-loop.sh`
+- [x] default heartbeat is 180s (3min) | `grep -q 'RALPH_HEARTBEAT_INTERVAL:-180' scripts/ralph-loop.sh`
+- [x] existing tests still pass | `bash tests/ralph-loop/test-enforcement.sh 2>&1 | tail -1 | grep -q "全部通过"`
 
 ## Review
 

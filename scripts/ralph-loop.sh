@@ -5,7 +5,10 @@
 set -euo pipefail
 
 MAX_ITERATIONS="${1:-10}"
-PLAN_POINTER="docs/plans/.active"
+PLAN_POINTER="${PLAN_POINTER_OVERRIDE:-docs/plans/.active}"
+TASK_TIMEOUT="${RALPH_TASK_TIMEOUT:-1800}"
+HEARTBEAT_INTERVAL="${RALPH_HEARTBEAT_INTERVAL:-180}"
+KIRO_CMD="${RALPH_KIRO_CMD:-}"
 STALE_ROUNDS=0
 MAX_STALE=3
 
@@ -35,8 +38,43 @@ LOCK_FILE=".ralph-loop.lock"
 
 # --- Lock file: signals to hooks that ralph-loop is active ---
 echo "$$" > "$LOCK_FILE"
-cleanup_lock() { rm -f "$LOCK_FILE"; }
-trap cleanup_lock EXIT
+CMD_PID=""
+cleanup() {
+  rm -f "$LOCK_FILE"
+  [ -n "${CMD_PID:-}" ] && kill "$CMD_PID" 2>/dev/null || true
+}
+trap 'cleanup' EXIT
+
+# --- Timeout + heartbeat wrapper ---
+run_with_timeout() {
+  local timeout_secs="$1" hb_interval="$2" iteration="$3"
+
+  (
+    elapsed=0
+    while kill -0 "$CMD_PID" 2>/dev/null; do
+      sleep "$hb_interval"
+      elapsed=$((elapsed + hb_interval))
+      kill -0 "$CMD_PID" 2>/dev/null && \
+        echo "💓 [$(date '+%H:%M:%S')] Iteration $iteration — running (elapsed ${elapsed}s)"
+    done
+  ) &
+  local HB_PID=$!
+
+  (
+    sleep "$timeout_secs"
+    if kill -0 "$CMD_PID" 2>/dev/null; then
+      echo "⏰ Iteration $iteration timed out after ${timeout_secs}s — killing"
+      kill "$CMD_PID" 2>/dev/null
+    fi
+  ) &
+  local WD_PID=$!
+
+  wait "$CMD_PID" 2>/dev/null || true
+  CMD_PID=""
+
+  kill "$HB_PID" 2>/dev/null; wait "$HB_PID" 2>/dev/null || true
+  kill "$WD_PID" 2>/dev/null; wait "$WD_PID" 2>/dev/null || true
+}
 
 echo "🔄 Ralph Loop — Plan: $PLAN_FILE"
 echo "   Max iterations: $MAX_ITERATIONS"
@@ -78,7 +116,7 @@ EOF
   echo "$summary"
   echo "==============================================================="
 }
-trap write_summary EXIT
+trap 'write_summary; cleanup' EXIT
 
 PREV_CHECKED=0
 
@@ -148,8 +186,14 @@ Rules:
 7. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next.
 8. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command. If blocked 3+ times on the same item, mark it as '- [SKIP] blocked by security hook' and continue."
 
-  # --- Launch fresh Kiro instance (output to log, not stdout) ---
-  kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" >> "$LOG_FILE" 2>&1 || true
+  # --- Launch fresh Kiro instance with timeout + heartbeat ---
+  if [ -n "$KIRO_CMD" ]; then
+    $KIRO_CMD >> "$LOG_FILE" 2>&1 &
+  else
+    kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" >> "$LOG_FILE" 2>&1 &
+  fi
+  CMD_PID=$!
+  run_with_timeout "$TASK_TIMEOUT" "$HEARTBEAT_INTERVAL" "$i"
 
   sleep 2
 done
