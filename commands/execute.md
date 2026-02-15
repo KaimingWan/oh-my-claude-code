@@ -15,7 +15,7 @@ The plan MUST contain a `## Checklist` section with at least one `- [ ]` item. I
 
 ## Step 3: Launch Ralph Loop
 
-Run:
+Run **foreground** (NEVER use `nohup &` — you need to see the exit summary):
 ```bash
 ./scripts/ralph-loop.sh
 ```
@@ -25,10 +25,11 @@ This bash script will:
 - Each iteration spawns a fresh Kiro CLI instance with clean context
 - Circuit breaker: exits if 3 consecutive rounds make no progress
 - Agent stopping is fine — the loop restarts a new instance
+- On exit (success or failure), prints a full summary to stdout
 
 ## Step 4: Report Results
 
-After ralph-loop.sh exits, report:
+The script prints a summary block on exit. Use that output to report:
 - How many checklist items completed vs total
 - Any `- [SKIP]` items with reasons
 - Read skills/finishing/SKILL.md for merge/PR/cleanup options

@@ -97,6 +97,8 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 | Hook | What It Does |
 |------|-------------|
 | `gate/require-workflow.sh` | Blocks new source files without a reviewed plan (4h window, configurable) |
+| `gate/plan-structure.sh` | Validates plan has Tasks, Verify commands, and Checklist with executable verify |
+| `gate/checklist-gate.sh` | Blocks checklist check-off without recent successful verify command execution |
 | `security/block-dangerous.sh` | Blocks `rm -rf`, `sudo`, `curl\|bash`, force push, etc. |
 | `security/block-secrets.sh` | Scans for API keys, private keys before git commit/push |
 | `security/block-sed-json.sh` | Blocks sed/awk on JSON files — use jq instead |
@@ -110,7 +112,8 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 | `feedback/auto-lint.sh` | Runs linter after file writes |
 | `feedback/inject-plan-context.sh` | PreToolUse[write]: injects plan checklist into context (Read Before Decide) |
 | `feedback/remind-update-progress.sh` | PostToolUse[write]: reminds to update progress.md after file changes |
-| `feedback/verify-completion.sh` | Stop hook: checks plan checklist for unchecked items |
+| `feedback/verify-completion.sh` | Stop hook: checks plan checklist + re-runs all verify commands |
+| `feedback/post-bash.sh` | PostToolUse[bash]: logs command execution for verify evidence |
 | `feedback/context-enrichment.sh` | Correction detection + unfinished task resume + keyword-matched rules injection |
 
 ## Skills (9 Core)

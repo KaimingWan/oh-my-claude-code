@@ -28,9 +28,51 @@ if [ "${TOTAL:-0}" -eq 0 ]; then
   exit 1
 fi
 
+SUMMARY_FILE="docs/plans/.ralph-result"
+
+LOG_FILE=".ralph-loop.log"
+
 echo "🔄 Ralph Loop — Plan: $PLAN_FILE"
 echo "   Max iterations: $MAX_ITERATIONS"
+echo "   Log: $LOG_FILE"
 echo ""
+
+# --- Write summary on exit ---
+write_summary() {
+  local exit_code=$?
+  local checked unchecked
+  checked=$(grep -c '^\- \[x\]' "$PLAN_FILE" 2>/dev/null || true)
+  unchecked=$(grep -c '^\- \[ \]' "$PLAN_FILE" 2>/dev/null || true)
+  local skipped
+  skipped=$(grep -c '^\- \[SKIP\]' "$PLAN_FILE" 2>/dev/null || true)
+
+  local status="❌ FAILED"
+  [ "$exit_code" -eq 0 ] && status="✅ SUCCESS"
+
+  # Build summary content
+  local summary
+  summary="$(cat <<EOF
+# Ralph Loop Result
+
+- **Status:** $status (exit $exit_code)
+- **Plan:** $PLAN_FILE
+- **Completed:** $checked
+- **Remaining:** $unchecked
+- **Skipped:** $skipped
+- **Finished at:** $(date '+%Y-%m-%d %H:%M:%S')
+
+$([ "${unchecked:-0}" -gt 0 ] && echo "## Remaining Items" && grep '^\- \[ \]' "$PLAN_FILE" || true)
+$([ "${skipped:-0}" -gt 0 ] && echo "## Skipped Items" && grep '^\- \[SKIP\]' "$PLAN_FILE" || true)
+EOF
+)"
+  # Write to file AND stdout so caller always sees the result
+  echo "$summary" > "$SUMMARY_FILE"
+  echo ""
+  echo "==============================================================="
+  echo "$summary"
+  echo "==============================================================="
+}
+trap write_summary EXIT
 
 PREV_CHECKED=0
 
@@ -99,8 +141,8 @@ Rules:
 6. Continue with next unchecked item. Do NOT stop while unchecked items remain.
 7. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next."
 
-  # --- Launch fresh Kiro instance ---
-  kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 || true
+  # --- Launch fresh Kiro instance (output to log, not stdout) ---
+  kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" >> "$LOG_FILE" 2>&1 || true
 
   sleep 2
 done
