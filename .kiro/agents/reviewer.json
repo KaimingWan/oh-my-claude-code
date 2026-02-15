@@ -44,6 +44,12 @@
         "command": "hooks/security/block-outside-workspace.sh"
       }
     ],
+    "postToolUse": [
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/feedback/post-bash.sh"
+      }
+    ],
     "stop": [
       {
         "command": "echo '📋 Review checklist: correctness, security, edge cases, test coverage?'"

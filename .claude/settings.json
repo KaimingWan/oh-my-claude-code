@@ -64,6 +64,15 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/post-write.sh"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/post-bash.sh"
+          }
+        ]
       }
     ],
     "Stop": [

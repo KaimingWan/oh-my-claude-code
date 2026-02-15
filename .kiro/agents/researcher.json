@@ -56,6 +56,12 @@
         "command": "hooks/security/block-outside-workspace.sh"
       }
     ],
+    "postToolUse": [
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/feedback/post-bash.sh"
+      }
+    ],
     "stop": [
       {
         "command": "echo '📝 Research complete. Did you: cite sources, cross-verify, report gaps?'"

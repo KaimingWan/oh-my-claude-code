@@ -34,3 +34,10 @@
 - **Files changed:** `agents/reviewer-prompt.md` (modified)
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 6 — 2026-02-15T13:02
+
+- **Task:** Mounted post-bash.sh hook to all agent configs (default, reviewer, researcher) and updated generate-platform-configs.sh as single source of truth
+- **Files changed:** `.kiro/agents/default.json`, `.kiro/agents/reviewer.json`, `.kiro/agents/researcher.json`, `scripts/generate-platform-configs.sh`, `.claude/settings.json` (regenerated)
+- **Learnings:** Always update generate-platform-configs.sh AND run it — it's the source of truth and will overwrite manual JSON edits.
+- **Status:** done

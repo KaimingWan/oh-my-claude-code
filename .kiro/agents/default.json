@@ -48,6 +48,10 @@
       {
         "matcher": "fs_write",
         "command": "hooks/feedback/post-write.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/feedback/post-bash.sh"
       }
     ],
     "stop": [

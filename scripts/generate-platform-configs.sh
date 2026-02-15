@@ -36,12 +36,20 @@ jq -n '{
         ]
       }
     ],
-    PostToolUse: [{
-      matcher: "Write|Edit",
-      hooks: [
-        {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/post-write.sh"}
-      ]
-    }],
+    PostToolUse: [
+      {
+        matcher: "Write|Edit",
+        hooks: [
+          {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/post-write.sh"}
+        ]
+      },
+      {
+        matcher: "Bash",
+        hooks: [
+          {type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/post-bash.sh"}
+        ]
+      }
+    ],
     Stop: [{
       hooks: [{type: "command", command: "bash \"$CLAUDE_PROJECT_DIR\"/hooks/feedback/verify-completion.sh"}]
     }]
@@ -75,7 +83,8 @@ jq -n '{
       {matcher: "fs_write", command: "hooks/gate/pre-write.sh"}
     ],
     postToolUse: [
-      {matcher: "fs_write", command: "hooks/feedback/post-write.sh"}
+      {matcher: "fs_write", command: "hooks/feedback/post-write.sh"},
+      {matcher: "execute_bash", command: "hooks/feedback/post-bash.sh"}
     ],
     stop: [{command: "hooks/feedback/verify-completion.sh"}]
   },
@@ -126,6 +135,7 @@ jq -n '{
   hooks: {
     agentSpawn: [{command: "echo '\''🔍 REVIEWER: 1) Run git diff first 2) Categorize: Critical/Warning/Suggestion 3) Be specific 4) Never rubber-stamp'\''"}],
     preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}, {matcher: "execute_bash", command: "hooks/security/block-outside-workspace.sh"}, {matcher: "fs_write", command: "hooks/security/block-outside-workspace.sh"}],
+    postToolUse: [{matcher: "execute_bash", command: "hooks/feedback/post-bash.sh"}],
     stop: [{command: "echo '\''📋 Review checklist: correctness, security, edge cases, test coverage?'\''"}]
   },
   includeMcpJson: true,
@@ -159,6 +169,7 @@ jq -n '{
   hooks: {
     agentSpawn: [{command: "echo '\''🔬 RESEARCHER: 1) Cite sources 2) Cross-verify claims 3) Report gaps explicitly'\''"}],
     preToolUse: [{matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"}, {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"}, {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"}, {matcher: "execute_bash", command: "hooks/security/block-outside-workspace.sh"}, {matcher: "fs_write", command: "hooks/security/block-outside-workspace.sh"}],
+    postToolUse: [{matcher: "execute_bash", command: "hooks/feedback/post-bash.sh"}],
     stop: [{command: "echo '\''📝 Research complete. Did you: cite sources, cross-verify, report gaps?'\''"}]
   },
   includeMcpJson: true,
