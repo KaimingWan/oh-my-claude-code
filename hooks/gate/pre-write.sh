@@ -123,8 +123,55 @@ inject_plan_context() {
   fi
 }
 
+# ============================================================
+# Phase 1.5: Checklist Check-off Gate
+# ============================================================
+gate_checklist() {
+  case "$FILE" in
+    docs/plans/*.md) ;;
+    *) return 0 ;;
+  esac
+
+  echo "$CONTENT" | grep -q '\- \[x\]' || return 0
+
+  WS_HASH=$(pwd | shasum 2>/dev/null | cut -c1-8 || echo "default")
+  LOG_FILE="/tmp/verify-log-${WS_HASH}.jsonl"
+  NOW=$(date +%s)
+  WINDOW=600
+
+  # Use process substitution to avoid subshell from pipe
+  while IFS= read -r line; do
+    VERIFY_CMD=$(echo "$line" | sed -n 's/.*| `\(.*\)`$/\1/p')
+
+    if [ -z "$VERIFY_CMD" ]; then
+      hook_block "🚫 BLOCKED: Checklist item checked without verify command.
+Item: $line
+Required format: - [ ] description | \`verify command\`"
+    fi
+
+    CMD_HASH=$(echo "$VERIFY_CMD" | shasum 2>/dev/null | cut -c1-40)
+    if [ ! -f "$LOG_FILE" ]; then
+      hook_block "🚫 BLOCKED: No verify execution log found. Run the verify command first.
+Item: $line
+Command: $VERIFY_CMD"
+    fi
+
+    RECENT=$(jq -r --arg h "$CMD_HASH" --argjson now "$NOW" --argjson w "$WINDOW" \
+      'select(.cmd_hash == $h and .exit_code == 0 and ($now - .ts) < $w)' \
+      "$LOG_FILE" 2>/dev/null | head -1)
+
+    if [ -z "$RECENT" ]; then
+      hook_block "🚫 BLOCKED: Verify command not recently executed (or failed).
+Item: $line
+Command: $VERIFY_CMD
+Run the command and confirm it passes before checking off."
+    fi
+  done < <(echo "$CONTENT" | grep '\- \[x\]')
+}
+
 # --- Execute phases in order ---
 gate_check
+gate_checklist
 scan_content
 inject_plan_context || true
 
