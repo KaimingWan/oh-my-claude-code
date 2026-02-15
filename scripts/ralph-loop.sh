@@ -24,6 +24,13 @@ if [ ! -f "$PLAN_FILE" ]; then
   exit 1
 fi
 
+# --- Reject dirty working tree ---
+if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+  echo "❌ Dirty working tree. Commit or stash changes before running ralph-loop."
+  git status --short
+  exit 1
+fi
+
 # --- Verify checklist exists ---
 TOTAL=$(grep -c '^\- \[[ x]\]' "$PLAN_FILE" 2>/dev/null || true)
 if [ "${TOTAL:-0}" -eq 0 ]; then
@@ -149,11 +156,6 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
   echo "==============================================================="
   echo " Iteration $i/$MAX_ITERATIONS — $UNCHECKED remaining, $CHECKED done"
   echo "==============================================================="
-
-  # --- Stash dirty state ---
-  if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
-    git stash push -m "ralph-loop-iter-$i" 2>/dev/null || true
-  fi
 
   # --- Derive memory files from plan directory ---
   PLAN_DIR="$(dirname "$PLAN_FILE")"
