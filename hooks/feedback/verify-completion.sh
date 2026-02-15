@@ -1,6 +1,6 @@
 #!/bin/bash
 # verify-completion.sh — Stop hook
-# Simple: check active plan's checklist. Unchecked items = not done.
+# Check active plan's checklist + re-run all verify commands.
 source "$(dirname "$0")/../_lib/common.sh"
 
 # Check active plan checklist
@@ -17,6 +17,26 @@ if [ -n "$ACTIVE_PLAN" ] && [ -f "$ACTIVE_PLAN" ]; then
     grep '^\- \[ \]' "$ACTIVE_PLAN"
     exit 0
   fi
+
+  # Re-run all verify commands from checked items
+  FAILED=0
+  TOTAL=0
+  while IFS= read -r line; do
+    VERIFY_CMD=$(echo "$line" | sed -n 's/.*| `\(.*\)`$/\1/p')
+    [ -z "$VERIFY_CMD" ] && continue
+    TOTAL=$((TOTAL + 1))
+    if ! timeout 30 bash -c "$VERIFY_CMD" > /dev/null 2>&1; then
+      FAILED=$((FAILED + 1))
+      echo "❌ VERIFY FAILED: $VERIFY_CMD"
+      echo "   Item: $line"
+    fi
+  done < <(sed -n '/^## Checklist/,/^## /p' "$ACTIVE_PLAN" | grep '^\- \[x\]')
+
+  [ "$FAILED" -gt 0 ] && echo "🚫 $FAILED/$TOTAL verify commands failed. Work is NOT complete."
+
+  # Cleanup verify log
+  WS_HASH=$(pwd | shasum 2>/dev/null | cut -c1-8 || echo "default")
+  [ -f "/tmp/verify-log-${WS_HASH}.jsonl" ] && : > "/tmp/verify-log-${WS_HASH}.jsonl"
 fi
 
 # Run tests if available

@@ -20,3 +20,10 @@
 - **Files changed:** `hooks/gate/pre-write.sh` (modified)
 - **Learnings:** `printf` with `\\n` in JSON works for test inputs. The `sed -n '/^## Checklist/,/^## /p'` pattern correctly extracts section content between headers.
 - **Status:** done
+
+## Iteration 4 — 2026-02-15T12:59
+
+- **Task:** Enhanced `hooks/feedback/verify-completion.sh` — re-runs all verify commands from checked checklist items with 30s timeout, reports failures, cleans up verify log
+- **Files changed:** `hooks/feedback/verify-completion.sh` (modified)
+- **Learnings:** Same process substitution pattern needed here to avoid subshell issue with while loop.
+- **Status:** done
