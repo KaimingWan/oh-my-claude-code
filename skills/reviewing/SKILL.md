@@ -22,6 +22,25 @@ Dispatch reviewer subagent with:
 3. Play devil's advocate
 4. Output: Strengths / Weaknesses / Missing / Verdict (APPROVE or REQUEST CHANGES)
 
+### Angle-Based Plan Review
+
+When dispatched with a specific review angle, follow this protocol:
+
+1. Read the review packet (plan header + checklist + context summary)
+2. Review ONLY from your assigned angle — go deep, not broad
+3. Challenge aggressively from that angle: find real problems, not theoretical ones
+4. Output in this exact format:
+
+```
+- Mission: [your assigned angle]
+- Findings: [list each specific finding]
+- Verdict: APPROVE or REJECT with specific reasons
+```
+
+**Calibration:** REJECT only for issues that would cause the plan to fail or produce wrong results. Do NOT reject for style preferences, theoretical risks unlikely in practice, or nice-to-have features. The bar is "would this plan produce a 90/100 result?" — not perfection.
+
+**Mission / Findings / Verdict** — every review must contain all three. Missing any = malformed output.
+
 ### Code Review Mode
 1. Run `git diff --stat` then `git diff`
 2. Categorize: P0 Critical / P1 High / P2 Medium / P3 Low

@@ -39,6 +39,8 @@ After questions are answered, judge whether research is needed:
 - **Both:** When the task combines internal changes with external dependencies (e.g., adding OAuth to an existing auth module)
 - **Skip:** When you have sufficient understanding (e.g., renaming a variable, fixing a typo, simple refactors with clear scope)
 
+**Research dimension principle:** When research IS needed, cover both theoretical foundations (papers, docs, design rationale) AND engineering practice (real implementations, battle-tested patterns, known pitfalls). One without the other leads to either ivory-tower designs or cargo-culted solutions.
+
 This is your judgment call — not every plan needs research.
 
 ### Step 4: Supplementary Questions (if any)
@@ -125,6 +127,74 @@ Expected: PASS
 ```
 
 Rules: exact file paths, complete code (not "add validation"), exact commands with expected output.
+
+## Phase 1.5: Adversarial Review
+
+After writing the plan, run multi-perspective adversarial review before execution.
+
+### Angle Pool
+
+Each reviewer is assigned one angle with a specific mission:
+
+| Angle | Mission | Output |
+|-------|---------|--------|
+| Technical Feasibility | Can this be built? API limits, dependency risks, integration complexity | Risks / Blockers / Verdict |
+| Completeness | Missing steps, unhandled edge cases, gaps in coverage | Missing Items / Edge Cases / Verdict |
+| Over-engineering (YAGNI) | Is anything unnecessary? Could scope be reduced? | Unnecessary Items / Simplification Suggestions / Verdict |
+| Security | Auth, data exposure, injection surfaces, secrets handling | Findings by Category / Severity / Verdict |
+| Testability | Are checklist verify commands adequate? Can failures be detected? | Weak Verifications / Suggested Improvements / Verdict |
+| Compatibility | Does this break existing behavior? Migration risks? | Breaking Changes / Migration Risks / Verdict |
+| Rollback Safety | What if this fails in practice? Can it be reverted? | Failure Modes / Rollback Strategy / Verdict |
+| Performance | N+1 calls, expensive loops, context window bloat | Bottlenecks / Recommendations / Verdict |
+| Clarity | Is the plan unambiguous? Could another agent execute it without questions? | Ambiguous Sections / Rewording Suggestions / Verdict |
+
+### Angle Selection Guide
+
+Select 3-7 angles based on plan complexity:
+
+| Plan Characteristic | Recommended Angles | Count |
+|--------------------|--------------------|-------|
+| Single file, simple change | Completeness, Testability, Clarity | 3 |
+| Multi-file, internal refactor | Completeness, Compatibility, Testability, Clarity | 4 |
+| New feature, touches APIs/deps | Technical Feasibility, Completeness, Testability, Over-engineering, Compatibility | 5 |
+| Security-sensitive (auth, hooks, permissions) | Security, Technical Feasibility, Completeness, Testability, Rollback Safety, Compatibility | 6 |
+| Architecture change, multi-module | All relevant from pool, up to 7 | 7 |
+
+Agent uses this as guidance, not rigid rules. Must explain angle choices.
+
+### Orchestration
+
+1. Assess plan complexity (by file count, scope, risk areas) → select 3-7 angles
+2. Dispatch reviewer subagents in parallel batches of 4 (tool hard limit). If N > 4, dispatch 4 then remainder.
+3. Each reviewer receives a review packet: plan Goal/Architecture/Tech Stack (verbatim) + full Checklist + 3-sentence context summary
+4. Reviewers in the same round do NOT see each other's feedback
+5. Collect all verdicts. If ANY reviewer REJECTs → fix issues → select different angles than the immediately previous round (can reuse older rounds) → next round
+6. Repeat until all APPROVE in a single round, or 5 rounds reached
+7. After 5 rounds: stop and tell user "Plan too complex for automated review. Consider breaking into smaller plans."
+
+### Reviewer Calibration
+
+Reviewers should REJECT only for issues that would cause the plan to fail or produce wrong results. Do NOT reject for:
+- Style preferences or alternative approaches that are equally valid
+- Theoretical risks that are unlikely in practice
+- Missing features that are nice-to-have but not required for the plan's stated goal
+
+The bar is "would this plan produce a 90/100 result?" not "is this plan perfect?"
+
+### Conflict Resolution
+
+When reviewers give contradictory feedback (e.g., YAGNI says "remove X" while Feasibility says "X is critical"):
+1. Main agent compares both arguments against the plan's **Goal** statement (the one-sentence goal in the plan header)
+2. The argument that directly serves the stated Goal statement wins
+3. Document the conflict, both arguments, and the resolution in the plan's Review section
+4. If both arguments equally serve the goal, ask the user to decide
+
+### Resource Constraints
+
+- **Max parallel subagents per batch**: 4 (tool hard limit). If N > 4 angles, dispatch in batches of 4 then remainder.
+- **Reviewer context isolation**: Reviewers in the same round do NOT see each other's feedback. Each gets only the review packet.
+- **Context size**: Review packet = plan header (Goal/Architecture/Tech Stack) + full Checklist + 3-sentence context summary. Not the entire plan.
+- **Error handling**: If a reviewer crashes or returns malformed output, continue with remaining reviewers. If fewer than half of the round's reviewers complete, restart the round. Malformed = missing Mission/Findings/Verdict structure.
 
 ## Phase 2: Execution
 
