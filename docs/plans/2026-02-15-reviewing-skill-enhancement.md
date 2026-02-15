@@ -44,10 +44,10 @@ Used old Strengths/Weaknesses/Missing format instead of Phase 1.5 adversarial re
 - [x] SKILL.md contains no plan review content | `! grep -qi "plan review" skills/reviewing/SKILL.md`
 - [x] SKILL.md references all 5 reference files | `for f in solid-checklist security-checklist code-quality-checklist removal-plan output-format; do grep -q "$f" skills/reviewing/SKILL.md || exit 1; done`
 - [x] All 5 reference files exist | `ls skills/reviewing/references/solid-checklist.md skills/reviewing/references/security-checklist.md skills/reviewing/references/code-quality-checklist.md skills/reviewing/references/removal-plan.md skills/reviewing/references/output-format.md`
-- [ ] Old reference.md removed | `! test -f skills/reviewing/reference.md`
-- [ ] SKILL.md has 7-step code review flow | `grep -c "^### [0-9])" skills/reviewing/SKILL.md | grep -q "[7-9]"`
-- [ ] Receiving Review has YAGNI check | `grep -qi "yagni" skills/reviewing/SKILL.md`
-- [ ] Receiving Review has implementation order | `grep -qi "implementation order\|blocking.*simple.*complex" skills/reviewing/SKILL.md`
+- [x] Old reference.md removed | `! test -f skills/reviewing/reference.md`
+- [x] SKILL.md has 7-step code review flow | `grep -c "^### [0-9])" skills/reviewing/SKILL.md | grep -q "[7-9]"`
+- [x] Receiving Review has YAGNI check | `grep -qi "yagni" skills/reviewing/SKILL.md`
+- [x] Receiving Review has implementation order | `grep -qi "implementation order\|blocking.*simple.*complex" skills/reviewing/SKILL.md`
 - [ ] AGENTS.md review entry updated | `grep -i "code review" AGENTS.md`
 - [ ] commands/plan.md Step 4 references Phase 1.5 | `grep -q "Phase 1.5\|adversarial review\|planning skill" commands/plan.md`
 - [ ] commands/plan.md no longer has hardcoded review format | `! grep -q "Strengths.*Weaknesses.*Missing.*Verdict" commands/plan.md`

@@ -83,3 +83,10 @@
 - **Files changed:** `skills/reviewing/SKILL.md` (rewritten), `skills/reviewing/references/solid-checklist.md` (new), `skills/reviewing/references/security-checklist.md` (new), `skills/reviewing/references/code-quality-checklist.md` (new), `skills/reviewing/references/removal-plan.md` (new), `skills/reviewing/references/output-format.md` (new)
 - **Learnings:** Tackling dependent checklist items together (reference files + SKILL.md rewrite) is more efficient than one-at-a-time when they share the same task scope.
 - **Status:** done
+
+## Iteration 13 — 2026-02-15T19:44
+
+- **Task:** Removed old `skills/reviewing/reference.md`, marked 7-step/YAGNI/impl-order items as done (already passing from iteration 12)
+- **Files changed:** `skills/reviewing/reference.md` (deleted)
+- **Learnings:** None new.
+- **Status:** done
