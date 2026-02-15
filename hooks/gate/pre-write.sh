@@ -141,6 +141,18 @@ inject_plan_context() {
 }
 
 # ============================================================
+# Phase 1.5a0: Brainstorming Gate
+# ============================================================
+gate_brainstorm() {
+  case "$FILE" in docs/plans/*.md) ;; *) return 0 ;; esac
+  [ "$COMMAND" = "create" ] || [ "$TOOL_NAME" = "Write" ] || return 0
+  [ -f ".skip-plan" ] && return 0
+  [ -f ".brainstorm-confirmed" ] && return 0
+  hook_block "🚫 BLOCKED: Creating plan without brainstorming confirmation.
+Run brainstorming first and confirm direction with user."
+}
+
+# ============================================================
 # Phase 1.5a: Plan Structure Static Rubric
 # ============================================================
 gate_plan_structure() {
@@ -229,6 +241,7 @@ Run the command and confirm it passes before checking off."
 # --- Execute phases in order ---
 gate_instruction_files
 gate_check
+gate_brainstorm
 gate_plan_structure
 gate_checklist
 scan_content

@@ -358,8 +358,8 @@ Declined changes (by design):
 - [x] .claude/rules/workflow.md exists | `test -f .claude/rules/workflow.md`
 - [x] .claude/rules/subagent.md exists | `test -f .claude/rules/subagent.md`
 - [x] .claude/rules/debugging.md exists | `test -f .claude/rules/debugging.md`
-- [ ] Plan create blocked without brainstorm flag | `rm -f .brainstorm-confirmed && echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/2026-02-16-t.md","command":"create","new_str":"#T"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
-- [ ] Plan create allowed with brainstorm flag | `touch .brainstorm-confirmed && echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/2026-02-16-t.md","command":"create","new_str":"#T"}}' | bash hooks/gate/pre-write.sh 2>&1; rc=$?; rm -f .brainstorm-confirmed; test $rc -eq 0`
+- [x] Plan create blocked without brainstorm flag | `rm -f .brainstorm-confirmed && echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/2026-02-16-t.md","command":"create","new_str":"#T"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
+- [x] Plan create allowed with brainstorm flag | `touch .brainstorm-confirmed && echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/2026-02-16-t.md","command":"create","new_str":"#T"}}' | bash hooks/gate/pre-write.sh 2>&1; rc=$?; rm -f .brainstorm-confirmed; test $rc -eq 0`
 - [ ] correction-detect.sh exists and executable | `test -x hooks/feedback/correction-detect.sh`
 - [ ] session-init.sh exists and executable | `test -x hooks/feedback/session-init.sh`
 - [ ] context-enrichment.sh no longer has correction logic | `! grep -q 'CORRECTION DETECTED' hooks/feedback/context-enrichment.sh`

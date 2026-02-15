@@ -1,7 +1,7 @@
 You MUST follow this exact sequence. Do NOT skip or reorder any step.
 
 ## Step 1: Brainstorming (skill: brainstorming)
-Read skills/brainstorming/SKILL.md, then explore the user's intent, requirements, and constraints. Ask clarifying questions one at a time. Do NOT proceed until the user confirms the direction.
+Read skills/brainstorming/SKILL.md, then explore the user's intent, requirements, and constraints. Ask clarifying questions one at a time. Do NOT proceed until the user confirms the direction. After user confirms: `touch .brainstorm-confirmed`
 
 ## Step 2: Writing Plan (skill: planning)
 Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, an empty ## Review section, and a ## Checklist section with all acceptance criteria as `- [ ]` items. The checklist is the contract — @execute will not proceed without it.
@@ -25,7 +25,8 @@ Show the final plan with reviewer verdict. Ask user to confirm before any implem
 ## Step 7: Hand Off to Execute
 After user confirms:
 1. Write the plan file path to `docs/plans/.active` (e.g., `echo "docs/plans/2026-02-14-feature-x.md" > docs/plans/.active`)
-2. Tell the user to run `@execute` to start implementation with Ralph Loop discipline (no unnecessary stops, one task at a time, commit after each).
+2. Clean up: `unlink .brainstorm-confirmed 2>/dev/null || true`
+3. Tell the user to run `@execute` to start implementation with Ralph Loop discipline (no unnecessary stops, one task at a time, commit after each).
 
 ---
 User's requirement:

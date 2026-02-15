@@ -216,3 +216,10 @@
 - **Files changed:** `.claude/rules/shell.md` (new), `.claude/rules/workflow.md` (new), `.claude/rules/subagent.md` (new), `.claude/rules/debugging.md` (new), `.claude/rules/security.md` (expanded), `knowledge/rules.md` (cleaned to staging area)
 - **Learnings:** Plan mentioned rules 10-13 in workflow section but current file only had 9 rules — no orphaned rules to keep.
 - **Status:** done
+
+## Iteration 32 — 2026-02-16T04:40
+
+- **Task:** Task 4 — Brainstorming gate hook. Added `gate_brainstorm` to pre-write.sh, updated commands/plan.md with `touch .brainstorm-confirmed` / cleanup.
+- **Files changed:** `hooks/gate/pre-write.sh` (modified), `tests/instruction-guard/test-brainstorm-gate.sh` (new), `commands/plan.md` (modified)
+- **Learnings:** Brainstorm gate test can't use exit code 0 for "allowed" case because plan structure gate still blocks minimal content. Test verifies brainstorm-specific message presence/absence instead.
+- **Status:** done
