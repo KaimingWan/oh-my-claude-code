@@ -209,3 +209,10 @@
 - **Files changed:** `CLAUDE.md` (rewritten), `AGENTS.md` (synced)
 - **Learnings:** Need `.skip-instruction-guard` bypass for Task 2-3 since Task 1's hook is now active.
 - **Status:** done
+
+## Iteration 31 — 2026-02-16T04:36
+
+- **Task:** Task 3 — Created `.claude/rules/` files (shell, workflow, subagent, debugging), expanded security.md, cleaned knowledge/rules.md to staging area. Used `.skip-instruction-guard` bypass.
+- **Files changed:** `.claude/rules/shell.md` (new), `.claude/rules/workflow.md` (new), `.claude/rules/subagent.md` (new), `.claude/rules/debugging.md` (new), `.claude/rules/security.md` (expanded), `knowledge/rules.md` (cleaned to staging area)
+- **Learnings:** Plan mentioned rules 10-13 in workflow section but current file only had 9 rules — no orphaned rules to keep.
+- **Status:** done
