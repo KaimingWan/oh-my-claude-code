@@ -145,7 +145,8 @@ Rules:
 4. If you discover reusable patterns or make technical decisions, write to $FINDINGS_FILE.
 5. Commit: feat: <item description>.
 6. Continue with next unchecked item. Do NOT stop while unchecked items remain.
-7. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next."
+7. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next.
+8. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command. If blocked 3+ times on the same item, mark it as '- [SKIP] blocked by security hook' and continue."
 
   # --- Launch fresh Kiro instance (output to log, not stdout) ---
   kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" >> "$LOG_FILE" 2>&1 || true

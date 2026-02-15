@@ -185,7 +185,7 @@ bash tests/block-recovery/test-block-recovery.sh
 - [x] 所有 security hook 语法正确 | `bash -n hooks/security/block-dangerous.sh && bash -n hooks/security/block-outside-workspace.sh && bash -n hooks/security/block-secrets.sh && bash -n hooks/security/block-sed-json.sh`
 - [x] 首次阻断输出含 RETRY | `rm -f /tmp/block-count-*.jsonl; OUTPUT=$(echo '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /tmp/test"}}' | bash hooks/security/block-dangerous.sh 2>&1 || true); echo "$OUTPUT" | grep -q 'RETRY'`
 - [x] 3 次阻断后输出含 SKIP | `rm -f /tmp/block-count-*.jsonl; for i in 1 2; do echo '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /tmp/test"}}' | bash hooks/security/block-dangerous.sh 2>&1 || true; done; OUTPUT=$(echo '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /tmp/test"}}' | bash hooks/security/block-dangerous.sh 2>&1 || true); echo "$OUTPUT" | grep -q 'SKIP'`
-- [ ] ralph-loop prompt 包含兜底规则 | `grep -q 'blocked.*security hook' scripts/ralph-loop.sh`
+- [x] ralph-loop prompt 包含兜底规则 | `grep -q 'blocked.*security hook' scripts/ralph-loop.sh`
 - [ ] 集成测试通过 | `bash tests/block-recovery/test-block-recovery.sh`
 
 ## Review
