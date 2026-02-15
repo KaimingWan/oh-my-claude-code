@@ -124,7 +124,47 @@ inject_plan_context() {
 }
 
 # ============================================================
-# Phase 1.5: Checklist Check-off Gate
+# Phase 1.5a: Plan Structure Static Rubric
+# ============================================================
+gate_plan_structure() {
+  case "$FILE" in
+    docs/plans/*.md) ;;
+    *) return 0 ;;
+  esac
+  # Only check on create (full content available)
+  case "$TOOL_NAME" in
+    fs_write) [ "$COMMAND" = "create" ] || return 0 ;;
+    Write) ;;
+    *) return 0 ;;
+  esac
+
+  echo "$CONTENT" | grep -q '^## Tasks' || \
+    hook_block "🚫 BLOCKED: Plan missing ## Tasks section."
+  echo "$CONTENT" | grep -q '^## Checklist' || \
+    hook_block "🚫 BLOCKED: Plan missing ## Checklist section."
+  echo "$CONTENT" | grep -q '^## Review' || \
+    hook_block "🚫 BLOCKED: Plan missing ## Review section."
+
+  TASK_COUNT=$(echo "$CONTENT" | grep -c '^### Task' || true)
+  [ "${TASK_COUNT:-0}" -eq 0 ] && \
+    hook_block "🚫 BLOCKED: Plan has no ### Task sections."
+
+  VERIFY_COUNT=$(echo "$CONTENT" | grep -c '^\*\*Verify:\*\*' || true)
+  [ "${VERIFY_COUNT:-0}" -lt "${TASK_COUNT}" ] && \
+    hook_block "🚫 BLOCKED: Not all Tasks have **Verify:** lines. Tasks=$TASK_COUNT, Verify=$VERIFY_COUNT"
+
+  CHECKLIST_TOTAL=$(echo "$CONTENT" | sed -n '/^## Checklist/,/^## /p' | grep -c '^\- \[ \]' || true)
+  [ "${CHECKLIST_TOTAL:-0}" -eq 0 ] && \
+    hook_block "🚫 BLOCKED: ## Checklist section has no items."
+
+  CHECKLIST_WITH_VERIFY=$(echo "$CONTENT" | sed -n '/^## Checklist/,/^## /p' | grep '^\- \[ \]' | grep -c '| `' || true)
+  [ "${CHECKLIST_WITH_VERIFY}" -lt "${CHECKLIST_TOTAL}" ] && \
+    hook_block "🚫 BLOCKED: $((CHECKLIST_TOTAL - CHECKLIST_WITH_VERIFY))/$CHECKLIST_TOTAL checklist items missing verify command.
+Required format: - [ ] description | \`verify command\`"
+}
+
+# ============================================================
+# Phase 1.5b: Checklist Check-off Gate
 # ============================================================
 gate_checklist() {
   case "$FILE" in
@@ -171,6 +211,7 @@ Run the command and confirm it passes before checking off."
 
 # --- Execute phases in order ---
 gate_check
+gate_plan_structure
 gate_checklist
 scan_content
 inject_plan_context || true

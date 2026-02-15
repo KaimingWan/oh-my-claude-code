@@ -13,3 +13,10 @@
 - **Files changed:** `hooks/gate/pre-write.sh` (modified)
 - **Learnings:** Pipe-based `while` loops run in subshells — `exit 2` from `hook_block` only exits the subshell, not the script. Fix: use process substitution `< <(...)` instead of pipe.
 - **Status:** done
+
+## Iteration 3 — 2026-02-15T12:57
+
+- **Task:** Added `gate_plan_structure` function to `hooks/gate/pre-write.sh` — validates plan files have required sections (Tasks, Checklist, Review), tasks have Verify lines, and checklist items have verify commands
+- **Files changed:** `hooks/gate/pre-write.sh` (modified)
+- **Learnings:** `printf` with `\\n` in JSON works for test inputs. The `sed -n '/^## Checklist/,/^## /p'` pattern correctly extracts section content between headers.
+- **Status:** done
