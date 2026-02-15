@@ -27,3 +27,6 @@
 2026-02-15 | active | tdd-checklist,verify,hook,plan | TDD checklist enforcement实现: 4层防护(plan结构检查→reviewer覆盖率审查→执行阶段hook拦截无证据勾选→stop hook重跑verify). 每个checklist项格式`- [ ] desc | \`cmd\``, 勾选前必须有cmd的成功执行记录(10分钟窗口). pipe while loop的exit在subshell中丢失, 必须用process substitution `< <(...)`
 2026-02-16 | active | plan,review,verification | Plan review跳过Round 3: 修复reviewer反馈后自行判定"改好了"跳过验证轮次. 违反"证据→声明"原则. 规则: fix后必须re-dispatch reviewer, all APPROVE in one round才能停, 不能自行判定通过
 2026-02-16 | active | plan,review,subagent,context | Plan review packet太精简(只传header+checklist+3句摘要)导致reviewer误判率高: 看不到Task完整代码/执行顺序/Create标注. 修复: 改为传完整plan文件给reviewer, 避免摘要过程丢失细节
+2026-02-16 | active | subagent,reviewer,dispatch,bug | use_subagent必须指定agent_name: 不指定时默认找'kiro_default'(不存在)而非.kiro/agents/default.json. reviewer dispatch必须用agent_name:"reviewer". 已修复planning SKILL.md和reviewing SKILL.md加明确说明
+2026-02-16 | active | subagent,reviewer,parallel,performance | Plan review应1批4个reviewer并发, 不是2批×2个. 同一agent_name可spawn多个实例. use_subagent限制是每次调用最多4个subagent, 不是4个不同agent. 拆批会串行等待浪费时间
+2026-02-16 | active | ralph-loop,stash,data-loss | ralph-loop.sh在iter开始前git stash dirty state, 但subagent在新实例工作不会pop stash. 当前会话的未commit改动会丢失. 教训: 跑ralph-loop前先commit所有改动

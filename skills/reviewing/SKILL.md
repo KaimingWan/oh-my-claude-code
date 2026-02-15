@@ -9,7 +9,7 @@ description: "Code review — covers requesting, executing, and receiving code r
 
 **When (mandatory):** after completing major feature, before merge, after each task batch.
 
-Dispatch reviewer subagent with:
+Dispatch reviewer subagent with **`agent_name: "reviewer"`** (required — omitting defaults to nonexistent agent):
 - What was implemented
 - Plan/requirements reference
 - Git diff range (BASE_SHA..HEAD_SHA)
