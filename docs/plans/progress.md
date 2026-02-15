@@ -244,3 +244,10 @@
 - **Files changed:** `commands/lint.md` (new)
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 36 — 2026-02-16T04:51
+
+- **Task:** Added Non-Goals to Plan Header, Errors Section and Findings Section to Phase 1, Execution Disciplines (Session Resume, Read Before Decide, Periodic Re-orientation, 3-Strike Error Protocol) to Phase 2. All 9 checklist items verified and checked off.
+- **Files changed:** `skills/planning/SKILL.md` (modified), `docs/plans/2026-02-16-planning-execution-resilience.md` (checklist updated)
+- **Learnings:** Items 4-9 were all part of one logical edit (Task 4 — Execution Disciplines block). Batching the insert + verification + checklist update is more efficient than 6 separate iterations.
+- **Status:** done
