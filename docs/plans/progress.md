@@ -27,3 +27,10 @@
 - **Files changed:** `hooks/feedback/verify-completion.sh` (modified)
 - **Learnings:** Same process substitution pattern needed here to avoid subshell issue with while loop.
 - **Status:** done
+
+## Iteration 5 — 2026-02-15T13:00
+
+- **Task:** Added Checklist Coverage Review section to `agents/reviewer-prompt.md` — mandatory checklist coverage checks during plan review
+- **Files changed:** `agents/reviewer-prompt.md` (modified)
+- **Learnings:** None new.
+- **Status:** done

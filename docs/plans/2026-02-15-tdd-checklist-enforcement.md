@@ -434,7 +434,7 @@ The Round 1 blocking issues have been adequately addressed through design decisi
 - [x] plan 结构检查：checklist 项无 verify 被拦截 | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/test-struct.md","command":"create","file_text":"# Test\n## Tasks\n### Task 1\n**Verify:** cmd\n## Review\n## Checklist\n- [ ] item without verify\n"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
 - [x] plan 结构检查：完整 plan 放行 | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/test-struct.md","command":"create","file_text":"# Test\n## Tasks\n### Task 1\n**Verify:** cmd\n## Review\n## Checklist\n- [ ] item | \`echo ok\`\n"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 0`
 - [x] verify-completion stop hook 重跑 verify 命令 | `grep -q 'VERIFY FAILED\|verify commands' hooks/feedback/verify-completion.sh`
-- [ ] reviewer prompt 包含 Checklist Coverage 要求 | `grep -c 'Checklist Coverage' agents/reviewer-prompt.md`
+- [x] reviewer prompt 包含 Checklist Coverage 要求 | `grep -c 'Checklist Coverage' agents/reviewer-prompt.md`
 - [ ] default.json 包含 post-bash hook | `jq -e '.hooks.postToolUse[] | select(.command | contains("post-bash"))' .kiro/agents/default.json`
 - [ ] planning skill 包含新 checklist 格式说明 | `grep -c 'verify command' skills/planning/SKILL.md`
 - [ ] knowledge 已记录 | `grep -c 'tdd-checklist' knowledge/episodes.md`
