@@ -31,6 +31,12 @@ fi
 SUMMARY_FILE="docs/plans/.ralph-result"
 
 LOG_FILE=".ralph-loop.log"
+LOCK_FILE=".ralph-loop.lock"
+
+# --- Lock file: signals to hooks that ralph-loop is active ---
+touch "$LOCK_FILE"
+cleanup_lock() { rm -f "$LOCK_FILE"; }
+trap cleanup_lock EXIT
 
 echo "🔄 Ralph Loop — Plan: $PLAN_FILE"
 echo "   Max iterations: $MAX_ITERATIONS"

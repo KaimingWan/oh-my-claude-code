@@ -42,6 +42,10 @@
       {
         "matcher": "fs_write",
         "command": "hooks/gate/pre-write.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/gate/enforce-ralph-loop.sh"
       }
     ],
     "postToolUse": [

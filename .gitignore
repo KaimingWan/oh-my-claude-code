@@ -23,3 +23,4 @@ tmp/
 .ralph-loop.log
 docs/plans/.ralph-result
 docs/plans/.test-summary-plan.md
+.ralph-loop.lock
