@@ -49,8 +49,8 @@ Used old Strengths/Weaknesses/Missing format instead of Phase 1.5 adversarial re
 - [x] Receiving Review has YAGNI check | `grep -qi "yagni" skills/reviewing/SKILL.md`
 - [x] Receiving Review has implementation order | `grep -qi "implementation order\|blocking.*simple.*complex" skills/reviewing/SKILL.md`
 - [x] AGENTS.md review entry updated | `grep -i "code review" AGENTS.md`
-- [ ] commands/plan.md Step 4 references Phase 1.5 | `grep -q "Phase 1.5\|adversarial review\|planning skill" commands/plan.md`
-- [ ] commands/plan.md no longer has hardcoded review format | `! grep -q "Strengths.*Weaknesses.*Missing.*Verdict" commands/plan.md`
+- [x] commands/plan.md Step 4 references Phase 1.5 | `grep -q "Phase 1.5\|adversarial review\|planning skill" commands/plan.md`
+- [x] commands/plan.md no longer has hardcoded review format | `! grep -q "Strengths.*Weaknesses.*Missing.*Verdict" commands/plan.md`
 - [ ] planning skill Phase 1.5 title says "Plan Review" | `grep -q "## Phase 1.5: Plan Review" skills/planning/SKILL.md`
 
 ---

@@ -9,22 +9,20 @@ Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md.
 ## Step 3: Verify Checklist Exists
 Before dispatching reviewer, confirm the plan file contains a `## Checklist` section with at least one `- [ ]` item. If missing, add it NOW — do not proceed to review without it.
 
-## Step 4: Reviewer Challenge (subagent: reviewer)
-Dispatch a reviewer subagent (agent_name: "reviewer") with this query:
+## Step 4: Plan Review (skill: planning)
+Follow `skills/planning/SKILL.md` Phase 1.5 for plan review. Select review angles based on plan complexity, dispatch reviewer subagent(s), and apply calibration rules defined there.
 
-"Review the plan at docs/plans/<filename>. Check: 1) Does ## Checklist exist with concrete `- [ ]` acceptance criteria? If missing → automatic REQUEST CHANGES. 2) Find gaps, risks, missing steps, edge cases. Be adversarial. Output: Strengths / Weaknesses / Missing / Verdict (APPROVE or REQUEST CHANGES). Write review into ## Review section."
-
-## Step 4: Address Feedback
+## Step 5: Address Feedback
 If reviewer verdict is REQUEST CHANGES or REJECT:
   - Fix the plan based on reviewer feedback
   - Mark old decisions as ~~deprecated~~ with reason
   - Re-dispatch reviewer for a second round
   - Repeat until APPROVE
 
-## Step 5: User Confirmation
+## Step 6: User Confirmation
 Show the final plan with reviewer verdict. Ask user to confirm before any implementation.
 
-## Step 6: Hand Off to Execute
+## Step 7: Hand Off to Execute
 After user confirms:
 1. Write the plan file path to `docs/plans/.active` (e.g., `echo "docs/plans/2026-02-14-feature-x.md" > docs/plans/.active`)
 2. Tell the user to run `@execute` to start implementation with Ralph Loop discipline (no unnecessary stops, one task at a time, commit after each).

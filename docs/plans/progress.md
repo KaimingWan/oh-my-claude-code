@@ -97,3 +97,10 @@
 - **Files changed:** `AGENTS.md`
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 15 — 2026-02-15T19:46
+
+- **Task:** Updated commands/plan.md: replaced hardcoded reviewer challenge with planning skill Phase 1.5 reference, renumbered steps 4→7
+- **Files changed:** `commands/plan.md`
+- **Learnings:** None new.
+- **Status:** done
