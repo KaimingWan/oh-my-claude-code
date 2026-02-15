@@ -25,3 +25,5 @@
 2026-02-15 | active | security,workspace,hook | workspace边界防护: block-outside-workspace.sh拦截workspace外文件写入. fs_write用realpath+python3 normpath检查路径, bash用正则检测外部写入模式(>/>>重定向/tee/cp/mv/tar -C). git root fallback PWD, fail-closed. 所有agent统一挂载. 应用层hook只防误操作, OS级攻击需seatbelt/docker沙箱
 2026-02-15 | active | knowledge-v2,rules,memory | 知识库v2: rules.md改为keyword section结构(## [kw1,kw2,...]), context-enrichment按消息关键词匹配section按需注入, promoted episodes自动清除(遗忘机制). 聚类由agent在self-reflect中语义判断, section自然涌现不预定义
 2026-02-15 | active | tdd-checklist,verify,hook,plan | TDD checklist enforcement实现: 4层防护(plan结构检查→reviewer覆盖率审查→执行阶段hook拦截无证据勾选→stop hook重跑verify). 每个checklist项格式`- [ ] desc | \`cmd\``, 勾选前必须有cmd的成功执行记录(10分钟窗口). pipe while loop的exit在subshell中丢失, 必须用process substitution `< <(...)`
+2026-02-16 | active | plan,review,verification | Plan review跳过Round 3: 修复reviewer反馈后自行判定"改好了"跳过验证轮次. 违反"证据→声明"原则. 规则: fix后必须re-dispatch reviewer, all APPROVE in one round才能停, 不能自行判定通过
+2026-02-16 | active | plan,review,subagent,context | Plan review packet太精简(只传header+checklist+3句摘要)导致reviewer误判率高: 看不到Task完整代码/执行顺序/Create标注. 修复: 改为传完整plan文件给reviewer, 避免摘要过程丢失细节

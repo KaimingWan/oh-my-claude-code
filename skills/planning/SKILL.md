@@ -163,7 +163,7 @@ Random selection: sample 2 from the random pool. Repeats across rounds are fine 
 
 1. Compose the round: Completeness + Testability + 2 random angles
 2. Dispatch 4 reviewer subagents in parallel (fits tool hard limit exactly)
-3. Each reviewer receives a review packet: plan Goal/Architecture/Tech Stack (verbatim) + full Checklist + 3-sentence context summary
+3. Each reviewer receives the full plan file content (verbatim) + their review angle mission
 4. Reviewers in the same round do NOT see each other's feedback
 5. Collect all verdicts. If ANY reviewer REJECTs → fix issues → next round (re-sample 2 random angles)
 6. Repeat until all APPROVE in a single round, or 5 rounds reached
@@ -189,8 +189,8 @@ When reviewers give contradictory feedback:
 ### Resource Constraints
 
 - **Max parallel subagents per batch**: 4 (tool hard limit). Fixed at 4 per round, no overflow batches needed.
-- **Reviewer context isolation**: Reviewers in the same round do NOT see each other's feedback. Each gets only the review packet.
-- **Context size**: Review packet = plan header (Goal/Architecture/Tech Stack) + full Checklist + 3-sentence context summary. Not the entire plan.
+- **Reviewer context isolation**: Reviewers in the same round do NOT see each other's feedback. Each gets the full plan.
+- **Context size**: Review packet = full plan file content (verbatim). Reviewers need complete task details, code blocks, and file paths to avoid false rejections from incomplete information.
 - **Error handling**: If a reviewer crashes or returns malformed output, continue with remaining reviewers. If fewer than half of the round's reviewers complete, restart the round. Malformed = missing Mission/Findings/Verdict structure.
 
 ## Phase 2: Execution
