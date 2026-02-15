@@ -132,7 +132,7 @@ Skill routing 表中，将：
 - [x] research 检测覆盖中英文 | `grep -q '调研' hooks/feedback/context-enrichment.sh && grep -qi 'research' hooks/feedback/context-enrichment.sh`
 - [x] AGENTS.md 无 @debug 引用 | `! grep -q '@debug' AGENTS.md`
 - [x] AGENTS.md debugging 触发方式已更新 | `grep -q 'rules.md 自动注入' AGENTS.md`
-- [ ] README 无 @debug | `! grep -q '@debug' README.md`
-- [ ] README 有 @reflect | `grep -q '@reflect' README.md`
-- [ ] README 有 @cpu | `grep -q '@cpu' README.md`
+- [x] README 无 @debug | `! grep -q '@debug' README.md`
+- [x] README 有 @reflect | `grep -q '@reflect' README.md`
+- [x] README 有 @cpu | `grep -q '@cpu' README.md`
 - [ ] hook 语法正确 | `bash -n hooks/feedback/context-enrichment.sh`

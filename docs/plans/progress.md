@@ -139,3 +139,10 @@
 - **Files changed:** `AGENTS.md`
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 21 — 2026-02-15T23:56
+
+- **Task:** Updated README.md: removed @debug from L1 table/architecture/command table, added @reflect and @cpu commands
+- **Files changed:** `README.md`
+- **Learnings:** None new.
+- **Status:** done

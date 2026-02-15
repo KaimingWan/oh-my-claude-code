@@ -24,7 +24,7 @@ Natural language instructions drift. Hooks don't. This framework uses a **3-laye
 
 | Layer | Mechanism | Certainty |
 |-------|-----------|-----------|
-| L1 Commands | `@plan` `@execute` `@debug` `@research` `@review` `@skill` | 100% — user triggers full workflow |
+| L1 Commands | `@plan` `@execute` `@research` `@review` `@reflect` `@cpu` `@skill` | 100% — user triggers full workflow |
 | L2 Gates | `hooks/gate/` + `hooks/security/` (PreToolUse exit 2) | 100% — hard block, agent cannot bypass |
 | L3 Feedback | `hooks/feedback/` (PostToolUse/Stop) | ~50% — advisory, agent may ignore |
 
@@ -53,7 +53,7 @@ When you say "no, use X not Y", the agent captures the pattern and writes it to 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  L1: Commands (User-Triggered, 100% Deterministic)       │
-│  @plan · @execute · @debug · @research · @review · @skill  │
+│  @plan · @execute · @research · @review · @reflect · @cpu · @skill  │
 │  Each hardcodes the full workflow — no steps skipped.    │
 ├─────────────────────────────────────────────────────────┤
 │  L2: Gates & Security (PreToolUse, 100% Hard Block)      │
@@ -85,10 +85,11 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 |---------|----------|
 | `@plan` | brainstorming → write plan (with checklist) → reviewer challenge → fix until APPROVE → user confirm |
 | `@execute` | load approved plan → Ralph Loop: bash outer loop checks checklist → fresh Kiro instance per iteration → no stops until all items checked off |
-| `@debug` | read debugging skill → check rules.md + episodes.md → reproduce → hypothesize → verify → fix |
 | `@research` | L0 built-in knowledge → L1 web search → L2 deep research → write findings to file |
 | `@review` | dispatch reviewer subagent → categorize P0-P3 → cite file:line |
-| `@skill` | list all 9 skills with descriptions, match user need to closest skill |
+| `@reflect` | manual knowledge capture → extract insight → dedup check → append to episodes.md |
+| `@cpu` | commit all changes → push to remote → update README if needed |
+| `@skill` | list all skills with descriptions, match user need to closest skill |
 
 ## Hook System
 
