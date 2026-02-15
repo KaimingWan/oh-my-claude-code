@@ -111,3 +111,10 @@
 - **Files changed:** `skills/planning/SKILL.md`
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 17 — 2026-02-15T23:52
+
+- **Task:** Deleted `commands/debug.md` — the @debug command file
+- **Files changed:** `commands/debug.md` (deleted)
+- **Learnings:** None new.
+- **Status:** done
