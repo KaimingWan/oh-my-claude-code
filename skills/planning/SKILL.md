@@ -70,6 +70,7 @@ After Phase 0 completes, proceed to Phase 1 (Writing the Plan) with the accumula
 # [Feature Name] Implementation Plan
 
 **Goal:** [One sentence]
+**Non-Goals:** [What this plan explicitly does NOT do]
 **Architecture:** [2-3 sentences]
 **Tech Stack:** [Key technologies]
 
