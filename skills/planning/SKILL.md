@@ -147,6 +147,21 @@ Rules:
 - This section is append-only during execution — never delete entries
 - Cap: keep most recent 20 entries; if exceeded, summarize older entries into a single "Earlier errors: N resolved" row
 
+### Findings Section (optional)
+
+Plans may include a `## Findings` section for persisting research discoveries made during execution:
+
+```markdown
+## Findings
+
+- [discovery with context]
+```
+
+Rules:
+- Append-only — never rewrite, only add new entries
+- Use when execution-phase research reveals something relevant to later tasks
+- Not required for simple plans where no research happens during execution
+
 ## Phase 1.5: Plan Review
 
 After writing the plan, run multi-perspective plan review before execution.
