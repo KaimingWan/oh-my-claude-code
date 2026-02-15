@@ -25,32 +25,6 @@ gate_check() {
   is_source_file "$FILE" || return 0
   is_test_file "$FILE" && return 0
 
-  # Ralph-loop enforcement: if active plan has unchecked items,
-  # only allow writes from inside ralph-loop (lock file with live PID)
-  local PLAN_PTR="docs/plans/.active"
-  local RALPH_LOCK=".ralph-loop.lock"
-  if [ -f "$PLAN_PTR" ]; then
-    local ACTIVE_PLAN
-    ACTIVE_PLAN=$(cat "$PLAN_PTR" | tr -d '[:space:]')
-    if [ -f "$ACTIVE_PLAN" ]; then
-      local UNCHECKED
-      UNCHECKED=$(grep -c '^\- \[ \]' "$ACTIVE_PLAN" 2>/dev/null || true)
-      if [ "${UNCHECKED:-0}" -gt 0 ]; then
-        local RALPH_OK=false
-        if [ -f "$RALPH_LOCK" ]; then
-          local LOCK_PID
-          LOCK_PID=$(cat "$RALPH_LOCK" 2>/dev/null | tr -d '[:space:]')
-          [ -n "$LOCK_PID" ] && kill -0 "$LOCK_PID" 2>/dev/null && RALPH_OK=true
-        fi
-        if [ "$RALPH_OK" = false ]; then
-          hook_block "🚫 BLOCKED: Active plan has $UNCHECKED unchecked items.
-   You MUST run: ./scripts/ralph-loop.sh
-   Do NOT execute plan tasks directly."
-        fi
-      fi
-    fi
-  fi
-
   # Only gate new file creation
   IS_CREATE=false
   case "$TOOL_NAME" in

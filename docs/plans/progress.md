@@ -55,3 +55,10 @@
 - **Files changed:** `knowledge/episodes.md`, `knowledge/rules.md`
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 9 — 2026-02-15T16:38
+
+- **Task:** Rewrote enforce-ralph-loop.sh to handle both execute_bash and fs_write, registered fs_write matcher in default.json, removed ralph-loop check from pre-write.sh
+- **Files changed:** `hooks/gate/enforce-ralph-loop.sh` (rewritten), `.kiro/agents/default.json` (added fs_write matcher), `hooks/gate/pre-write.sh` (removed ralph-loop block)
+- **Learnings:** The fs_write allowlist uses case-based path matching — simpler and more readable than regex chains. Path traversal check (`..`) is a single grep before the allowlist.
+- **Status:** done
