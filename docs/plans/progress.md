@@ -90,3 +90,10 @@
 - **Files changed:** `skills/reviewing/reference.md` (deleted)
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 14 — 2026-02-15T19:45
+
+- **Task:** Updated AGENTS.md skill routing table: "Review" → "Code Review"
+- **Files changed:** `AGENTS.md`
+- **Learnings:** None new.
+- **Status:** done
