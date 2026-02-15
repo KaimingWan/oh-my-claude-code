@@ -120,18 +120,18 @@ Path validation: reject any path containing `..` after normalization.
 - [x] enforce-ralph-loop.sh handles both execute_bash and fs_write | `grep -q 'execute_bash\|Bash' hooks/gate/enforce-ralph-loop.sh && grep -q 'fs_write\|Write' hooks/gate/enforce-ralph-loop.sh`
 - [x] fs_write registered in default.json | `jq '.hooks.preToolUse[] | select(.command == "hooks/gate/enforce-ralph-loop.sh")' .kiro/agents/default.json | grep -q 'fs_write'`
 - [x] pre-write.sh has NO ralph-loop check | `! grep -q 'ralph-loop\|RALPH_LOCK\|ralph_loop' hooks/gate/pre-write.sh`
-- [ ] read-only allowlist rejects chained writes | `echo '{"tool_name":"execute_bash","tool_input":{"command":"cat foo && mkdir bar"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
-- [ ] fs_write to plan file allowed | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/test.md","command":"str_replace"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 0`
-- [ ] fs_write to source file blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"src/foo.sh","command":"create"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
-- [ ] stale lock (dead PID) cleaned and blocked | `echo "99999999" > .ralph-loop.lock && echo '{"tool_name":"execute_bash","tool_input":{"command":"mkdir x"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; RC=$?; [ ! -f .ralph-loop.lock ] && [ $RC -eq 2 ]`
-- [ ] delete .active blocked | `echo '{"tool_name":"execute_bash","tool_input":{"command":"rm docs/plans/.active"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
+- [x] read-only allowlist rejects chained writes | `echo '{"tool_name":"execute_bash","tool_input":{"command":"cat foo && mkdir bar"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
+- [x] fs_write to plan file allowed | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/test.md","command":"str_replace"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 0`
+- [x] fs_write to source file blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"src/foo.sh","command":"create"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
+- [x] stale lock (dead PID) cleaned and blocked | `echo "99999999" > .ralph-loop.lock && echo '{"tool_name":"execute_bash","tool_input":{"command":"mkdir x"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; RC=$?; [ ! -f .ralph-loop.lock ] && [ $RC -eq 2 ]`
+- [x] delete .active blocked | `echo '{"tool_name":"execute_bash","tool_input":{"command":"rm docs/plans/.active"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
 - [ ] test suite has ≥15 cases | `grep -c 'begin_test' tests/ralph-loop/test-enforcement.sh | awk '{exit ($1 >= 15 ? 0 : 1)}'`
 - [ ] all tests pass | `bash tests/ralph-loop/test-enforcement.sh 2>&1 | grep -q "全部通过"`
-- [ ] path traversal blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/../../evil.sh","command":"create"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
-- [ ] lock forgery blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":".ralph-loop.lock","command":"create"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
-- [ ] knowledge non-md blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"knowledge/evil.sh","command":"create"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
-- [ ] hook syntax valid | `bash -n hooks/gate/enforce-ralph-loop.sh`
-- [ ] .skip-ralph bypass works | `touch .skip-ralph && echo '{"tool_name":"execute_bash","tool_input":{"command":"mkdir x"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; RC=$?; rm -f .skip-ralph; test $RC -eq 0`
+- [x] path traversal blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"docs/plans/../../evil.sh","command":"create"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
+- [x] lock forgery blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":".ralph-loop.lock","command":"create"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
+- [x] knowledge non-md blocked | `echo '{"tool_name":"fs_write","tool_input":{"file_path":"knowledge/evil.sh","command":"create"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; test $? -eq 2`
+- [x] hook syntax valid | `bash -n hooks/gate/enforce-ralph-loop.sh`
+- [x] .skip-ralph bypass works | `touch .skip-ralph && echo '{"tool_name":"execute_bash","tool_input":{"command":"mkdir x"}}' | bash hooks/gate/enforce-ralph-loop.sh 2>&1; RC=$?; rm -f .skip-ralph; test $RC -eq 0`
 - [ ] no real files modified by tests | `md5 -q docs/plans/.active hooks/gate/enforce-ralph-loop.sh > .pre-test.md5 && bash tests/ralph-loop/test-enforcement.sh > /dev/null 2>&1 && md5 -q docs/plans/.active hooks/gate/enforce-ralph-loop.sh | diff .pre-test.md5 -`
 
 ## Round 1 Review (Security, Technical Feasibility, Completeness, Testability)
