@@ -134,41 +134,38 @@ After writing the plan, run multi-perspective plan review before execution.
 
 ### Angle Pool
 
-Each reviewer is assigned one angle with a specific mission:
+Two categories: **fixed** (every round) and **random** (sampled each round).
+
+**Fixed angles (always included):**
+
+| Angle | Mission | Output |
+|-------|---------|--------|
+| Completeness | Missing steps, unhandled edge cases, gaps in coverage | Missing Items / Edge Cases / Verdict |
+| Testability | Are checklist verify commands adequate? Can failures be detected? | Weak Verifications / Suggested Improvements / Verdict |
+
+**Random pool (2 sampled per round):**
 
 | Angle | Mission | Output |
 |-------|---------|--------|
 | Technical Feasibility | Can this be built? API limits, dependency risks, integration complexity | Risks / Blockers / Verdict |
-| Completeness | Missing steps, unhandled edge cases, gaps in coverage | Missing Items / Edge Cases / Verdict |
-| Over-engineering (YAGNI) | Is anything unnecessary? Could scope be reduced? | Unnecessary Items / Simplification Suggestions / Verdict |
 | Security | Auth, data exposure, injection surfaces, secrets handling | Findings by Category / Severity / Verdict |
-| Testability | Are checklist verify commands adequate? Can failures be detected? | Weak Verifications / Suggested Improvements / Verdict |
-| Compatibility | Does this break existing behavior? Migration risks? | Breaking Changes / Migration Risks / Verdict |
-| Rollback Safety | What if this fails in practice? Can it be reverted? | Failure Modes / Rollback Strategy / Verdict |
+| Compatibility & Rollback | Does this break existing behavior? Can it be reverted if it fails? | Breaking Changes / Rollback Strategy / Verdict |
 | Performance | N+1 calls, expensive loops, context window bloat | Bottlenecks / Recommendations / Verdict |
 | Clarity | Is the plan unambiguous? Could another agent execute it without questions? | Ambiguous Sections / Rewording Suggestions / Verdict |
 
-### Angle Selection Guide
+### Angle Selection
 
-Select 3-7 angles based on plan complexity:
+Every round: 2 fixed + 2 random = 4 reviewers (one parallel batch, no overflow).
 
-| Plan Characteristic | Recommended Angles | Count |
-|--------------------|--------------------|-------|
-| Single file, simple change | Completeness, Testability, Clarity | 3 |
-| Multi-file, internal refactor | Completeness, Compatibility, Testability, Clarity | 4 |
-| New feature, touches APIs/deps | Technical Feasibility, Completeness, Testability, Over-engineering, Compatibility | 5 |
-| Security-sensitive (auth, hooks, permissions) | Security, Technical Feasibility, Completeness, Testability, Rollback Safety, Compatibility | 6 |
-| Architecture change, multi-module | All relevant from pool, up to 7 | 7 |
-
-Agent uses this as guidance, not rigid rules. Must explain angle choices.
+Random selection: sample 2 from the random pool. Repeats across rounds are fine — the same angle reviewing a revised plan catches regressions and verifies fixes.
 
 ### Orchestration
 
-1. Assess plan complexity (by file count, scope, risk areas) → select 3-7 angles
-2. Dispatch reviewer subagents in parallel batches of 4 (tool hard limit). If N > 4, dispatch 4 then remainder.
+1. Compose the round: Completeness + Testability + 2 random angles
+2. Dispatch 4 reviewer subagents in parallel (fits tool hard limit exactly)
 3. Each reviewer receives a review packet: plan Goal/Architecture/Tech Stack (verbatim) + full Checklist + 3-sentence context summary
 4. Reviewers in the same round do NOT see each other's feedback
-5. Collect all verdicts. If ANY reviewer REJECTs → fix issues → select different angles than the immediately previous round (can reuse older rounds) → next round
+5. Collect all verdicts. If ANY reviewer REJECTs → fix issues → next round (re-sample 2 random angles)
 6. Repeat until all APPROVE in a single round, or 5 rounds reached
 7. After 5 rounds: stop and tell user "Plan too complex for automated review. Consider breaking into smaller plans."
 
@@ -183,15 +180,15 @@ The bar is "would this plan produce a 90/100 result?" not "is this plan perfect?
 
 ### Conflict Resolution
 
-When reviewers give contradictory feedback (e.g., YAGNI says "remove X" while Feasibility says "X is critical"):
+When reviewers give contradictory feedback:
 1. Main agent compares both arguments against the plan's **Goal** statement (the one-sentence goal in the plan header)
-2. The argument that directly serves the stated Goal statement wins
+2. The argument that directly serves the stated Goal wins
 3. Document the conflict, both arguments, and the resolution in the plan's Review section
 4. If both arguments equally serve the goal, ask the user to decide
 
 ### Resource Constraints
 
-- **Max parallel subagents per batch**: 4 (tool hard limit). If N > 4 angles, dispatch in batches of 4 then remainder.
+- **Max parallel subagents per batch**: 4 (tool hard limit). Fixed at 4 per round, no overflow batches needed.
 - **Reviewer context isolation**: Reviewers in the same round do NOT see each other's feedback. Each gets only the review packet.
 - **Context size**: Review packet = plan header (Goal/Architecture/Tech Stack) + full Checklist + 3-sentence context summary. Not the entire plan.
 - **Error handling**: If a reviewer crashes or returns malformed output, continue with remaining reviewers. If fewer than half of the round's reviewers complete, restart the round. Malformed = missing Mission/Findings/Verdict structure.
