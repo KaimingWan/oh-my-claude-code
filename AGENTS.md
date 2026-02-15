@@ -28,14 +28,14 @@
 
 ## Knowledge Retrieval
 - Question → knowledge/INDEX.md → topic indexes → source docs
-- Rules: `knowledge/rules.md` (proven DO/DON'T constraints)
-- Episodes: `knowledge/episodes.md` (past mistakes & wins timeline)
+- Rules: `knowledge/rules.md` (keyword sections, context-enrichment 按需注入匹配的 section)
+- Episodes: `knowledge/episodes.md` (past mistakes & wins timeline, promoted 自动清除)
 - **必须引用来源文件**，不引用 = 幻觉
 
 ## Self-Learning
 - 简单纠正 → auto-capture hook 自动写入 episodes.md（无需 agent 操作）
 - 复杂洞察 → `@reflect` 命令 或 self-reflect skill
-- 晋升（keyword ≥3 次）→ self-reflect skill 写入 rules.md
+- 晋升（keyword ≥3 次）→ self-reflect skill 语义匹配 rules.md 的 keyword section 写入
 - 输出: `📝 Learning captured: '[preview]' → [target file]`
 
 ## Subagent Delegation

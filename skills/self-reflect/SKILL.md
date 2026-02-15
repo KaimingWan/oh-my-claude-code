@@ -22,7 +22,7 @@ quality reporting (hook does it).
 
 | Scenario | Target |
 |----------|--------|
-| Promotion (≥3 same pattern) | knowledge/rules.md |
+| Promotion (≥3 same pattern) | knowledge/rules.md (matching keyword section) |
 | Complex insight | knowledge/episodes.md |
 | Code-enforceable rule | .kiro/rules/enforcement.md |
 
@@ -39,9 +39,17 @@ quality reporting (hook does it).
 
 1. Read episodes.md, find keywords appearing ≥3 times in active episodes
 2. Distill into 1-2 line rule with DO/DON'T + trigger scenario
-3. Propose to user for approval
-4. If approved: append to rules.md, change source episodes status to `promoted`
-5. Output: ⬆️ Promoted to rules.md: 'RULE'
+3. Read knowledge/rules.md section headers (`## [keywords]`)
+4. **Clustering** — choose target section by semantic match:
+   - Compare episode keywords with each section's keyword list
+   - Pick the section with most keyword overlap + semantic relevance
+   - If no section matches → create new `## [episode-keywords]` section at end of file
+   - If placing in existing section → append new keywords to section header if they add value
+5. Propose to user for approval (show target section)
+6. If approved: append rule to chosen section, change source episodes status to `promoted`
+7. Output: ⬆️ Promoted to rules.md [section]: 'RULE'
+
+Note: promoted episodes are auto-cleaned by context-enrichment on next session start.
 
 ## Trigger Patterns
 

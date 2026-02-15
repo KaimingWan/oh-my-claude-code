@@ -6,11 +6,6 @@
 <!-- STATUS: active / resolved / promoted -->
 <!-- Promotion candidates are computed at runtime (keyword freq ≥3), not stored -->
 
-2026-02-13 | promoted | sed,json,jq | sed处理JSON→用jq, x10次, 已建hook [hook: block-sed-json]
-2026-02-13 | promoted | stat,macos | macOS用stat-c→用stat-f, x3次
-2026-02-13 | promoted | grep,exit-code | grep-c无匹配exit1但输出0, 不要和echo0组合
-2026-02-13 | promoted | skill,injection,html | skill含HTML注释prompt injection [hook: scan-skill-injection]
-2026-02-13 | promoted | hook,enforcement | 没有hook强制的行为=不会发生, x多次验证
 2026-02-13 | active | kiro,subagent,hooks | Kiro子agent完全执行自定义hooks(实测确认)
 2026-02-13 | active | kiro,shell,semantic | Kiro hook只支持command, 可curl调LLM API做语义判断
 2026-02-13 | active | refactor,capability | 重构过度聚焦新功能, 差点丢失旧框架核心能力
@@ -28,3 +23,4 @@
 2026-02-15 | active | kiro,mcp,includeMcpJson | workspace mcp.json不会自动被subagent继承! 必须在agent JSON中设置`includeMcpJson: true`才能继承workspace和global mcp.json中的MCP servers(默认false). 来源: kiro.dev/docs/cli/custom-agents/configuration-reference + kiro.dev/docs/cli/mcp
 2026-02-15 | active | fetch,mcp,socksio,proxy | fetch MCP(mcp-server-fetch)在SOCKS代理环境下需要socksio包. 修复: uvx args改为["--with", "socksio", "mcp-server-fetch"]. MCP server进程在session内不会自动重启, 配置变更需新session生效
 2026-02-15 | active | security,workspace,hook | workspace边界防护: block-outside-workspace.sh拦截workspace外文件写入. fs_write用realpath+python3 normpath检查路径, bash用正则检测外部写入模式(>/>>重定向/tee/cp/mv/tar -C). git root fallback PWD, fail-closed. 所有agent统一挂载. 应用层hook只防误操作, OS级攻击需seatbelt/docker沙箱
+2026-02-15 | active | knowledge-v2,rules,memory | 知识库v2: rules.md改为keyword section结构(## [kw1,kw2,...]), context-enrichment按消息关键词匹配section按需注入, promoted episodes自动清除(遗忘机制). 聚类由agent在self-reflect中语义判断, section自然涌现不预定义

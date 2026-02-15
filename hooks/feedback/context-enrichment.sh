@@ -39,17 +39,57 @@ fi
 # 3. Rules injection + health check (only once per session)
 LESSONS_FLAG="/tmp/lessons-injected-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default').flag"
 if [ ! -f "$LESSONS_FLAG" ]; then
-  if [ -f "knowledge/rules.md" ]; then
-    echo "📚 AGENT RULES (from knowledge/rules.md):"
-    grep '^[0-9]' "knowledge/rules.md" | head -10
-  else
-    cat << 'FALLBACK'
-📚 AGENT RULES (fallback):
-  • JSON = jq, 无条件无例外。
-  • macOS 用 stat -f, 禁止 stat -c。
-FALLBACK
+  # 遗忘机制：清除已晋升的 episodes
+  if [ -f "knowledge/episodes.md" ]; then
+    PROMOTED_COUNT=$(grep -c '| promoted |' "knowledge/episodes.md" 2>/dev/null || true)
+    if [ "${PROMOTED_COUNT:-0}" -gt 0 ]; then
+      grep -v '| promoted |' "knowledge/episodes.md" > /tmp/episodes-clean.tmp && mv /tmp/episodes-clean.tmp "knowledge/episodes.md"
+      echo "🧹 Cleaned $PROMOTED_COUNT promoted episodes (consolidated to rules)"
+    fi
   fi
-  # 晋升候选提醒（实时计算，不依赖存储的 promote_candidate 状态）
+
+  # 按需注入 rules（keyword section 匹配）
+  inject_rules() {
+    local RULES_FILE="knowledge/rules.md"
+    [ -f "$RULES_FILE" ] || return 0
+
+    # 旧格式 fallback：无 section header 时全量注入
+    if ! grep -q '^## \[' "$RULES_FILE" 2>/dev/null; then
+      echo "📚 AGENT RULES:" && grep '^[0-9]' "$RULES_FILE"
+      return 0
+    fi
+
+    local MSG_LOWER=$(echo "$USER_MSG" | tr '[:upper:]' '[:lower:]')
+    local INJECTED=0
+
+    # awk 一次解析，输出 "keywords\trules" 行，存到临时变量
+    local SECTIONS
+    SECTIONS=$(awk '/^## \[/{if(sec) print sec "\t" rules; gsub(/^## \[|\]$/,""); sec=$0; rules=""; next} /^[0-9]/{rules=rules $0 "\\n"} END{if(sec) print sec "\t" rules}' "$RULES_FILE")
+
+    # 遍历 sections 匹配关键词
+    while IFS=$'\t' read -r keywords rules; do
+      [ -z "$keywords" ] && continue
+      for kw in $(echo "$keywords" | tr ',' '\n' | sed 's/^ *//;s/ *$//'); do
+        if echo "$MSG_LOWER" | grep -qiw "$kw"; then
+          echo "📚 Rules ($kw...):"
+          printf '%b' "$rules"
+          INJECTED=1
+          break
+        fi
+      done
+    done <<< "$SECTIONS"
+
+    # 无匹配 → 注入最大 section
+    if [ "$INJECTED" -eq 0 ]; then
+      echo "📚 Rules (general):"
+      local BEST_SEC
+      BEST_SEC=$(awk '/^## \[/{if(cnt>max){max=cnt;best=sec};sec=$0;cnt=0;next}/^[0-9]/{cnt++}END{if(cnt>max)best=sec;print best}' "$RULES_FILE")
+      [ -n "$BEST_SEC" ] && awk -v sec="$BEST_SEC" '$0==sec{p=1;next}/^## \[/{p=0}p&&/^[0-9]/' "$RULES_FILE"
+    fi
+  }
+  inject_rules
+
+  # 晋升候选提醒
   if [ -f "knowledge/episodes.md" ]; then
     PROMOTE=$(grep '| active |' "knowledge/episodes.md" 2>/dev/null | cut -d'|' -f3 | tr ',' '\n' | sed 's/^ *//;s/ *$//' | sort | uniq -c | awk '$1 >= 3' | wc -l | tr -d ' ')
     [ "$PROMOTE" -gt 0 ] && echo "⬆️ $PROMOTE keyword patterns appear ≥3 times in episodes → consider promotion"
