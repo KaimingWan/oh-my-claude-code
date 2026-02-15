@@ -132,3 +132,10 @@
 - **Files changed:** `hooks/feedback/context-enrichment.sh`
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 20 — 2026-02-15T23:55
+
+- **Task:** Updated AGENTS.md skill routing table: debugging trigger changed from `@debug` to `rules.md 自动注入`
+- **Files changed:** `AGENTS.md`
+- **Learnings:** None new.
+- **Status:** done
