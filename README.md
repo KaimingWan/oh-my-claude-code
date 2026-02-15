@@ -111,7 +111,7 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 | `feedback/inject-plan-context.sh` | PreToolUse[write]: injects plan checklist into context (Read Before Decide) |
 | `feedback/remind-update-progress.sh` | PostToolUse[write]: reminds to update progress.md after file changes |
 | `feedback/verify-completion.sh` | Stop hook: checks plan checklist for unchecked items |
-| `feedback/context-enrichment.sh` | Correction detection + unfinished task resume + high-freq lessons |
+| `feedback/context-enrichment.sh` | Correction detection + unfinished task resume + keyword-matched rules injection |
 
 ## Skills (9 Core)
 
@@ -165,8 +165,8 @@ Implementation/debugging tasks use ralph-loop (independent kiro-cli process with
 │   └── rules/                     # enforcement.md, commands.md, reference.md
 ├── knowledge/                     # Persistent memory
 │   ├── INDEX.md                   # Knowledge routing table
-│   ├── rules.md                   # Proven DO/DON'T constraints
-│   ├── episodes.md                # Mistakes and wins (timeline)
+│   ├── rules.md                   # Keyword-section rules (smart injection by topic match)
+│   ├── episodes.md                # Mistakes and wins (auto-cleanup on promotion)
 │   └── reference/                 # Archived skill content
 └── docs/
     ├── designs/                   # Design documents
