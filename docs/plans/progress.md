@@ -146,3 +146,10 @@
 - **Files changed:** `README.md`
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 22 — 2026-02-15T23:57
+
+- **Task:** Verified hook syntax (already passing from iteration 19)
+- **Files changed:** `docs/plans/2026-02-15-command-cleanup.md` (checklist update only)
+- **Learnings:** None new.
+- **Status:** done

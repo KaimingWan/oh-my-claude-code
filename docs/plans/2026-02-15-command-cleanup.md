@@ -135,4 +135,4 @@ Skill routing 表中，将：
 - [x] README 无 @debug | `! grep -q '@debug' README.md`
 - [x] README 有 @reflect | `grep -q '@reflect' README.md`
 - [x] README 有 @cpu | `grep -q '@cpu' README.md`
-- [ ] hook 语法正确 | `bash -n hooks/feedback/context-enrichment.sh`
+- [x] hook 语法正确 | `bash -n hooks/feedback/context-enrichment.sh`
