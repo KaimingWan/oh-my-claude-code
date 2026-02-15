@@ -9,6 +9,55 @@ description: "Write and execute implementation plans. Covers: plan writing, TDD 
 
 One skill for the full plan lifecycle: write → review → execute.
 
+## Phase 0: Deep Understanding
+
+Before writing any plan, build deep understanding of the goal. Skip this phase only if the user provides a fully specified design doc.
+
+### Step 1: Form Initial Understanding
+
+Read relevant code, docs, and recent commits to understand the context. Do NOT ask questions yet — first build your own mental model of:
+- What the user wants to achieve
+- What exists today (current state)
+- What would need to change (gap analysis)
+
+### Step 2: Ask Clarifying Questions
+
+Based on your understanding, ask questions **one at a time**. Each question must:
+- Eliminate a whole branch of ambiguity (not trivial details)
+- Build on previous answers (incremental deepening)
+- Offer multiple-choice options with your recommendation when possible
+
+**Dynamic termination:** Stop asking when remaining uncertainty won't materially affect the plan. Don't ask for the sake of asking.
+
+**Soft cap:** Maximum 5 questions. If you still have uncertainty after 5, state your assumptions and proceed.
+
+### Step 3: Research (optional)
+
+After questions are answered, judge whether research is needed:
+- **Codebase research:** When the task touches existing code you haven't fully explored (e.g., modifying a hook system — read existing hooks first)
+- **Web research:** When the task involves external tools, APIs, or best practices you're unsure about (e.g., integrating a new library, adopting an unfamiliar pattern)
+- **Both:** When the task combines internal changes with external dependencies (e.g., adding OAuth to an existing auth module)
+- **Skip:** When you have sufficient understanding (e.g., renaming a variable, fixing a typo, simple refactors with clear scope)
+
+This is your judgment call — not every plan needs research.
+
+### Step 4: Supplementary Questions (if any)
+
+After research, absorb what you learned. Only ask the user about findings you **cannot resolve from research alone** — things requiring user decisions or preferences.
+
+If no supplementary questions needed, proceed directly to Phase 1.
+
+### Transition to Phase 1
+
+After Phase 0 completes, proceed to Phase 1 (Writing the Plan) with the accumulated understanding. All context gathered — user answers, research findings, codebase observations — feeds directly into plan writing.
+
+### Error Handling
+
+- **No relevant code/docs found:** Inform the user, ask them to point you to the right area, then continue.
+- **User wants to skip Phase 0:** Allowed. User can say "skip questions" or "just write the plan" at any time. State your assumptions and proceed to Phase 1.
+- **Contradictory answers:** Surface the contradiction to the user, ask them to clarify which direction to take.
+- **5-question cap reached with critical ambiguity:** State remaining assumptions explicitly, proceed to Phase 1. The plan will note these assumptions for reviewer scrutiny.
+
 ## Phase 1: Writing the Plan
 
 **Save to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
