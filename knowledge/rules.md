@@ -23,6 +23,7 @@
 6. 文档不确定的能力要实测验证，不要猜。
 7. 没有 hook 强制的步骤 agent 就会跳过。所有强制约束必须映射到 hook。
 8. 用自定义 @plan 替代平台内置 /plan，确保走自定义 skill chain + reviewer。
+9. Checklist 勾选必须有 verify 命令执行证据（10 分钟内 exit 0），hook 强制。格式：`- [ ] desc | \`verify cmd\``。
 
 ## [subagent, mcp, kiro, delegate, capability, tool]
 1. Kiro subagent 只能用 read/write/shell/MCP 四类工具。web_search/web_fetch/code/grep/glob/use_aws/introspect/thinking/todo_list 均不可用，配了也无效。但 MCP 可补回部分能力（ripgrep→grep, fetch→web_fetch）。resources（file://+skill://）是 spawn 时加载的 context，不受此限制。

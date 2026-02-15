@@ -48,3 +48,10 @@
 - **Files changed:** `skills/planning/SKILL.md` (modified)
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 8 — 2026-02-15T13:06
+
+- **Task:** Recorded tdd-checklist enforcement to `knowledge/episodes.md` and added verify rule to `knowledge/rules.md` workflow section
+- **Files changed:** `knowledge/episodes.md`, `knowledge/rules.md`
+- **Learnings:** None new.
+- **Status:** done

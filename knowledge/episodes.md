@@ -24,3 +24,4 @@
 2026-02-15 | active | fetch,mcp,socksio,proxy | fetch MCP(mcp-server-fetch)在SOCKS代理环境下需要socksio包. 修复: uvx args改为["--with", "socksio", "mcp-server-fetch"]. MCP server进程在session内不会自动重启, 配置变更需新session生效
 2026-02-15 | active | security,workspace,hook | workspace边界防护: block-outside-workspace.sh拦截workspace外文件写入. fs_write用realpath+python3 normpath检查路径, bash用正则检测外部写入模式(>/>>重定向/tee/cp/mv/tar -C). git root fallback PWD, fail-closed. 所有agent统一挂载. 应用层hook只防误操作, OS级攻击需seatbelt/docker沙箱
 2026-02-15 | active | knowledge-v2,rules,memory | 知识库v2: rules.md改为keyword section结构(## [kw1,kw2,...]), context-enrichment按消息关键词匹配section按需注入, promoted episodes自动清除(遗忘机制). 聚类由agent在self-reflect中语义判断, section自然涌现不预定义
+2026-02-15 | active | tdd-checklist,verify,hook,plan | TDD checklist enforcement实现: 4层防护(plan结构检查→reviewer覆盖率审查→执行阶段hook拦截无证据勾选→stop hook重跑verify). 每个checklist项格式`- [ ] desc | \`cmd\``, 勾选前必须有cmd的成功执行记录(10分钟窗口). pipe while loop的exit在subshell中丢失, 必须用process substitution `< <(...)`
