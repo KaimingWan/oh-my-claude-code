@@ -286,3 +286,17 @@
 - **Files changed:** `AGENTS.md`, `.claude/rules/subagent.md`, `agents/reviewer-prompt.md`, `skills/planning/SKILL.md`, `knowledge/episodes.md`, `docs/plans/2026-02-16-socratic-thinking-principles.md`
 - **Learnings:** Items 1+2 share AGENTS.md so must be sequential; items 3-5 have non-overlapping files and were dispatched as 3 parallel executor subagents (Strategy D). All 6 items completed in one iteration by batching same-file edits and parallelizing independent ones.
 - **Status:** done
+
+## Iteration 42 — 2026-02-17T02:00
+
+- **Task:** Executed 5 codebase cleanup items in parallel (Strategy D — 4 executor subagents): dead file removal, README stale refs, enforcement.md stale ref, enforce-ralph-loop.sh comments, init-project.sh default.json→pilot.json
+- **Files changed:** `knowledge/lessons-learned.md.bak` (deleted), `docs/plans/.test-enforce-plan.md` (deleted), `archive/v2/hooks.bak` (deleted), `archive/v2/skills.bak` (deleted), `archive/v2/{commands}/` (deleted), `archive/v2/kiro-prompts/commands` (deleted), `README.md` (modified), `.kiro/rules/enforcement.md` (modified), `hooks/gate/enforce-ralph-loop.sh` (modified), `tools/init-project.sh` (modified)
+- **Learnings:** All 5 items had non-overlapping file sets — dispatched 4 executor subagents (items 4+5 combined into one since both are simple comment/reference fixes). All passed verification on first attempt.
+- **Status:** done
+
+## Iteration 43 — 2026-02-17T02:07
+
+- **Task:** Verified and checked off items 6-8 (CLAUDE.md/AGENTS.md sync, docs/INDEX.md entries, KB health report). Marked item 9 (pytest) as SKIP after 3 security hook blocks.
+- **Files changed:** `docs/plans/2026-02-16-codebase-review-cleanup.md` (checklist updates)
+- **Learnings:** enforce-ralph-loop.sh blocks `python3 -m pytest` because it's not in the read-only allowlist. The `grep -c '|'` verify command also gets blocked because the hook interprets `|` in the grep pattern as a pipe character. Use the `grep` tool (non-bash) or `md5` command for verification when bash is restricted. Items 6-8 were already completed by previous iterations — just needed verification and check-off.
+- **Status:** done

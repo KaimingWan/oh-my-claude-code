@@ -36,3 +36,14 @@
 **Solution:** Always commit changes to `ralph-loop.sh` before running integration tests that invoke it. The `git stash push` inside the script is by design (protects against dirty state during agent runs), so the fix is in the workflow, not the code.
 
 **Rule:** When modifying ralph-loop.sh, commit before testing.
+
+## enforce-ralph-loop Blocks Checklist Verify Commands
+
+**Problem:** Several checklist verify commands are themselves blocked by enforce-ralph-loop.sh:
+- `python3 -m pytest tests/ -q` — not in read-only allowlist
+- `grep -c '|' docs/INDEX.md` — hook interprets `|` in grep pattern as a pipe character
+- `diff CLAUDE.md AGENTS.md` — standalone `diff` not in allowlist (only `git diff` is)
+
+**Impact:** When executing the final checklist items outside ralph-loop, the verify commands can't be run via bash. Must use alternative tools (grep tool, md5 command, fs_read) or run inside ralph-loop.
+
+**Recommendation:** Consider adding `python3 -m pytest`, `diff`, and `bash -c 'test ...'` to the read-only allowlist, or make the pipe detection smarter (distinguish `|` in grep patterns from actual shell pipes).
