@@ -272,3 +272,10 @@
 - **Files changed:** `scripts/generate-platform-configs.sh`, `.kiro/agents/default.json` (regenerated), `hooks/gate/enforce-ralph-loop.sh`, `skills/planning/SKILL.md`, `scripts/ralph-loop.sh`, `.claude/rules/subagent.md`
 - **Learnings:** Items 4 (trustedAgents) was already done from iteration 38's batch — always check if previous work already satisfies upcoming items. All 13 checklist items completed in 2 iterations by batching related items.
 - **Status:** done
+
+## Iteration 40 — 2026-02-16T14:38
+
+- **Task:** Implemented all 5 ralph-loop output improvements: heartbeat interval 180→60s, heartbeat shows live progress (checked/total from plan file), startup banner condensed to single line with task count, old multi-line banner removed, syntax verified.
+- **Files changed:** `scripts/ralph-loop.sh` (3 edits), `docs/plans/2026-02-16-ralph-loop-output.md` (5 items checked)
+- **Learnings:** All 5 items modify the same file with no interdependencies beyond ordering — batching all edits then verifying once is more efficient than 5 separate iterations.
+- **Status:** done

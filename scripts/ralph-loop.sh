@@ -7,7 +7,7 @@ set -euo pipefail
 MAX_ITERATIONS="${1:-10}"
 PLAN_POINTER="${PLAN_POINTER_OVERRIDE:-docs/plans/.active}"
 TASK_TIMEOUT="${RALPH_TASK_TIMEOUT:-1800}"
-HEARTBEAT_INTERVAL="${RALPH_HEARTBEAT_INTERVAL:-180}"
+HEARTBEAT_INTERVAL="${RALPH_HEARTBEAT_INTERVAL:-60}"
 KIRO_CMD="${RALPH_KIRO_CMD:-}"
 STALE_ROUNDS=0
 MAX_STALE=3
@@ -61,8 +61,12 @@ run_with_timeout() {
     while kill -0 "$CMD_PID" 2>/dev/null; do
       sleep "$hb_interval"
       elapsed=$((elapsed + hb_interval))
-      kill -0 "$CMD_PID" 2>/dev/null && \
-        echo "💓 [$(date '+%H:%M:%S')] Iteration $iteration — running (elapsed ${elapsed}s)"
+      if kill -0 "$CMD_PID" 2>/dev/null; then
+        local_checked=$(grep -c '^\- \[x\]' "$PLAN_FILE" 2>/dev/null || echo 0)
+        local_unchecked=$(grep -c '^\- \[ \]' "$PLAN_FILE" 2>/dev/null || echo 0)
+        local_total=$((local_checked + local_unchecked))
+        echo "💓 [$(date '+%H:%M:%S')] Iteration $iteration — ${local_checked}/${local_total} done (elapsed ${elapsed}s)"
+      fi
     done
   ) &
   local HB_PID=$!
@@ -83,9 +87,10 @@ run_with_timeout() {
   kill "$WD_PID" 2>/dev/null; wait "$WD_PID" 2>/dev/null || true
 }
 
-echo "🔄 Ralph Loop — Plan: $PLAN_FILE"
-echo "   Max iterations: $MAX_ITERATIONS"
-echo "   Log: $LOG_FILE"
+CHECKED_START=$(grep -c '^\- \[x\]' "$PLAN_FILE" 2>/dev/null || true)
+UNCHECKED_START=$(grep -c '^\- \[ \]' "$PLAN_FILE" 2>/dev/null || true)
+TOTAL_START=$((CHECKED_START + UNCHECKED_START))
+echo "🔄 Ralph Loop — ${UNCHECKED_START} tasks remaining (${CHECKED_START}/${TOTAL_START} done) | log: $LOG_FILE"
 echo ""
 
 # --- Write summary on exit ---
