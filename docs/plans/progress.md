@@ -258,3 +258,10 @@
 - **Files changed:** `scripts/ralph-loop.sh` (modified), `tests/ralph-loop/test-timeout-heartbeat.sh` (new)
 - **Learnings:** The script's `git stash push` stashes uncommitted changes to the script itself, causing self-revert during test runs. Must commit changes before running integration tests that invoke the script. Also, str_replace operations that appear to succeed may silently fail if the old_str doesn't match exactly — always verify with `head`/`grep` after each edit.
 - **Status:** done
+
+## Iteration 38 — 2026-02-16T13:40
+
+- **Task:** Created executor agent JSON via config generator, added executor to default agent's availableAgents/trustedAgents, regenerated all configs
+- **Files changed:** `scripts/generate-platform-configs.sh` (executor block + availableAgents), `.kiro/agents/executor.json` (generated), `.kiro/agents/default.json` (regenerated)
+- **Learnings:** Batched all 3 related checklist items (executor.json creation, generator registration, availableAgents) into one iteration since they share the same file edits and regeneration step.
+- **Status:** done

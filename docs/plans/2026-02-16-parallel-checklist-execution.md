@@ -270,9 +270,9 @@ Add this line to the PROMPT:
 
 ## Checklist
 
-- [ ] executor.json 存在且结构完整 | `jq -e '.name == "executor" and (.hooks.postToolUse | length > 0) and .includeMcpJson == true and (.toolsSettings.shell.deniedCommands | any(test("git commit")))' .kiro/agents/executor.json`
-- [ ] executor 在 config generator 中 | `grep -c 'executor' scripts/generate-platform-configs.sh | xargs test 2 -le`
-- [ ] executor 在 availableAgents 中 | `jq -e '.toolsSettings.subagent.availableAgents | index("executor")' .kiro/agents/default.json`
+- [x] executor.json 存在且结构完整 | `jq -e '.name == "executor" and (.hooks.postToolUse | length > 0) and .includeMcpJson == true and (.toolsSettings.shell.deniedCommands | any(test("git commit")))' .kiro/agents/executor.json`
+- [x] executor 在 config generator 中 | `grep -c 'executor' scripts/generate-platform-configs.sh | xargs test 2 -le`
+- [x] executor 在 availableAgents 中 | `jq -e '.toolsSettings.subagent.availableAgents | index("executor")' .kiro/agents/default.json`
 - [ ] executor 在 trustedAgents 中 | `jq -e '.toolsSettings.subagent.trustedAgents | index("executor")' .kiro/agents/default.json`
 - [ ] enforce-ralph-loop 在 config generator 中 | `grep -c 'enforce-ralph-loop' scripts/generate-platform-configs.sh | xargs test 1 -le`
 - [ ] enforce-ralph-loop 在 default.json preToolUse 中 | `jq -e '[.hooks.preToolUse[] | select(.command | contains("enforce-ralph-loop"))] | length == 2' .kiro/agents/default.json`

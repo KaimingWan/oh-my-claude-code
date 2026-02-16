@@ -98,8 +98,8 @@ jq -n '{
   },
   toolsSettings: {
     subagent: {
-      availableAgents: ["researcher", "reviewer"],
-      trustedAgents: ["researcher", "reviewer"]
+      availableAgents: ["researcher", "reviewer", "executor"],
+      trustedAgents: ["researcher", "reviewer", "executor"]
     },
     shell: {
       autoAllowReadonly: true,
@@ -190,6 +190,34 @@ jq -n '{
 }' > .kiro/agents/researcher.json
 
 echo "  ✅ .kiro/agents/researcher.json"
+
+# --- executor agent ---
+jq -n '{
+  name: "executor",
+  description: "Task executor for parallel plan execution. Implements code + runs verify. Does NOT edit plan files or git commit.",
+  tools: ["read", "write", "shell"],
+  allowedTools: ["read", "write", "shell"],
+  hooks: {
+    agentSpawn: [{command: "echo '\''⚡ EXECUTOR: 1) Implement assigned task 2) Run verify command 3) Report result 4) Do NOT git commit or edit plan files'\''"}],
+    preToolUse: [
+      {matcher: "execute_bash", command: "hooks/security/block-dangerous.sh"},
+      {matcher: "execute_bash", command: "hooks/security/block-secrets.sh"},
+      {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"},
+      {matcher: "execute_bash", command: "hooks/security/block-outside-workspace.sh"},
+      {matcher: "fs_write", command: "hooks/security/block-outside-workspace.sh"}
+    ],
+    postToolUse: [{matcher: "execute_bash", command: "hooks/feedback/post-bash.sh"}]
+  },
+  includeMcpJson: true,
+  toolsSettings: {
+    shell: {
+      autoAllowReadonly: true,
+      deniedCommands: ["git commit.*", "git push.*", "git checkout.*", "git reset.*", "git stash.*"]
+    }
+  }
+}' > .kiro/agents/executor.json
+
+echo "  ✅ .kiro/agents/executor.json"
 
 # ===== 3. Validate all generated JSON =====
 ERRORS=0

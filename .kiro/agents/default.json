@@ -70,11 +70,13 @@
     "subagent": {
       "availableAgents": [
         "researcher",
-        "reviewer"
+        "reviewer",
+        "executor"
       ],
       "trustedAgents": [
         "researcher",
-        "reviewer"
+        "reviewer",
+        "executor"
       ]
     },
     "shell": {
