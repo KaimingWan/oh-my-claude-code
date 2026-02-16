@@ -28,8 +28,9 @@ fi
 PLAN_FILE=$(cat "$PLAN_POINTER" | tr -d '[:space:]')
 [ ! -f "$PLAN_FILE" ] && exit 0
 
-# No unchecked items → allow (plan is done)
-UNCHECKED=$(grep -c '^\- \[ \]' "$PLAN_FILE" 2>/dev/null || true)
+# No unchecked items in last Checklist section → allow (plan is done)
+# awk resets buffer on each ## Checklist, so only the last section survives
+UNCHECKED=$(awk '/^## Checklist/{found=1;buf="";next} found && /^## /{found=0} found{buf=buf"\n"$0} END{print buf}' "$PLAN_FILE" 2>/dev/null | grep -c '^\- \[ \]' || true)
 [ "${UNCHECKED:-0}" -eq 0 ] && exit 0
 
 # Ralph-loop running (lock file exists AND process alive) → allow
