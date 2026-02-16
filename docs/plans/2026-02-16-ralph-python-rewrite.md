@@ -598,25 +598,25 @@ Expected: No matches (or only historical plan docs)
 
 ## Checklist
 
-- [ ] scripts/lib/plan.py 解析 checklist 正确 | `python3 -m pytest tests/ralph-loop/test_plan.py -v`
-- [ ] scripts/lib/lock.py 锁文件生命周期正确 | `python3 -m pytest tests/ralph-loop/test_lock.py -v`
-- [ ] ralph_loop.py 无 active plan 时 exit 1 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_no_active_plan -v`
-- [ ] ralph_loop.py 无 checklist 时 exit 1 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_no_checklist -v`
-- [ ] ralph_loop.py 全部完成时 exit 0 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_already_complete -v`
-- [ ] ralph_loop.py 超时能杀掉子进程 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_timeout_kills_process -v`
-- [ ] ralph_loop.py circuit breaker 生效 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_circuit_breaker -v`
-- [ ] ralph_loop.py SIGTERM 后清理 lock | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_lock_cleanup_on_signal -v`
-- [ ] ralph_loop.py 传 --agent pilot 给 kiro-cli | `grep -q '\-\-agent.*pilot' scripts/ralph_loop.py`
-- [ ] generate_configs.py 生成合法 JSON | `python3 -m pytest tests/test_generate_configs.py::test_generates_valid_json -v`
-- [ ] generate_configs.py 注册所有 hooks | `python3 -m pytest tests/test_generate_configs.py::test_hooks_registered -v`
-- [ ] generate_configs.py 输出与 bash 版语义一致 | `python3 -m pytest tests/test_generate_configs.py::test_output_matches_bash_generator -v`
-- [ ] agent 已改名 pilot.json | `test -f .kiro/agents/pilot.json && ! test -f .kiro/agents/default.json`
-- [ ] pilot.json name 字段正确 | `grep -q '"name": "pilot"' .kiro/agents/pilot.json`
-- [ ] enforce-ralph-loop.sh 匹配新命令名 | `echo '{"tool_name":"execute_bash","tool_input":{"command":"python3 scripts/ralph_loop.py"}}' | bash hooks/gate/enforce-ralph-loop.sh; test $? -eq 0`
-- [ ] 旧脚本已移除 | `test ! -f scripts/ralph-loop.sh && test ! -f scripts/generate-platform-configs.sh`
-- [ ] 语言边界规则已写入 | `grep -q 'Language Boundary' .claude/rules/shell.md`
-- [ ] __pycache__ 已 gitignore | `grep -q '__pycache__' .gitignore`
-- [ ] 无残留旧路径引用 | `grep -rn 'ralph-loop\.sh\|generate-platform-configs\.sh' --include='*.sh' --include='*.json' . | grep -v '.trash' | grep -v 'docs/plans/20' | wc -l | grep -q '^0$'`
+- [x] scripts/lib/plan.py 解析 checklist 正确 | `python3 -m pytest tests/ralph-loop/test_plan.py -v`
+- [x] scripts/lib/lock.py 锁文件生命周期正确 | `python3 -m pytest tests/ralph-loop/test_lock.py -v`
+- [x] ralph_loop.py 无 active plan 时 exit 1 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_no_active_plan -v`
+- [x] ralph_loop.py 无 checklist 时 exit 1 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_no_checklist -v`
+- [x] ralph_loop.py 全部完成时 exit 0 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_already_complete -v`
+- [x] ralph_loop.py 超时能杀掉子进程 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_timeout_kills_process -v`
+- [x] ralph_loop.py circuit breaker 生效 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_circuit_breaker -v`
+- [x] ralph_loop.py SIGTERM 后清理 lock | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_lock_cleanup_on_signal -v`
+- [x] ralph_loop.py 传 --agent pilot 给 kiro-cli | `grep -q '\-\-agent.*pilot' scripts/ralph_loop.py`
+- [x] generate_configs.py 生成合法 JSON | `python3 -m pytest tests/test_generate_configs.py::test_generates_valid_json -v`
+- [x] generate_configs.py 注册所有 hooks | `python3 -m pytest tests/test_generate_configs.py::test_hooks_registered -v`
+- [x] generate_configs.py 输出与 bash 版语义一致 | `python3 -m pytest tests/test_generate_configs.py::test_output_matches_bash_generator -v`
+- [x] agent 已改名 pilot.json | `test -f .kiro/agents/pilot.json && ! test -f .kiro/agents/default.json`
+- [x] pilot.json name 字段正确 | `grep -q '"name": "pilot"' .kiro/agents/pilot.json`
+- [x] enforce-ralph-loop.sh 匹配新命令名 | `echo '{"tool_name":"execute_bash","tool_input":{"command":"python3 scripts/ralph_loop.py"}}' | bash hooks/gate/enforce-ralph-loop.sh; test $? -eq 0`
+- [x] 旧脚本已移除 | `test ! -f scripts/ralph-loop.sh && test ! -f scripts/generate-platform-configs.sh`
+- [x] 语言边界规则已写入 | `grep -q 'Language Boundary' .claude/rules/shell.md`
+- [x] __pycache__ 已 gitignore | `grep -q '__pycache__' .gitignore`
+- [x] 无残留旧路径引用 | `grep -rn 'ralph-loop\.sh\|generate-platform-configs\.sh' --include='*.sh' --include='*.json' . | grep -v '.trash' | grep -v 'docs/plans/20' | wc -l | grep -q '^0$'`
 
 ## Errors
 
