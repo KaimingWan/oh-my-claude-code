@@ -18,6 +18,9 @@ tmp/
 .cursor/
 .trae/
 
+# Trash
+.trash/
+
 # Cache
 .firecrawl/
 .ralph-loop.log
