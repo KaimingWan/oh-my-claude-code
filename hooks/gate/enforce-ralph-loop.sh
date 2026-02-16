@@ -50,7 +50,7 @@ block_msg() {
   echo "🚫 BLOCKED: Active plan has $UNCHECKED unchecked items." >&2
   echo "   Plan: $PLAN_FILE" >&2
   [ -n "$1" ] && echo "   Reason: $1" >&2
-  echo "   You MUST run: ./scripts/ralph-loop.sh" >&2
+  echo "   You MUST run: python3 scripts/ralph_loop.py" >&2
   echo "   Do NOT execute plan tasks directly." >&2
   exit 2
 }
@@ -59,7 +59,7 @@ if [ "$MODE" = "bash" ]; then
   CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
   # Allow ralph-loop.sh itself
-  echo "$CMD" | grep -q 'ralph-loop' && exit 0
+  echo "$CMD" | grep -qE 'ralph[-_.]loop|ralph_loop' && exit 0
 
   # Block commands that delete/overwrite .active
   echo "$CMD" | grep -qE '(rm|>|>>|mv|cp).*\.active' && block_msg "Cannot manipulate .active file"

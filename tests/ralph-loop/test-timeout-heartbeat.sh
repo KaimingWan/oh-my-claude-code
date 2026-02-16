@@ -29,7 +29,7 @@ begin_test "T1: stuck iteration killed within timeout"
 START=$(date +%s)
 RALPH_TASK_TIMEOUT=3 RALPH_KIRO_CMD="$FAKE" \
   PLAN_POINTER_OVERRIDE="$ACTIVE" \
-  bash "$REPO_ROOT/scripts/ralph-loop.sh" 1 > "$TDIR/t1.txt" 2>&1 || true
+  python3 "$REPO_ROOT/scripts/ralph_loop.py" 1 > "$TDIR/t1.txt" 2>&1 || true
 ELAPSED=$(( $(date +%s) - START ))
 if [ "$ELAPSED" -lt 15 ]; then pass_test; else fail_test "elapsed=${ELAPSED}s"; fi
 
@@ -43,7 +43,7 @@ begin_test "T3: heartbeat printed during execution"
 printf '# T\n\n## Checklist\n\n- [ ] x | `echo ok`\n' > "$PLAN"
 RALPH_TASK_TIMEOUT=6 RALPH_HEARTBEAT_INTERVAL=2 RALPH_KIRO_CMD="$FAKE" \
   PLAN_POINTER_OVERRIDE="$ACTIVE" \
-  bash "$REPO_ROOT/scripts/ralph-loop.sh" 1 > "$TDIR/t3.txt" 2>&1 || true
+  python3 "$REPO_ROOT/scripts/ralph_loop.py" 1 > "$TDIR/t3.txt" 2>&1 || true
 if grep -q "💓" "$TDIR/t3.txt"; then pass_test; else fail_test "no heartbeat in output"; fi
 
 echo ""
