@@ -281,8 +281,8 @@ Add this line to the PROMPT:
 - [x] Strategy Selection 表包含 D | `sed -n '/Strategy Selection/,/^### Strategy A/p' skills/planning/SKILL.md | grep -q 'Fan-out'`
 - [x] ralph-loop prompt 包含 executor 并行指令 | `grep -q 'executor' scripts/ralph-loop.sh`
 - [x] ralph-loop NEXT_ITEMS 用 head -5 | `grep -q 'head -5' scripts/ralph-loop.sh`
-- [ ] subagent.md 包含 executor 规则 | `grep -q 'executor.*plan.*commit' .claude/rules/subagent.md`
-- [ ] 所有 agent JSON 语法正确 | `for f in .kiro/agents/*.json; do jq -e . "$f" > /dev/null || exit 1; done`
+- [x] subagent.md 包含 executor 规则 | `grep -q 'executor.*plan.*commit' .claude/rules/subagent.md`
+- [x] 所有 agent JSON 语法正确 | `for f in .kiro/agents/*.json; do jq -e . "$f" > /dev/null || exit 1; done`
 
 ## Errors
 
