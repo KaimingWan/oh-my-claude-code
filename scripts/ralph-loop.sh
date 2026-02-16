@@ -57,9 +57,11 @@ run_with_timeout() {
   local timeout_secs="$1" hb_interval="$2" iteration="$3"
 
   (
+    trap 'kill %% 2>/dev/null' EXIT
     elapsed=0
     while kill -0 "$CMD_PID" 2>/dev/null; do
-      sleep "$hb_interval"
+      sleep "$hb_interval" &
+      wait $! 2>/dev/null || exit
       elapsed=$((elapsed + hb_interval))
       if kill -0 "$CMD_PID" 2>/dev/null; then
         local_checked=$(grep -c '^\- \[x\]' "$PLAN_FILE" 2>/dev/null || echo 0)
@@ -72,7 +74,9 @@ run_with_timeout() {
   local HB_PID=$!
 
   (
-    sleep "$timeout_secs"
+    trap 'kill %% 2>/dev/null' EXIT
+    sleep "$timeout_secs" &
+    wait $! 2>/dev/null || exit
     if kill -0 "$CMD_PID" 2>/dev/null; then
       echo "⏰ Iteration $iteration timed out after ${timeout_secs}s — killing"
       kill "$CMD_PID" 2>/dev/null
