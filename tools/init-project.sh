@@ -28,7 +28,7 @@ done
 cp "$TEMPLATE_DIR/.claude/settings.json" "$TARGET/.claude/"
 cp "$TEMPLATE_DIR/.kiro/rules/"*.md "$TARGET/.kiro/rules/"
 cp "$TEMPLATE_DIR/.kiro/hooks/"*.sh "$TARGET/.kiro/hooks/"
-cp "$TEMPLATE_DIR/.kiro/agents/default.json" "$TARGET/.kiro/agents/"
+cp "$TEMPLATE_DIR/.kiro/agents/"*.json "$TARGET/.kiro/agents/"
 cp "$TEMPLATE_DIR/knowledge/"*.md "$TARGET/knowledge/"
 cp -r "$TEMPLATE_DIR/knowledge/product" "$TARGET/knowledge/"
 cp "$TEMPLATE_DIR/docs/INDEX.md" "$TARGET/docs/"
@@ -48,8 +48,8 @@ if [ -d "$TEMPLATE_DIR/.kiro/skills" ]; then
 fi
 
 # Replace project name in agent config (use jq for JSON)
-jq --arg name "$PROJECT_NAME agent" '.description = $name' "$TARGET/.kiro/agents/default.json" > "$TARGET/.kiro/agents/default.json.tmp" && \
-mv "$TARGET/.kiro/agents/default.json.tmp" "$TARGET/.kiro/agents/default.json"
+jq --arg name "$PROJECT_NAME agent" '.description = $name' "$TARGET/.kiro/agents/pilot.json" > "$TARGET/.kiro/agents/pilot.json.tmp" && \
+mv "$TARGET/.kiro/agents/pilot.json.tmp" "$TARGET/.kiro/agents/pilot.json"
 
 echo ""
 echo "✅ Done! Project initialized at: $TARGET"

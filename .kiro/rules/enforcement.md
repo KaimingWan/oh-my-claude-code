@@ -31,5 +31,5 @@
 
 ## Config Generation
 
-Single source: `scripts/generate-platform-configs.sh`
+Single source: `scripts/generate_configs.py`
 Generates: `.claude/settings.json` + `.kiro/agents/*.json`

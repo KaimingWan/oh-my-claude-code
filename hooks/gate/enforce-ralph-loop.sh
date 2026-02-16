@@ -1,7 +1,7 @@
 #!/bin/bash
 # enforce-ralph-loop.sh — PreToolUse[execute_bash, fs_write] gate
 # When an active plan has unchecked items, block direct execution.
-# Agent must use ralph-loop.sh, not execute tasks directly.
+# Agent must use ralph_loop.py, not execute tasks directly.
 source "$(dirname "$0")/../_lib/common.sh"
 
 INPUT=$(cat)
@@ -59,7 +59,7 @@ block_msg() {
 if [ "$MODE" = "bash" ]; then
   CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
-  # Allow ralph-loop.sh itself
+  # Allow ralph-loop invocations
   echo "$CMD" | grep -qE 'ralph[-_.]loop|ralph_loop' && exit 0
 
   # Block commands that delete/overwrite .active
