@@ -17,7 +17,7 @@ The plan MUST contain a `## Checklist` section with at least one `- [ ]` item. I
 
 Run **foreground** (NEVER use `nohup &` — you need to see the exit summary):
 ```bash
-./scripts/ralph-loop.sh
+python3 scripts/ralph_loop.py
 ```
 
 This bash script will:
