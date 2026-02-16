@@ -88,7 +88,7 @@ Every plan must have a `## Checklist` section. Every checklist item MUST include
 
 Examples:
 - `- [ ] hook 语法正确 | \`bash -n hooks/security/my-hook.sh\``
-- `- [ ] config 包含新 hook | \`jq '.hooks' .kiro/agents/default.json | grep -q my-hook\``
+- `- [ ] config 包含新 hook | \`jq '.hooks' .kiro/agents/pilot.json | grep -q my-hook\``
 - `- [ ] 外部路径被拦截 | \`echo '{"tool_name":"fs_write","tool_input":{"file_path":"/tmp/evil.txt"}}' | bash hooks/security/my-hook.sh 2>&1; test $? -eq 2\``
 
 Rules:
