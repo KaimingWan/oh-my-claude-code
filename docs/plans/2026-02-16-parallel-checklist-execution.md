@@ -279,8 +279,8 @@ Add this line to the PROMPT:
 - [x] enforce-ralph-loop 有 subagent 兼容注释 | `grep -q 'subagent' hooks/gate/enforce-ralph-loop.sh`
 - [x] Strategy D 在 planning SKILL.md Phase 2 中 | `sed -n '/^## Phase 2/,/^## Phase 3/p' skills/planning/SKILL.md | grep -q 'Strategy D: Parallel Fan-out'`
 - [x] Strategy Selection 表包含 D | `sed -n '/Strategy Selection/,/^### Strategy A/p' skills/planning/SKILL.md | grep -q 'Fan-out'`
-- [ ] ralph-loop prompt 包含 executor 并行指令 | `grep -q 'executor' scripts/ralph-loop.sh`
-- [ ] ralph-loop NEXT_ITEMS 用 head -5 | `grep -q 'head -5' scripts/ralph-loop.sh`
+- [x] ralph-loop prompt 包含 executor 并行指令 | `grep -q 'executor' scripts/ralph-loop.sh`
+- [x] ralph-loop NEXT_ITEMS 用 head -5 | `grep -q 'head -5' scripts/ralph-loop.sh`
 - [ ] subagent.md 包含 executor 规则 | `grep -q 'executor.*plan.*commit' .claude/rules/subagent.md`
 - [ ] 所有 agent JSON 语法正确 | `for f in .kiro/agents/*.json; do jq -e . "$f" > /dev/null || exit 1; done`
 

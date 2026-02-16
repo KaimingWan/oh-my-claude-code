@@ -163,7 +163,7 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
   FINDINGS_FILE="$PLAN_DIR/findings.md"
 
   # --- Build prompt with next unchecked items ---
-  NEXT_ITEMS=$(grep '^\- \[ \]' "$PLAN_FILE" | head -3)
+  NEXT_ITEMS=$(grep '^\- \[ \]' "$PLAN_FILE" | head -5)
 
   PROMPT="You are executing a plan. Read these files first:
 1. Plan: $PLAN_FILE
@@ -186,7 +186,11 @@ Rules:
 5. Commit: feat: <item description>.
 6. Continue with next unchecked item. Do NOT stop while unchecked items remain.
 7. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next.
-8. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command. If blocked 3+ times on the same item, mark it as '- [SKIP] blocked by security hook' and continue."
+8. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command. If blocked 3+ times on the same item, mark it as '- [SKIP] blocked by security hook' and continue.
+9. PARALLEL EXECUTION: If 2+ unchecked items have non-overlapping file sets (check the plan's Task Files: fields),
+   dispatch executor subagents in parallel (max 4, agent_name: \"executor\").
+   Subagents only implement + run verify. YOU handle: plan file updates, git commit, progress.md.
+   If any subagent fails, fall back to sequential for that item. See Strategy D in planning SKILL.md."
 
   # --- Launch fresh Kiro instance with timeout + heartbeat ---
   if [ -n "$KIRO_CMD" ]; then
