@@ -21,6 +21,10 @@ tmp/
 # Trash
 .trash/
 
+# Python
+__pycache__/
+.pytest_cache/
+
 # Cache
 .firecrawl/
 .ralph-loop.log
