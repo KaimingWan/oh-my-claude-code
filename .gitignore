@@ -21,6 +21,9 @@ tmp/
 # Trash
 .trash/
 
+# Ralph bypass
+.skip-ralph
+
 # Python
 __pycache__/
 .pytest_cache/
