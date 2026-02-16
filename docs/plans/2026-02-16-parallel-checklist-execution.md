@@ -273,10 +273,10 @@ Add this line to the PROMPT:
 - [x] executor.json 存在且结构完整 | `jq -e '.name == "executor" and (.hooks.postToolUse | length > 0) and .includeMcpJson == true and (.toolsSettings.shell.deniedCommands | any(test("git commit")))' .kiro/agents/executor.json`
 - [x] executor 在 config generator 中 | `grep -c 'executor' scripts/generate-platform-configs.sh | xargs test 2 -le`
 - [x] executor 在 availableAgents 中 | `jq -e '.toolsSettings.subagent.availableAgents | index("executor")' .kiro/agents/default.json`
-- [ ] executor 在 trustedAgents 中 | `jq -e '.toolsSettings.subagent.trustedAgents | index("executor")' .kiro/agents/default.json`
-- [ ] enforce-ralph-loop 在 config generator 中 | `grep -c 'enforce-ralph-loop' scripts/generate-platform-configs.sh | xargs test 1 -le`
-- [ ] enforce-ralph-loop 在 default.json preToolUse 中 | `jq -e '[.hooks.preToolUse[] | select(.command | contains("enforce-ralph-loop"))] | length == 2' .kiro/agents/default.json`
-- [ ] enforce-ralph-loop 有 subagent 兼容注释 | `grep -q 'subagent' hooks/gate/enforce-ralph-loop.sh`
+- [x] executor 在 trustedAgents 中 | `jq -e '.toolsSettings.subagent.trustedAgents | index("executor")' .kiro/agents/default.json`
+- [x] enforce-ralph-loop 在 config generator 中 | `grep -c 'enforce-ralph-loop' scripts/generate-platform-configs.sh | xargs test 1 -le`
+- [x] enforce-ralph-loop 在 default.json preToolUse 中 | `jq -e '[.hooks.preToolUse[] | select(.command | contains("enforce-ralph-loop"))] | length == 2' .kiro/agents/default.json`
+- [x] enforce-ralph-loop 有 subagent 兼容注释 | `grep -q 'subagent' hooks/gate/enforce-ralph-loop.sh`
 - [ ] Strategy D 在 planning SKILL.md Phase 2 中 | `sed -n '/^## Phase 2/,/^## Phase 3/p' skills/planning/SKILL.md | grep -q 'Strategy D: Parallel Fan-out'`
 - [ ] Strategy Selection 表包含 D | `sed -n '/Strategy Selection/,/^### Strategy A/p' skills/planning/SKILL.md | grep -q 'Fan-out'`
 - [ ] ralph-loop prompt 包含 executor 并行指令 | `grep -q 'executor' scripts/ralph-loop.sh`

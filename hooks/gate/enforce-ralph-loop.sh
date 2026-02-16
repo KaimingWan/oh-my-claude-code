@@ -36,6 +36,8 @@ UNCHECKED=$(grep -c '^\- \[ \]' "$PLAN_FILE" 2>/dev/null || true)
 if [ -f "$LOCK_FILE" ]; then
   LOCK_PID=$(cat "$LOCK_FILE" 2>/dev/null | tr -d '[:space:]')
   if [ -n "$LOCK_PID" ] && kill -0 "$LOCK_PID" 2>/dev/null; then
+    # Intentional: allows ANY process (including executor subagents) when ralph-loop is alive.
+    # kill -0 checks if ralph-loop PID exists, not if current process IS ralph-loop.
     exit 0
   fi
   # Stale lock — process dead, clean it up

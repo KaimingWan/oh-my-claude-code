@@ -88,7 +88,9 @@ jq -n '{
       {matcher: "execute_bash", command: "hooks/security/block-sed-json.sh"},
       {matcher: "execute_bash", command: "hooks/security/block-outside-workspace.sh"},
       {matcher: "fs_write", command: "hooks/security/block-outside-workspace.sh"},
-      {matcher: "fs_write", command: "hooks/gate/pre-write.sh"}
+      {matcher: "fs_write", command: "hooks/gate/pre-write.sh"},
+      {matcher: "execute_bash", command: "hooks/gate/enforce-ralph-loop.sh"},
+      {matcher: "fs_write", command: "hooks/gate/enforce-ralph-loop.sh"}
     ],
     postToolUse: [
       {matcher: "fs_write", command: "hooks/feedback/post-write.sh"},
