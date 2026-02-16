@@ -68,7 +68,7 @@ begin_test "T1: bash write blocked when plan active"
 RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"mkdir -p foo"}}')
 assert_exit "$RC" 2
 
-# T2: ralph-loop.sh allowed
+# T2: ralph_loop.py allowed
 begin_test "T2: ralph_loop.py command allowed"
 RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"python3 scripts/ralph_loop.py"}}')
 assert_exit "$RC" 0
