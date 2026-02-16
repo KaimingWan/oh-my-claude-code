@@ -283,6 +283,7 @@ Rules:
 | ≤3 | A: Sequential in main conversation | Low overhead, not worth subagent spawn cost |
 | >3 | C: Subagent per task | Isolates context, prevents conversation bloat |
 | 2+ independent tasks | B: Parallel agents | No shared state, can run simultaneously |
+| 2+ tasks, non-overlapping files | D: Parallel Fan-out | Concurrent execution with zero race conditions |
 
 ### Strategy A: Sequential (default)
 
@@ -315,6 +316,37 @@ Dispatch one agent per independent domain:
 - `web_search` / `web_fetch` (internet access — use main agent instead, it's free)
 - `use_aws` (AWS CLI)
 - Cross-step context (subagents are stateless between invocations)
+
+### Strategy D: Parallel Fan-out
+
+**When:** 2+ independent tasks with non-overlapping file sets.
+
+**Independence check:** Extract `Files:` field from each Task. Two tasks are independent iff their file sets (Create + Modify + Test) have zero intersection. Tasks needing `code` tool (LSP) cannot be parallelized (subagents lack LSP).
+
+**Execution flow:**
+
+1. Identify all unchecked tasks, extract file sets from `Files:` field
+2. Build independence graph: tasks with no file overlap form parallel groups
+3. Group into batches (max 4 per batch — `use_subagent` hard limit)
+4. For each batch, dispatch executor subagents in ONE `use_subagent` call:
+   - `agent_name: "executor"` (must specify — see subagent rules)
+   - Each subagent receives: full task description, file list, verify commands
+   - Subagent contract: implement code + run verify command + report structured result
+   - Subagent MUST NOT: edit plan file, git commit, modify files outside its task scope
+5. Main agent collects results, validates each:
+   - Re-run verify commands to confirm (trust but verify)
+   - If any subagent failed: log to `## Errors`, fall back to Strategy A for that task
+6. Main agent updates plan (check off completed items in one write)
+7. Main agent does single `git add + commit` for the batch
+8. Append to progress.md
+
+**Fallback:** If parallel execution fails (subagent crash, verify failure), revert to Strategy A for remaining tasks in that batch. Never retry a failed parallel task in parallel — go sequential.
+
+**Race condition prevention:**
+- Plan file: only main agent writes (subagents never touch it)
+- Git operations: only main agent commits (executor shell denies git commit)
+- Verify log (`/tmp/verify-log-*.jsonl`): safe for concurrent append (entries <512 bytes, within POSIX PIPE_BUF)
+- Source files: guaranteed non-overlapping by independence check
 
 ### Workspace Isolation (Git Worktrees)
 
