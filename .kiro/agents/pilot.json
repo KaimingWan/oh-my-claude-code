@@ -1,0 +1,114 @@
+{
+  "name": "pilot",
+  "description": "Main orchestrator agent with deterministic workflow gates",
+  "tools": [
+    "*"
+  ],
+  "allowedTools": [
+    "*"
+  ],
+  "resources": [
+    "file://AGENTS.md",
+    "file://knowledge/INDEX.md",
+    "skill://skills/**/SKILL.md"
+  ],
+  "hooks": {
+    "userPromptSubmit": [
+      {
+        "command": "hooks/feedback/correction-detect.sh"
+      },
+      {
+        "command": "hooks/feedback/session-init.sh"
+      },
+      {
+        "command": "hooks/feedback/context-enrichment.sh"
+      }
+    ],
+    "preToolUse": [
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-dangerous.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-secrets.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-sed-json.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/security/block-outside-workspace.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": "hooks/security/block-outside-workspace.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": "hooks/gate/pre-write.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/gate/enforce-ralph-loop.sh"
+      },
+      {
+        "matcher": "fs_write",
+        "command": "hooks/gate/enforce-ralph-loop.sh"
+      }
+    ],
+    "postToolUse": [
+      {
+        "matcher": "fs_write",
+        "command": "hooks/feedback/post-write.sh"
+      },
+      {
+        "matcher": "execute_bash",
+        "command": "hooks/feedback/post-bash.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": "hooks/feedback/verify-completion.sh"
+      }
+    ]
+  },
+  "toolsSettings": {
+    "subagent": {
+      "availableAgents": [
+        "researcher",
+        "reviewer",
+        "executor"
+      ],
+      "trustedAgents": [
+        "researcher",
+        "reviewer",
+        "executor"
+      ]
+    },
+    "shell": {
+      "autoAllowReadonly": true,
+      "deniedCommands": [
+        "rm\\s+(-[rRf]|--recursive|--force).*",
+        "rmdir\\b.*",
+        "mkfs\\b.*",
+        "sudo\\b.*",
+        "git\\s+push\\s+.*--force.*",
+        "git\\s+reset\\s+--hard.*",
+        "git\\s+clean\\s+-f.*",
+        "chmod\\s+(-R\\s+)?777.*",
+        "curl.*\\|\\s*(ba)?sh.*",
+        "wget.*\\|\\s*(ba)?sh.*",
+        "kill\\s+-9.*",
+        "killall\\b.*",
+        "shutdown\\b.*",
+        "reboot\\b.*",
+        "DROP\\s+(DATABASE|TABLE|SCHEMA).*",
+        "TRUNCATE\\b.*",
+        "find\\b.*-delete",
+        "find\\b.*-exec\\s+rm"
+      ]
+    }
+  }
+}
