@@ -196,8 +196,7 @@ Random selection: sample 2 from the random pool. Repeats across rounds are fine 
 ### Orchestration
 
 1. Compose the round: Completeness + Testability + 2 random angles
-2. Dispatch 4 reviewer subagents in parallel (fits tool hard limit exactly). **Must specify `agent_name: "reviewer"`** — omitting it defaults to a nonexistent agent and fails. **All 4 go in ONE `use_subagent` call** — same `agent_name` can spawn multiple instances in parallel.
-3. Each reviewer receives the full plan file content (verbatim) + their review angle mission
+2. Dispatch 4 reviewer subagents in ONE `use_subagent` call. Each reviewer query = review angle mission + plan file path. Reviewer reads the file itself (has read/shell tools). Do NOT paste plan content into query — it bloats payload and breaks 4-way parallelism. **Must pass plan file path, not content.** **Must specify `agent_name: "reviewer"`**. Same `agent_name` can spawn multiple instances in parallel.
 4. Reviewers in the same round do NOT see each other's feedback
 5. Collect all verdicts. If ANY reviewer REJECTs → fix issues → next round (re-sample 2 random angles)
 6. Repeat until all APPROVE in a single round, or 5 rounds reached
