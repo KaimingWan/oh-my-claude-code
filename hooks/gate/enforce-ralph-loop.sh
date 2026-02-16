@@ -80,6 +80,12 @@ fi
 if [ "$MODE" = "write" ]; then
   FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)
 
+  # Normalize absolute path to relative (Kiro sends absolute paths, allowlist uses relative)
+  WORKSPACE=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
+  case "$FILE" in
+    "$WORKSPACE"/*) FILE="${FILE#$WORKSPACE/}" ;;
+  esac
+
   # Path traversal check
   echo "$FILE" | grep -q '\.\.' && block_msg "Path traversal (..) not allowed"
 

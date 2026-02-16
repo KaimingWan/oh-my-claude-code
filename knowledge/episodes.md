@@ -32,3 +32,4 @@
 2026-02-16 | active | subagent,availableAgents,whitelist | availableAgents白名单限制subagent spawn范围. 省略agent_name时用Kiro内置default subagent, 但如果availableAgents不含通配符或内置default, 会被拦截. 需要执行task的subagent必须在白名单中
 2026-02-16 | active | subagent,reviewer,parallel,performance | Plan review应1批4个reviewer并发, 不是2批×2个. 同一agent_name可spawn多个实例. use_subagent限制是每次调用最多4个subagent, 不是4个不同agent. 拆批会串行等待浪费时间
 2026-02-16 | active | ralph-loop,stash,data-loss | ralph-loop.sh在iter开始前git stash dirty state, 但subagent在新实例工作不会pop stash. 当前会话的未commit改动会丢失. 教训: 跑ralph-loop前先commit所有改动
+2026-02-16 | active | enforce-ralph-loop,absolute-path,hook,bug | enforce-ralph-loop.sh的fs_write allowlist用相对路径pattern(docs/plans/*.md)但Kiro传入绝对路径, case glob不匹配导致合法写入被误拦. 修复: 在allowlist检查前用git rev-parse --show-toplevel剥离workspace前缀转为相对路径. 同时发现bash allowlist中包含.active的命令也被误拦(grep '.active'匹配). 教训: hook收到的路径格式必须实测验证, 不能假设
