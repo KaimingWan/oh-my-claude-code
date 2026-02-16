@@ -306,7 +306,7 @@ Dispatch one agent per independent domain:
 
 **When:** Tasks are independent, want fresh context per task.
 
-1. Dispatch default subagent per task（自动继承 workspace ripgrep MCP）. For task execution, omit `agent_name` to use default agent.
+1. Dispatch subagent per task. **Must specify `agent_name`** if using a custom executor agent, or ensure the built-in default subagent is allowed in `availableAgents`. Subagents inherit workspace MCP if `includeMcpJson: true`.
 2. Review after each task (spec compliance → code quality)
 3. Fix issues before next task
 

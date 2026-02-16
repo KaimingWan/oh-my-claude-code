@@ -12,6 +12,7 @@
 - Minimal context, single source of truth（优先低 context 开销方案，信息只在一处维护）
 - End-to-end autonomy（目标明确时独立端到端完成，不中断问人。遇到问题自己调研解决，主动克服障碍，直到拿到最终结果）
 - Think like a top expert（深度广度充分，周全严谨细致高效，不要浅尝辄止）
+- Never skip anomalies（执行过程中发现 bug、矛盾、可疑之处，必须立即分析清楚并解决，不能跳过或留到以后）
 
 ## Workflow
 - Explore → Plan → Code（先调研，再计划，再编码）
