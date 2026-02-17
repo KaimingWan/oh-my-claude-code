@@ -70,12 +70,22 @@ if [ "$MODE" = "bash" ]; then
     block_msg "Chained/piped commands not allowed outside ralph-loop"
   fi
 
-  # Strict read-only allowlist (simple single commands only)
+  # Read-only allowlist (inspection commands)
   if echo "$CMD" | grep -qE '^[[:space:]]*(git[[:space:]]+(status|log|diff|show|branch|stash[[:space:]]+list)|ls|cat|head|tail|grep|rg|wc|file|stat|test|md5|shasum|date|pwd|which|type|jq|printf|echo|awk|sed[[:space:]]+-n|find[[:space:]])'; then
     exit 0
   fi
 
-  block_msg "Command not in read-only allowlist"
+  # Safe git operations (save work, not execute tasks)
+  if echo "$CMD" | grep -qE '^[[:space:]]*git[[:space:]]+(add|commit|push|stash[[:space:]]+(save|push|pop|apply))([[:space:]]|$)'; then
+    exit 0
+  fi
+
+  # Safe filesystem markers (touch, mkdir, unlink)
+  if echo "$CMD" | grep -qE '^[[:space:]]*(touch|mkdir(-p)?|unlink)[[:space:]]'; then
+    exit 0
+  fi
+
+  block_msg "Command not in allowlist"
 fi
 
 if [ "$MODE" = "write" ]; then
