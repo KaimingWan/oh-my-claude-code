@@ -97,6 +97,7 @@ Rules:
 - Each Task must have at least 1 checklist item
 - Cover: happy path + edge case + integration (where applicable)
 - Hook enforces: checking off `- [x]` requires recent successful execution of the verify command
+- **Regression test rule:** If plan Files fields include `scripts/ralph_loop.py` or `scripts/lib/`, the checklist MUST include: `- [ ] 回归测试通过 | \`python3 -m pytest tests/ralph-loop/ -v\``
 
 ### Task Structure (TDD)
 

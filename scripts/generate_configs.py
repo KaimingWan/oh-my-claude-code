@@ -98,6 +98,7 @@ def pilot_agent() -> dict:
                 {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
                 {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
                 {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
+                {"matcher": "execute_bash", "command": "hooks/gate/require-regression.sh"},
             ],
             "postToolUse": [
                 {"matcher": "fs_write", "command": "hooks/feedback/post-write.sh"},
