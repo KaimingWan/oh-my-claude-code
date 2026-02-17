@@ -250,10 +250,10 @@ Focus on: is the approach correct? Is the task order right? Are verify commands 
 - [x] parse_tasks 空 plan 返回空列表 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_parse_tasks_empty_plan -v`
 - [x] build_batches 全独立任务分一组 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_all_independent -v`
 - [x] build_batches 全依赖任务各自一组 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_all_dependent -v`
-- [ ] build_batches 混合依赖正确分组 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_mixed_deps -v`
-- [ ] build_batches 不超过 max_parallel | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_max_parallel_cap -v`
-- [ ] build_batches 空输入返回空 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_empty_tasks -v`
-- [ ] build_batches 单任务标记 sequential | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_single_task -v`
+- [x] build_batches 混合依赖正确分组 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_mixed_deps -v`
+- [x] build_batches 不超过 max_parallel | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_max_parallel_cap -v`
+- [x] build_batches 空输入返回空 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_empty_tasks -v`
+- [x] build_batches 单任务标记 sequential | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_single_task -v`
 - [ ] 并行 prompt 包含 dispatch 指令 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_parallel_prompt_contains_dispatch -v`
 - [ ] 串行 prompt 不含 dispatch 指令 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_sequential_prompt_no_dispatch -v`
 - [ ] 启动 banner 显示 batch 信息 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_batch_mode_startup_banner -v`
