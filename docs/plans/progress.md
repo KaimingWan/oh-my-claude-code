@@ -504,3 +504,10 @@
 - **Files changed:** `README.md` (badge added), `docs/releases/v1.0.0-beta.md` (new), `docs/plans/2026-02-18-release-v1-beta.md` (5/6 checklist items checked)
 - **Learnings:** `gh release create` requires authentication — `gh auth login` needed before creating GitHub Releases. Checklist gate requires exact command hash match — verify commands must be run as standalone bash calls matching the exact string extracted from the checklist.
 - **Status:** 5/6 done — GitHub Release blocked by `gh` auth (401 Unauthorized)
+
+## Iteration 71 — 2026-02-18T02:34
+
+- **Task:** GitHub Release prerelease checklist item — attempted `gh release view` and `gh auth status`, both return 401 Unauthorized (invalid token)
+- **Files changed:** `docs/plans/2026-02-18-release-v1-beta.md` (item marked SKIP)
+- **Learnings:** `gh` CLI token expired/invalid — all API calls fail. This was already documented in iteration 70's Errors section. The git tag `v1.0.0-beta` exists locally but the GitHub Release cannot be created without valid auth. User must run `gh auth login` interactively, then: `gh release create v1.0.0-beta --title "v1.0.0-beta" --notes-file docs/releases/v1.0.0-beta.md --prerelease`
+- **Status:** skipped — blocked by gh auth (3 attempts across iterations 70-71)

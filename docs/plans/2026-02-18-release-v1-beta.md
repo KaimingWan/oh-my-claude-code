@@ -64,7 +64,7 @@ test -f docs/releases/v1.0.0-beta.md && grep -q 'Highlights' docs/releases/v1.0.
 - [x] release notes 包含 highlights | `grep -q 'Highlights' docs/releases/v1.0.0-beta.md`
 - [x] release notes 包含 compare link | `grep -q 'v3.0.0...v1.0.0-beta' docs/releases/v1.0.0-beta.md`
 - [x] git tag 存在 | `git tag -l v1.0.0-beta | grep -q v1.0.0-beta`
-- [ ] GitHub Release 是 prerelease | `gh release view v1.0.0-beta --json isPrerelease -q '.isPrerelease' | grep -q true`
+- [SKIP] GitHub Release 是 prerelease — blocked: `gh auth` token invalid (401 Unauthorized). User must run `gh auth login` then `gh release create v1.0.0-beta --title "v1.0.0-beta" --notes-file docs/releases/v1.0.0-beta.md --prerelease` | `gh release view v1.0.0-beta --json isPrerelease -q '.isPrerelease' | grep -q true`
 
 ## Errors
 
