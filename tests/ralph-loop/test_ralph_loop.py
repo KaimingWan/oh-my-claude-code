@@ -107,3 +107,82 @@ def test_lock_cleanup_on_signal(tmp_path):
     proc.wait(timeout=5)
     time.sleep(0.5)
     assert not lock_path.exists(), "Lock file should be cleaned up after SIGTERM"
+
+
+# --- Task 4 + 5 tests: batch prompt + banner ---
+from scripts.lib.plan import TaskInfo
+from scripts.lib.scheduler import Batch
+
+
+def _import_build_batch_prompt():
+    """Import build_batch_prompt from ralph_loop without running module-level code."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("ralph_loop", "scripts/ralph_loop.py",
+                                                    submodule_search_locations=[])
+    # We can't import the module directly (it runs main-loop code at import time).
+    # Instead, read the source and extract the function.
+    source = Path("scripts/ralph_loop.py").read_text()
+    # Extract function via exec in isolated namespace
+    ns = {"Path": Path, "Batch": Batch}
+    # Find and exec just the function
+    import re
+    match = re.search(r'(def build_batch_prompt\(.*?\n(?=\ndef |\n# ))', source, re.DOTALL)
+    if match:
+        exec(match.group(1), ns)
+        return ns["build_batch_prompt"]
+    return None
+
+
+def test_parallel_prompt_contains_dispatch():
+    fn = _import_build_batch_prompt()
+    assert fn is not None, "build_batch_prompt not found in ralph_loop.py"
+    batch = Batch(tasks=[
+        TaskInfo(1, "Parser", {"a.py"}, ""),
+        TaskInfo(2, "Scheduler", {"b.py"}, ""),
+    ], parallel=True)
+    prompt = fn(batch, Path("docs/plans/test.md"), 1)
+    assert "executor" in prompt.lower()
+    assert "parallel" in prompt.lower()
+    prompt_lower = prompt.lower()
+    assert "use_subagent" in prompt_lower or "agent_name" in prompt_lower
+
+
+def test_sequential_prompt_no_dispatch():
+    fn = _import_build_batch_prompt()
+    assert fn is not None, "build_batch_prompt not found in ralph_loop.py"
+    batch = Batch(tasks=[
+        TaskInfo(1, "Parser", {"a.py"}, ""),
+    ], parallel=False)
+    prompt = fn(batch, Path("docs/plans/test.md"), 1)
+    assert "dispatch" not in prompt.lower()
+
+
+def test_batch_mode_startup_banner(tmp_path):
+    """Plan with 2 independent tasks → stdout contains 'batch'."""
+    task_section = (
+        "## Tasks\n\n"
+        + "### " + "Task 1: Alpha\n\n**Files:**\n- Create: `a.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
+        + "### " + "Task 2: Beta\n\n**Files:**\n- Create: `b.py`\n\n**Verify:** `echo ok`\n\n"
+    )
+    plan_text = PLAN_TEMPLATE.format(items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
+    # Insert task section before checklist
+    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
+    write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
+    (tmp_path / "plan.md").write_text(plan_text)
+    r = run_ralph(tmp_path)
+    assert "batch" in r.stdout.lower()
+
+
+def test_dependent_tasks_sequential_banner(tmp_path):
+    """Plan with 2 tasks sharing a file → stdout contains 'sequential'."""
+    task_section = (
+        "## Tasks\n\n"
+        + "### " + "Task 1: Alpha\n\n**Files:**\n- Modify: `shared.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
+        + "### " + "Task 2: Beta\n\n**Files:**\n- Modify: `shared.py`\n\n**Verify:** `echo ok`\n\n"
+    )
+    plan_text = PLAN_TEMPLATE.format(items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
+    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
+    write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
+    (tmp_path / "plan.md").write_text(plan_text)
+    r = run_ralph(tmp_path)
+    assert "sequential" in r.stdout.lower()

@@ -254,10 +254,10 @@ Focus on: is the approach correct? Is the task order right? Are verify commands 
 - [x] build_batches 不超过 max_parallel | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_max_parallel_cap -v`
 - [x] build_batches 空输入返回空 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_empty_tasks -v`
 - [x] build_batches 单任务标记 sequential | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_single_task -v`
-- [ ] 并行 prompt 包含 dispatch 指令 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_parallel_prompt_contains_dispatch -v`
-- [ ] 串行 prompt 不含 dispatch 指令 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_sequential_prompt_no_dispatch -v`
-- [ ] 启动 banner 显示 batch 信息 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_batch_mode_startup_banner -v`
-- [ ] 依赖任务标记 sequential | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_dependent_tasks_sequential_banner -v`
+- [x] 并行 prompt 包含 dispatch 指令 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_parallel_prompt_contains_dispatch -v`
+- [x] 串行 prompt 不含 dispatch 指令 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_sequential_prompt_no_dispatch -v`
+- [x] 启动 banner 显示 batch 信息 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_batch_mode_startup_banner -v`
+- [x] 依赖任务标记 sequential | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_dependent_tasks_sequential_banner -v`
 - [ ] unchecked_tasks 过滤已完成任务 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks -v`
 - [ ] unchecked_tasks 全完成返回空 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks_all_done -v`
 - [ ] unchecked_tasks 非连续勾选正确映射 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks_non_contiguous -v`

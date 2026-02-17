@@ -21,6 +21,7 @@ os.chdir(PROJECT_ROOT)
 
 from scripts.lib.plan import PlanFile
 from scripts.lib.lock import LockFile
+from scripts.lib.scheduler import build_batches, Batch
 
 # --- Configuration from env ---
 MAX_ITERATIONS = int(sys.argv[1]) if len(sys.argv) > 1 else 10
@@ -143,10 +144,59 @@ Rules:
    If any subagent fails, fall back to sequential for that item. See Strategy D in planning SKILL.md."""
 
 
+def build_batch_prompt(batch: Batch, plan_path_: Path, iteration: int) -> str:
+    """Generate prompt for a batch of tasks."""
+    plan_dir = plan_path_.parent
+    progress_file = plan_dir / "progress.md"
+    findings_file = plan_dir / "findings.md"
+
+    if batch.parallel:
+        task_lines = "\n".join(
+            f"  - Task {t.number}: {t.name} (files: {', '.join(sorted(t.files))})"
+            for t in batch.tasks
+        )
+        return f"""You are executing a plan in parallel mode. Read the plan first: {plan_path_}
+
+Dispatch these tasks to executor subagents using use_subagent (agent_name: "executor"):
+{task_lines}
+
+Each subagent implements its task and runs the verify command from the plan.
+You handle: plan checklist updates, git commit, {progress_file} updates.
+If any subagent fails, fall back to sequential for that task.
+Max parallel: {len(batch.tasks)}. See Strategy D in planning SKILL.md."""
+    else:
+        task = batch.tasks[0]
+        return f"""You are executing a plan. Read these files first:
+1. Plan: {plan_path_}
+2. Progress log: {progress_file} (if exists)
+3. Findings: {findings_file} (if exists)
+
+Implement Task {task.number}: {task.name}
+Files: {', '.join(sorted(task.files))}
+
+Rules:
+1. Implement the task. Verify it works (run the verify command from the plan).
+2. Update the plan: change the corresponding checklist item from '- [ ]' to '- [x]'.
+3. Append to {progress_file} with iteration {iteration} progress.
+4. Commit: feat: <task description>."""
+
+
 # --- Startup banner ---
 plan.reload()
-print(f"🔄 Ralph Loop — {plan.unchecked} tasks remaining ({plan.checked}/{plan.total} done) | log: {LOG_FILE}",
-      flush=True)
+tasks = plan.parse_tasks()
+unchecked_tasks = [t for t in tasks if True]  # will filter below
+# Filter to unchecked via positional mapping (Task 3 will refine this)
+batches = build_batches(tasks) if tasks else []
+
+if batches:
+    print(f"🔄 Ralph Loop — {plan.unchecked} tasks remaining ({plan.checked}/{plan.total} done) | batch mode", flush=True)
+    for idx, b in enumerate(batches, 1):
+        task_names = ", ".join(f"T{t.number}" for t in b.tasks)
+        mode = "⚡ parallel" if b.parallel else "📝 sequential"
+        print(f"  Batch {idx}: {mode} [{task_names}]", flush=True)
+else:
+    print(f"🔄 Ralph Loop — {plan.unchecked} tasks remaining ({plan.checked}/{plan.total} done) | log: {LOG_FILE}",
+          flush=True)
 print(flush=True)
 
 # --- Main loop ---
