@@ -15,6 +15,7 @@
 | Agent-learned rules (staging) | `knowledge/rules.md` | "Any new patterns?" |
 | Past mistakes & wins | `knowledge/episodes.md` | "Have we seen this before?" |
 | Framework design & architecture | `docs/designs/2026-02-13-framework-v2-upgrade.md` | "How does the hook system work?" |
+| Hook architecture & governance | `docs/designs/2026-02-18-hook-architecture.md` | "Hook classification? New hook process?" |
 | Reference materials (archived skills) | `knowledge/reference/` | "Mermaid syntax?" |
 
 ## Quick Links
@@ -24,7 +25,8 @@
 - [Workflow Rules](../.claude/rules/workflow.md) — Plans, reviews, testing, commits
 - [Security Rules](../.claude/rules/security.md) — Hooks, injection, workspace boundaries
 - [Framework v2 Design](../docs/designs/2026-02-13-framework-v2-upgrade.md) — Architecture & hooks
+- [Hook Architecture](../docs/designs/2026-02-18-hook-architecture.md) — Hook governance, classification, lifecycle
 - [Reference Materials](reference/) — Archived skill content (writing style, mermaid, java, etc.)
 
 ---
-*Index version: 6.0 — Updated for three-layer instruction governance*
+*Index version: 7.0 — Added Hook Architecture design doc routing*

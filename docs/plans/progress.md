@@ -465,3 +465,24 @@
 - **Files changed:** `.kiro/rules/enforcement.md` (rewritten — 15 hooks, L0 security layer), `hooks/_lib/llm-eval.sh` → `.trash/llm-eval.sh` (moved), `scripts/generate_configs.py` (added enforce-ralph-loop + require-regression to CC settings), `.claude/settings.json` (regenerated), `.kiro/agents/*.json` (regenerated), `hooks/gate/pre-write.sh` (phase renumbering), `hooks/feedback/session-init.sh` (removed delegation reminder)
 - **Learnings:** Checklist verify command `grep -c '| hooks/'` didn't match because enforcement.md uses backtick-wrapped paths (`\`hooks/...\``). Fixed verify to use `'| \`hooks/'`. Also: checklist gate requires each verify command run as standalone bash execution with exact hash match — combined commands in a single bash call don't satisfy individual item hashes.
 - **Status:** done
+
+## Iteration 67 — 2026-02-18T01:15
+
+- **Task:** Tasks 6-9 of hook-governance plan — parallel dispatch via 4 executor subagents (Strategy D)
+  - Task 6: pre-write.sh advisory reminder for hooks/ directory modifications
+  - Task 7: generate_configs.py --validate consistency check (enforcement.md ↔ disk)
+  - Task 8: reviewer-prompt.md show-your-work + fill-the-template rules
+  - Task 9: planning SKILL.md fill-in templates for review angles + SCOPE guard
+- **Files changed:** `hooks/gate/pre-write.sh` (advisory in gate_instruction_files), `scripts/generate_configs.py` (validate() + --validate flag), `agents/reviewer-prompt.md` (Output Quality Rules section), `skills/planning/SKILL.md` (Verify Correctness/Goal Alignment templates, Completeness SCOPE, all-angles Non-Goals reminder)
+- **Learnings:** Checklist gate hashes each verify command individually — when a checklist item has `cmd_a && cmd_b`, the gate hashes the full string, not the individual commands. Must log the exact string as extracted by `sed -n 's/.*| \`\(.*\)\`$/\1/p'`.
+- **Status:** done
+
+## Iteration 68 — 2026-02-18T01:21
+
+- **Task:** Tasks 6, 9, 10 of hook-governance plan — verification + completion
+  - Task 6: Already implemented (advisory in pre-write.sh) — verified passing
+  - Task 9: Already implemented (fill-in templates + SCOPE guard in planning SKILL.md) — verified passing
+  - Task 10: Added hook architecture routing entry + quick link to knowledge/INDEX.md, bumped version to 7.0
+- **Files changed:** `knowledge/INDEX.md` (added hook architecture routing + quick link + version bump), `docs/plans/2026-02-18-hook-governance.md` (Task 10 checked off)
+- **Learnings:** Tasks 6 and 9 were already completed in iteration 67 — always verify current state before dispatching subagents to avoid redundant work.
+- **Status:** done

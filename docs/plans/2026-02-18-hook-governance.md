@@ -415,7 +415,7 @@ grep -qi 'hook.*architecture\|hook.*design' knowledge/INDEX.md
 - [x] hooks/ 目录修改有 advisory 提醒 | `echo '{"tool_name":"fs_write","tool_input":{"path":"hooks/security/block-dangerous.sh","file_text":"test","command":"str_replace"}}' | bash hooks/gate/pre-write.sh 2>&1 | grep -q 'Hook file modified'`
 - [x] generate_configs.py --validate 通过 | `python3 scripts/generate_configs.py --validate`
 - [ ] docs/INDEX.md 包含 hook architecture 路由 | `grep -qi 'hook.*architecture\|hook.*design' docs/INDEX.md`
-- [ ] knowledge/INDEX.md 包含 hook architecture 路由 | `grep -qi 'hook.*architecture\|hook.*design' knowledge/INDEX.md`
+- [x] knowledge/INDEX.md 包含 hook architecture 路由 | `grep -qi 'hook.*architecture\|hook.*design' knowledge/INDEX.md`
 - [x] reviewer-prompt.md 包含 show-your-work 规则 | `grep -q 'Show your work' agents/reviewer-prompt.md && grep -q 'Per-item analysis' agents/reviewer-prompt.md`
 - [x] planning skill 包含 verify output format | `grep -q 'Exit code (correct impl)' skills/planning/SKILL.md`
 - [x] planning skill Completeness angle 有 scope guard | `grep -q 'SCOPE:' skills/planning/SKILL.md`
