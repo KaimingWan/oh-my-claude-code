@@ -174,13 +174,15 @@ Two categories: **fixed** (every round) and **random** (sampled each round).
 
 | Angle | Mission | Output |
 |-------|---------|--------|
-| Completeness | Missing steps, unhandled edge cases, gaps in coverage | Missing Items / Edge Cases / Verdict |
-| Testability | Are checklist verify commands adequate? Can failures be detected? | Weak Verifications / Suggested Improvements / Verdict |
+| Goal Alignment | For each Task, answer: does it contribute to the Goal? Is any task needed for the Goal but missing? Trace execution from Task 1 to final state — does it reach the Goal? Findings must cite specific Task numbers. | Missing Tasks / Unnecessary Tasks / Verdict |
+| Verify Correctness | For each checklist verify command: 1) state what it confirms, 2) trace exit code for correct implementation, 3) trace exit code for incorrect implementation. Flag only commands where both traces give same exit code (false positive). | False Positives / Weak Verifications / Verdict |
 
 **Random pool (2 sampled per round):**
 
 | Angle | Mission | Output |
 |-------|---------|--------|
+| Completeness | Missing steps, unhandled edge cases, gaps in coverage | Missing Items / Edge Cases / Verdict |
+| Testability | Are checklist verify commands adequate? Can failures be detected? | Weak Verifications / Suggested Improvements / Verdict |
 | Technical Feasibility | Can this be built? API limits, dependency risks, integration complexity | Risks / Blockers / Verdict |
 | Security | Auth, data exposure, injection surfaces, secrets handling | Findings by Category / Severity / Verdict |
 | Compatibility & Rollback | Does this break existing behavior? Can it be reverted if it fails? | Breaking Changes / Rollback Strategy / Verdict |
@@ -193,14 +195,42 @@ Every round: 2 fixed + 2 random = 4 reviewers (one parallel batch, no overflow).
 
 Random selection: sample 2 from the random pool. Repeats across rounds are fine — the same angle reviewing a revised plan catches regressions and verifies fixes.
 
+### Dispatch Query Template
+
+Each reviewer query MUST include: Context (Goal, Non-Goals, key design decisions), Mission (angle-specific from table above), files to read, and anti-patterns.
+
+```
+## Context
+Goal: [one sentence from plan header]
+Non-Goals: [from plan header]
+Key design decisions that reviewers might mistake for gaps:
+- [decision 1 — what was chosen and what was intentionally excluded]
+- [decision 2]
+
+## Your Mission
+This is a PLAN REVIEW (Mode 1 in your prompt).
+[angle-specific mission from the table above]
+
+## Read These Files
+Plan: [path]
+Source files referenced in plan: [list — reviewer must read before claiming code behavior]
+
+## Anti-patterns (do NOT do these)
+- Do not flag issues outside the stated Goal/Non-Goals
+- Do not suggest alternative approaches that are equally valid
+- Do not flag missing implementation details that an executor agent can infer
+- [plan-specific anti-patterns if any]
+```
+
 ### Orchestration
 
 1. Compose the round: Completeness + Testability + 2 random angles
 2. Dispatch 4 reviewer subagents in ONE `use_subagent` call. Each reviewer query = review angle mission + plan file path. Reviewer reads the file itself (has read/shell tools). Do NOT paste plan content into query — it bloats payload and breaks 4-way parallelism. **Must pass plan file path, not content.** **Must specify `agent_name: "reviewer"`**. Same `agent_name` can spawn multiple instances in parallel. **Include in each query:** "Read the source files referenced in the plan before making claims about code behavior."
 4. Reviewers in the same round do NOT see each other's feedback
 5. Collect all verdicts. If ANY reviewer REJECTs → fix issues → next round (re-sample 2 random angles)
-6. Repeat until all APPROVE in a single round, or 5 rounds reached
-7. After 5 rounds: stop and tell user "Plan too complex for automated review. Consider breaking into smaller plans."
+6. **Round 2+ rule:** When re-dispatching after fixes, include in each query a "Rejected Findings" section with one-line summaries of findings rejected in previous rounds and why. Reviewers must not re-raise these.
+7. Repeat until all APPROVE in a single round, or 5 rounds reached
+8. After 5 rounds: stop and tell user "Plan too complex for automated review. Consider breaking into smaller plans."
 
 ### Reviewer Calibration
 
@@ -319,6 +349,8 @@ Dispatch one agent per independent domain:
 ### Strategy D: Parallel Fan-out
 
 **When:** 2+ independent tasks with non-overlapping file sets.
+
+> **Note:** ralph_loop.py now auto-analyzes task dependencies and generates batch-aware prompts with explicit dispatch instructions. The agent no longer needs to judge independence — it receives pre-computed batches.
 
 **Independence check:** Extract `Files:` field from each Task. Two tasks are independent iff their file sets (Create + Modify + Test) have zero intersection. Tasks needing `code` tool (LSP) cannot be parallelized (subagents lack LSP).
 
