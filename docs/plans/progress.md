@@ -300,3 +300,10 @@
 - **Files changed:** `docs/plans/2026-02-16-codebase-review-cleanup.md` (checklist updates)
 - **Learnings:** enforce-ralph-loop.sh blocks `python3 -m pytest` because it's not in the read-only allowlist. The `grep -c '|'` verify command also gets blocked because the hook interprets `|` in the grep pattern as a pipe character. Use the `grep` tool (non-bash) or `md5` command for verification when bash is restricted. Items 6-8 were already completed by previous iterations — just needed verification and check-off.
 - **Status:** done
+
+## Iteration 44 — 2026-02-17T15:38
+
+- **Task:** Created test harness `tests/hooks/test-kiro-compat.sh` with 17 tests covering all 12 wired hooks (BLOCK+ALLOW for 4 security hooks, BLOCK+ALLOW for pre-write, ALLOW for enforce-ralph-loop, ALLOW for 6 feedback hooks). Verified items 1-5: valid bash syntax, ALLOW tests for all security hooks, all 12 hooks covered, block-outside-workspace blocks external fs_write (exit 2), block-outside-workspace allows internal fs_write (exit 0).
+- **Files changed:** `tests/hooks/test-kiro-compat.sh` (new)
+- **Learnings:** session-init.sh uses a flag file (`/tmp/lessons-injected-*.flag`) to run once per session — test passes because it exits 0 on first run. The `run_test` function reads stdin from heredoc, so each test case is self-contained. block-outside-workspace resolves `/tmp` to `/private/tmp` on macOS (symlink) but still correctly detects it as outside workspace.
+- **Status:** done
