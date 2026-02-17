@@ -405,3 +405,10 @@
 - **Files changed:** `tests/ralph-loop/test_lock.py` (added test_concurrent_acquire), `tests/ralph-loop/test_ralph_loop.py` (added test_double_ralph_no_lock_guard), `tests/ralph-loop/test_plan.py` (added test_concurrent_reload)
 - **Learnings:** Task 7 (lock contention) and Task 11 (concurrent reload) have non-overlapping file sets (test_lock.py+test_ralph_loop.py vs test_plan.py) — full parallel dispatch. Both subagents completed on first attempt. Lock contention test documents current behavior: acquire() is unconditional write_text with no guard, so second instance simply overwrites.
 - **Status:** done
+
+## Iteration 59 — 2026-02-17T23:23
+
+- **Task:** Task 8 — Signal handling and cleanup tests (test_sigint_cleanup, test_child_process_no_orphan)
+- **Files changed:** `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
+- **Learnings:** ralph_loop.py uses `start_new_session=True` for child processes and `os.killpg` for cleanup — this ensures child process groups are killed on timeout, preventing orphans. SIGINT handler calls `LOCK.release()` then `sys.exit(1)`, so lock cleanup works correctly. The `exec -a` trick in bash gives the sleep process a unique name for reliable `pgrep -f` detection.
+- **Status:** done

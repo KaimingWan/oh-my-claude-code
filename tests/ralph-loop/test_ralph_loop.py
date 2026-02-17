@@ -315,3 +315,70 @@ def test_double_ralph_no_lock_guard(tmp_path):
     
     assert r2.returncode in (0, 1)
     lock_path.unlink(missing_ok=True)
+
+
+def test_sigint_cleanup(tmp_path):
+    """Start ralph (KIRO_CMD=sleep 60), send SIGINT → lock file cleaned up, process exits."""
+    write_plan(tmp_path)
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+
+    proc = subprocess.Popen(
+        ["python3", SCRIPT, "1"],
+        env={
+            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+            "HOME": os.environ.get("HOME", "/tmp"),
+            "PLAN_POINTER_OVERRIDE": str(tmp_path / ".active"),
+            "RALPH_KIRO_CMD": "sleep 60",
+            "RALPH_TASK_TIMEOUT": "60",
+            "RALPH_HEARTBEAT_INTERVAL": "999",
+            "RALPH_SKIP_DIRTY_CHECK": "1",
+        },
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    time.sleep(1)
+    assert lock_path.exists(), "Lock file should exist while running"
+    proc.send_signal(signal.SIGINT)
+    proc.wait(timeout=5)
+    time.sleep(0.5)
+    assert not lock_path.exists(), "Lock file should be cleaned up after SIGINT"
+
+
+def test_child_process_no_orphan(tmp_path):
+    """Start ralph with uniquely-named KIRO_CMD script, kill ralph, verify no orphan."""
+    write_plan(tmp_path)
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+
+    unique_name = f"ralph_test_orphan_{os.getpid()}"
+    script_path = tmp_path / f"{unique_name}.sh"
+    script_path.write_text(f"#!/bin/bash\nexec -a {unique_name} sleep 60\n")
+    script_path.chmod(0o755)
+
+    proc = subprocess.Popen(
+        ["python3", SCRIPT, "1"],
+        env={
+            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+            "HOME": os.environ.get("HOME", "/tmp"),
+            "PLAN_POINTER_OVERRIDE": str(tmp_path / ".active"),
+            "RALPH_KIRO_CMD": str(script_path),
+            "RALPH_TASK_TIMEOUT": "2",
+            "RALPH_HEARTBEAT_INTERVAL": "999",
+            "RALPH_SKIP_DIRTY_CHECK": "1",
+        },
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait()
+    time.sleep(1)
+
+    # Verify no orphan process with the unique name
+    check = subprocess.run(
+        ["pgrep", "-f", unique_name],
+        capture_output=True, text=True,
+    )
+    assert check.returncode != 0, f"Orphan process found: {check.stdout.strip()}"
+    lock_path.unlink(missing_ok=True)
