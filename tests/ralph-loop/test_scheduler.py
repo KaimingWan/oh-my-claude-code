@@ -109,3 +109,21 @@ def test_empty_file_sets():
     batches = build_batches(tasks)
     assert len(batches) == 1
     assert len(batches[0].tasks) == 3
+
+def test_rebatch_after_removal():
+    tasks = [
+        make_task(1, ["shared.py", "a.py"]),
+        make_task(2, ["shared.py", "b.py"]),
+        make_task(3, ["c.py"]),
+        make_task(4, ["d.py"])
+    ]
+    
+    initial_batches = build_batches(tasks)
+    assert len(initial_batches) >= 2
+    
+    remaining_tasks = [tasks[1], tasks[2], tasks[3]]
+    new_batches = build_batches(remaining_tasks)
+    
+    assert len(new_batches) == 1
+    assert new_batches[0].parallel == True
+    assert len(new_batches[0].tasks) == 3

@@ -250,3 +250,38 @@ def test_prompt_file_paths():
     prompt = fn(batch, Path('docs/plans/test.md'), 1)
     assert 'src/main.py' in prompt
     assert 'tests/test_main.py' in prompt
+
+
+def test_summary_success(tmp_path):
+    """Test summary output for successful completion."""
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        write_plan(tmp_path, items="- [x] done | `echo ok`")
+        r = run_ralph(tmp_path)
+        assert r.returncode == 0
+        
+        assert summary_file.exists()
+        content = summary_file.read_text()
+        assert "SUCCESS" in content
+        assert "Completed:** 1" in content
+        assert "Remaining:** 0" in content
+        assert str(tmp_path / "plan.md") in content
+    finally:
+        summary_file.unlink(missing_ok=True)
+
+
+def test_summary_failure(tmp_path):
+    """Test summary output for failed execution with remaining items."""
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        write_plan(tmp_path, items="- [ ] task one | `echo ok`\n- [ ] task two | `echo ok`")
+        r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"}, max_iter="1")
+        assert r.returncode == 1
+        
+        assert summary_file.exists()
+        content = summary_file.read_text()
+        assert "FAILED" in content
+        assert "Remaining:** 2" in content
+        assert "Remaining Items" in content
+    finally:
+        summary_file.unlink(missing_ok=True)
