@@ -54,10 +54,10 @@ Create `/tmp/ralph-test-gamma.txt` with content "gamma".
 Concatenate alpha + beta + gamma into `/tmp/ralph-test-result.txt`.
 
 ## Checklist
-- [ ] alpha file created | `test -f /tmp/ralph-test-alpha.txt`
-- [ ] beta file created | `test -f /tmp/ralph-test-beta.txt`
-- [ ] gamma file created | `test -f /tmp/ralph-test-gamma.txt`
-- [ ] result file created | `test -f /tmp/ralph-test-result.txt`
+- [x] alpha file created | `test -f /tmp/ralph-test-alpha.txt`
+- [x] beta file created | `test -f /tmp/ralph-test-beta.txt`
+- [x] gamma file created | `test -f /tmp/ralph-test-gamma.txt`
+- [x] result file created | `test -f /tmp/ralph-test-result.txt`
 
 ## Errors
 

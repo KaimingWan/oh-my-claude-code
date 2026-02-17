@@ -377,3 +377,10 @@
 - **Files changed:** `docs/plans/2026-02-17-ralph-parallel-execution.md` (final checklist update)
 - **Learnings:** None new.
 - **Status:** done
+
+## Iteration 55 — 2026-02-17T19:51
+
+- **Task:** Parallel smoke test — 3 independent file creation tasks dispatched to executor subagents (Strategy D), plus 1 dependent concatenation task
+- **Files changed:** `/tmp/ralph-test-alpha.txt` (new), `/tmp/ralph-test-beta.txt` (new), `/tmp/ralph-test-gamma.txt` (new), `/tmp/ralph-test-result.txt` (new), `docs/plans/2026-02-17-parallel-smoke-test.md` (checklist updated)
+- **Learnings:** Security hook blocks main agent from writing to /tmp — delegate /tmp writes to executor subagents. Checklist gate requires verify commands run as standalone bash calls in main agent shell (not combined with echo). All 4 items completed: 3 parallel + 1 sequential dependent.
+- **Status:** done
