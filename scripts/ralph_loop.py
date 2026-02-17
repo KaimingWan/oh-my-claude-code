@@ -183,10 +183,8 @@ Rules:
 
 # --- Startup banner ---
 plan.reload()
-tasks = plan.parse_tasks()
-unchecked_tasks = [t for t in tasks if True]  # will filter below
-# Filter to unchecked via positional mapping (Task 3 will refine this)
-batches = build_batches(tasks) if tasks else []
+unchecked = plan.unchecked_tasks()
+batches = build_batches(unchecked) if unchecked else []
 
 if batches:
     print(f"🔄 Ralph Loop — {plan.unchecked} tasks remaining ({plan.checked}/{plan.total} done) | batch mode", flush=True)
@@ -225,11 +223,25 @@ for i in range(1, MAX_ITERATIONS + 1):
         stale_rounds = 0
     prev_checked = plan.checked
 
+    # Recompute batches from remaining unchecked tasks
+    unchecked = plan.unchecked_tasks()
+    batches = build_batches(unchecked) if unchecked else []
+
     print(f"{'=' * 63}", flush=True)
-    print(f" Iteration {i}/{MAX_ITERATIONS} — {plan.unchecked} remaining, {plan.checked} done", flush=True)
+    if batches:
+        current_batch = batches[0]
+        mode = "⚡ parallel" if current_batch.parallel else "📝 sequential"
+        names = ", ".join(f"T{t.number}" for t in current_batch.tasks)
+        print(f" Iteration {i}/{MAX_ITERATIONS} — {plan.unchecked} remaining | Batch: {mode} [{names}]", flush=True)
+    else:
+        print(f" Iteration {i}/{MAX_ITERATIONS} — {plan.unchecked} remaining, {plan.checked} done", flush=True)
     print(f"{'=' * 63}", flush=True)
 
-    prompt = build_prompt(i)
+    # Use batch-aware prompt if batches available, otherwise fallback
+    if batches:
+        prompt = build_batch_prompt(batches[0], plan_path, i)
+    else:
+        prompt = build_prompt(i)
 
     # Launch kiro-cli with process group isolation
     with LOG_FILE.open("a") as log_fd:
