@@ -32,6 +32,8 @@
 | 2026-02-16 | plan | Ralph Python Rewrite | [link](plans/2026-02-16-ralph-python-rewrite.md) |
 | 2026-02-16 | plan | Socratic Thinking Principles | [link](plans/2026-02-16-socratic-thinking-principles.md) |
 | 2026-02-16 | plan | Codebase Review Cleanup | [link](plans/2026-02-16-codebase-review-cleanup.md) |
+| 2026-02-18 | design | Hook Architecture | [link](designs/2026-02-18-hook-architecture.md) |
+| 2026-02-18 | plan | Hook Governance | [link](plans/2026-02-18-hook-governance.md) |
 
 ---
 *Last updated: 2026-02-17*
