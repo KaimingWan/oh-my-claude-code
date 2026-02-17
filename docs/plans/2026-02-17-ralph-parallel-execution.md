@@ -245,11 +245,11 @@ Focus on: is the approach correct? Is the task order right? Are verify commands 
 
 ## Checklist
 
-- [ ] parse_tasks 提取 Task 结构正确 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_parse_tasks -v`
-- [ ] parse_tasks 提取文件集正确 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_parse_tasks_file_sets -v`
-- [ ] parse_tasks 空 plan 返回空列表 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_parse_tasks_empty_plan -v`
-- [ ] build_batches 全独立任务分一组 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_all_independent -v`
-- [ ] build_batches 全依赖任务各自一组 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_all_dependent -v`
+- [x] parse_tasks 提取 Task 结构正确 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_parse_tasks -v`
+- [x] parse_tasks 提取文件集正确 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_parse_tasks_file_sets -v`
+- [x] parse_tasks 空 plan 返回空列表 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_parse_tasks_empty_plan -v`
+- [x] build_batches 全独立任务分一组 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_all_independent -v`
+- [x] build_batches 全依赖任务各自一组 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_all_dependent -v`
 - [ ] build_batches 混合依赖正确分组 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_mixed_deps -v`
 - [ ] build_batches 不超过 max_parallel | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_max_parallel_cap -v`
 - [ ] build_batches 空输入返回空 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_empty_tasks -v`
