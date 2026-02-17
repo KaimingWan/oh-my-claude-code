@@ -197,3 +197,56 @@ def test_fallback_no_task_structure(tmp_path):
     # Should not contain traceback
     assert "Traceback" not in r.stdout
     assert "Traceback" not in r.stderr
+
+
+def test_parallel_prompt_structure():
+    fn = _import_build_batch_prompt()
+    assert fn is not None
+    batch = Batch(tasks=[
+        TaskInfo(1, 'Alpha', {'a.py', 'b.py'}, ''),
+        TaskInfo(2, 'Beta', {'c.py'}, ''),
+        TaskInfo(3, 'Gamma', {'d.py', 'e.py'}, '')
+    ], parallel=True)
+    prompt = fn(batch, Path('docs/plans/test.md'), 1)
+    assert 'Task 1' in prompt
+    assert 'Alpha' in prompt
+    assert 'a.py' in prompt
+    assert 'b.py' in prompt
+    assert 'Task 2' in prompt
+    assert 'Beta' in prompt
+    assert 'c.py' in prompt
+    assert 'Task 3' in prompt
+    assert 'Gamma' in prompt
+    assert 'd.py' in prompt
+    assert 'e.py' in prompt
+
+
+def test_sequential_prompt_structure():
+    fn = _import_build_batch_prompt()
+    assert fn is not None
+    batch = Batch(tasks=[
+        TaskInfo(1, 'Alpha', {'a.py', 'b.py'}, '')
+    ], parallel=False)
+    prompt = fn(batch, Path('docs/plans/test.md'), 1)
+    assert 'Task 1' in prompt
+    assert 'Alpha' in prompt
+    assert 'a.py' in prompt
+    assert 'b.py' in prompt
+    assert 'dispatch' not in prompt.lower()
+
+
+def test_prompt_iteration_number():
+    fn = _import_build_batch_prompt()
+    assert fn is not None
+    batch = Batch(tasks=[TaskInfo(1, 'Test', {'test.py'}, '')], parallel=False)
+    prompt = fn(batch, Path('docs/plans/test.md'), 7)
+    assert '7' in prompt
+
+
+def test_prompt_file_paths():
+    fn = _import_build_batch_prompt()
+    assert fn is not None
+    batch = Batch(tasks=[TaskInfo(1, 'Test', {'src/main.py', 'tests/test_main.py'}, '')], parallel=False)
+    prompt = fn(batch, Path('docs/plans/test.md'), 1)
+    assert 'src/main.py' in prompt
+    assert 'tests/test_main.py' in prompt

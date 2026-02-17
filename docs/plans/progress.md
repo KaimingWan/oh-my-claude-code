@@ -384,3 +384,10 @@
 - **Files changed:** `/tmp/ralph-test-alpha.txt` (new), `/tmp/ralph-test-beta.txt` (new), `/tmp/ralph-test-gamma.txt` (new), `/tmp/ralph-test-result.txt` (new), `docs/plans/2026-02-17-parallel-smoke-test.md` (checklist updated)
 - **Learnings:** Security hook blocks main agent from writing to /tmp — delegate /tmp writes to executor subagents. Checklist gate requires verify commands run as standalone bash calls in main agent shell (not combined with echo). All 4 items completed: 3 parallel + 1 sequential dependent.
 - **Status:** done
+
+## Iteration 56 — 2026-02-17T23:04
+
+- **Task:** Tasks 1-4 of ralph-comprehensive-testing plan — parallel dispatch via 4 executor subagents
+- **Files changed:** `tests/ralph-loop/conftest.py` (new), `tests/ralph-loop/test_scheduler.py` (added 4 parametric tests), `tests/ralph-loop/test_plan.py` (added 7 edge case tests), `tests/ralph-loop/test_ralph_loop.py` (added 4 prompt structure tests)
+- **Learnings:** All 4 tasks had non-overlapping file sets → full parallel dispatch. Checklist gate hook requires verify commands run individually before each checkoff (batch checkoff blocked). 53 total tests collected, all passing.
+- **Status:** done

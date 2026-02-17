@@ -158,3 +158,73 @@ def test_unchecked_tasks_non_contiguous(tmp_path):
     assert len(result) == 2
     assert result[0].number == 2
     assert result[1].number == 4
+
+
+def test_counts_with_extra_whitespace(tmp_path):
+    plan = "# Test\n## Checklist\n- [x] normal\n- [ ] normal\n  - [ ] indented\n  - [x] indented\n"
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    assert pf.unchecked == 1
+
+
+def test_counts_mixed_skip_states(tmp_path):
+    plan = "# Test\n## Checklist\n- [x] done\n- [x] done\n- [ ] todo\n- [ ] todo\n- [ ] todo\n- [SKIP] skip\n"
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    assert pf.checked == 2
+    assert pf.unchecked == 3
+    assert pf.skipped == 1
+    assert pf.total == 5
+
+
+def test_reload_after_external_modify(tmp_path):
+    plan = "# Test\n## Checklist\n- [ ] one\n- [ ] two\n"
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    assert pf.unchecked == 2
+    p.write_text(plan.replace("- [ ] one", "- [x] one"))
+    pf.reload()
+    assert pf.unchecked == 1
+
+
+def test_task_count_mismatch_more_checklist(tmp_path):
+    plan = "# Test\n### Task 1: A\n**Files:**\n- Create: `a.py`\n### Task 2: B\n**Files:**\n- Create: `b.py`\n## Checklist\n- [ ] one\n- [ ] two\n- [ ] three\n- [ ] four\n"
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    result = pf.unchecked_tasks()
+    assert len(result) == 2
+
+
+def test_task_count_mismatch_fewer_checklist(tmp_path):
+    plan = "# Test\n### Task 1: A\n**Files:**\n- Create: `a.py`\n### Task 2: B\n**Files:**\n- Create: `b.py`\n### Task 3: C\n**Files:**\n- Create: `c.py`\n### Task 4: D\n**Files:**\n- Create: `d.py`\n## Checklist\n- [x] one\n- [x] two\n"
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    result = pf.unchecked_tasks()
+    assert len(result) == 2
+    assert result[0].number == 3
+    assert result[1].number == 4
+
+
+def test_checklist_with_skip_positional(tmp_path):
+    plan = "# Test\n### Task 1: A\n**Files:**\n- Create: `a.py`\n### Task 2: B\n**Files:**\n- Create: `b.py`\n### Task 3: C\n**Files:**\n- Create: `c.py`\n### Task 4: D\n**Files:**\n- Create: `d.py`\n## Checklist\n- [x] one\n- [SKIP] two\n- [ ] three\n- [ ] four\n"
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    result = pf.unchecked_tasks()
+    assert len(result) == 2
+    assert result[0].number == 3
+    assert result[1].number == 4
+
+
+def test_parse_tasks_malformed_header(tmp_path):
+    plan = "# Test\n### Task 1: Good\n**Files:**\n- Create: `a.py`\n### BadTask no number\n**Files:**\n- Create: `bad.py`\n### Task 2: Good\n**Files:**\n- Create: `b.py`\n"
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    tasks = pf.parse_tasks()
+    assert len(tasks) == 2

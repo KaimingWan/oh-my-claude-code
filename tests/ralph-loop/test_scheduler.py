@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
+import pytest
 from scripts.lib.scheduler import build_batches
 from scripts.lib.plan import TaskInfo
 
@@ -67,3 +68,44 @@ def test_single_task():
     assert len(batches) == 1
     assert batches[0].parallel is False
     assert len(batches[0].tasks) == 1
+
+
+@pytest.mark.parametrize("task_count,file_sets,max_parallel,expected_batch_count,expected_max_batch_size", [
+    (1, [["a.py"]], 4, 1, 1),
+    (4, [["a.py"], ["b.py"], ["c.py"], ["d.py"]], 4, 1, 4),
+    (5, [["a.py"], ["b.py"], ["c.py"], ["d.py"], ["e.py"]], 4, 2, 4),
+    (4, [["shared.py"], ["shared.py"], ["shared.py"], ["shared.py"]], 4, 4, 1),
+    (4, [["x.py"], ["x.py"], ["y.py"], ["y.py"]], 4, 2, 2),
+    (8, [["a.py"], ["b.py"], ["c.py"], ["d.py"], ["e.py"], ["f.py"], ["g.py"], ["h.py"]], 2, 4, 2),
+    (4, [["a.py", "b.py"], ["b.py", "c.py"], ["c.py", "d.py"], ["d.py", "e.py"]], 4, 2, 2)
+])
+def test_batch_grouping_parametric(task_count, file_sets, max_parallel, expected_batch_count, expected_max_batch_size):
+    tasks = [make_task(i, file_sets[i]) for i in range(task_count)]
+    batches = build_batches(tasks, max_parallel)
+    assert len(batches) == expected_batch_count
+    assert max(len(b.tasks) for b in batches) <= expected_max_batch_size
+    assert sum(len(b.tasks) for b in batches) == task_count
+
+
+def test_batch_stability():
+    tasks = [make_task(i, [f"file{i}.py"]) for i in range(4)]
+    results = [build_batches(tasks) for _ in range(10)]
+    first = results[0]
+    for result in results[1:]:
+        assert len(result) == len(first)
+        for i, batch in enumerate(result):
+            assert {t.number for t in batch.tasks} == {t.number for t in first[i].tasks}
+
+
+def test_large_task_set():
+    tasks = [make_task(i, [f"file{i}.py"]) for i in range(50)]
+    batches = build_batches(tasks, max_parallel=4)
+    assert all(len(b.tasks) <= 4 for b in batches)
+    assert sum(len(b.tasks) for b in batches) == 50
+
+
+def test_empty_file_sets():
+    tasks = [make_task(i, []) for i in range(3)]
+    batches = build_batches(tasks)
+    assert len(batches) == 1
+    assert len(batches[0].tasks) == 3
