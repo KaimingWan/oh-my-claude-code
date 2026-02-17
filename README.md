@@ -188,7 +188,9 @@ Key design: `hooks/`, `skills/`, `agents/`, `commands/` are the single source of
 | Platform | Hooks | Commands | Skills | Subagents |
 |----------|-------|----------|--------|-----------|
 | **Claude Code** | ✅ Full (14 events) | Via slash commands | ✅ | ✅ Full |
-| **Kiro CLI** | ✅ 5 events, command type | ✅ `.kiro/prompts/` | ✅ | ✅ With constraints |
+| **Kiro CLI** | ✅ 5 events (preToolUse, postToolUse, userPromptSubmit, stop, agentSpawn) | ✅ `.kiro/prompts/` | ✅ | ✅ With constraints |
+
+All 12 wired hooks verified compatible with Kiro CLI. See [compatibility matrix](docs/kiro-hook-compatibility.md) for details.
 
 ## Quick Start
 

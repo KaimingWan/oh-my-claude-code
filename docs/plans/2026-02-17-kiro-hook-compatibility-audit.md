@@ -125,8 +125,8 @@ Update README Compatibility section to reflect actual Kiro hook support includin
 - [x] block-sed-json blocks sed on .json | `echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"sed -i s/old/new/ config.json"}}' | bash hooks/security/block-sed-json.sh 2>&1; test $? -eq 2`
 - [x] pre-write blocks CLAUDE.md write | `echo '{"hook_event_name":"preToolUse","cwd":"'$(pwd)'","tool_name":"fs_write","tool_input":{"command":"create","path":"'$(pwd)'/CLAUDE.md","file_text":"hijack"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
 - [x] All test harness tests pass | `bash tests/hooks/test-kiro-compat.sh 2>/dev/null | grep -c FAIL | grep -q '^0$'`
-- [ ] Compatibility matrix doc exists | `test -f docs/kiro-hook-compatibility.md`
-- [ ] README updated with Kiro hook details | `grep -q "agentSpawn" README.md`
+- [x] Compatibility matrix doc exists | `test -f docs/kiro-hook-compatibility.md`
+- [x] README updated with Kiro hook details | `grep -q "agentSpawn" README.md`
 
 ## Errors
 
