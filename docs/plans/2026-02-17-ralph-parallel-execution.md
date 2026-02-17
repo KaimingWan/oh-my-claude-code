@@ -269,7 +269,7 @@ Focus on: is the approach correct? Is the task order right? Are verify commands 
 - [x] reviewer agentSpawn hook 修复 | `jq -r '.hooks.agentSpawn[0].command' .kiro/agents/reviewer.json | grep -q 'Never skip analysis'`
 - [x] reviewer-prompt 加 executor model | `grep -q 'Plan Executor Model' agents/reviewer-prompt.md`
 - [x] generate_configs.py 同步 agentSpawn 改动 | `python3 scripts/generate_configs.py && jq -r '.hooks.agentSpawn[0].command' .kiro/agents/reviewer.json | grep -q 'Never skip analysis'`
-- [ ] 全部测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
+- [x] 全部测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
 
 ## Errors
 
