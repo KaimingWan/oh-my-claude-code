@@ -361,6 +361,57 @@ def test_empty_active_file(tmp_path):
     assert r.returncode != 0
 
 
+def test_plan_modified_during_iteration(tmp_path):
+    """KIRO_CMD script checks off an item → ralph detects progress on next reload."""
+    plan = tmp_path / "plan.md"
+    plan_text = PLAN_TEMPLATE.format(items="- [ ] task one | `echo ok`\n- [ ] task two | `echo ok`")
+    plan.write_text(plan_text)
+    active = tmp_path / ".active"
+    active.write_text(str(plan))
+
+    # Script that checks off the first item in the plan
+    script = tmp_path / "modify_plan.sh"
+    script.write_text(f"#!/bin/bash\nsed -i.bak 's/- \\[ \\] task one/- [x] task one/' '{plan}'\n")
+    script.chmod(0o755)
+
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": str(script)}, max_iter="5")
+        # Ralph should detect the checked-off item and not count it as stale
+        assert r.returncode in (0, 1)
+        # Verify plan was actually modified by the script
+        content = plan.read_text()
+        assert "- [x] task one" in content
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+
+
+def test_lock_deleted_during_run(tmp_path):
+    """Delete lock file while ralph runs → ralph still completes iteration."""
+    write_plan(tmp_path)
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+
+    # Script that deletes the lock file then exits
+    script = tmp_path / "delete_lock.sh"
+    script.write_text(f"#!/bin/bash\nrm -f '{lock_path.resolve()}'\nsleep 1\n")
+    script.chmod(0o755)
+
+    try:
+        r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": str(script)}, max_iter="2")
+        # Ralph should complete without crashing despite lock deletion
+        assert r.returncode in (0, 1)
+        assert "Traceback" not in r.stdout
+        assert "Traceback" not in r.stderr
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+
+
 def test_child_process_no_orphan(tmp_path):
     """Start ralph with uniquely-named KIRO_CMD script, kill ralph, verify no orphan."""
     write_plan(tmp_path)

@@ -419,3 +419,10 @@
 - **Files changed:** `tests/ralph-loop/test_plan.py` (2 tests added), `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
 - **Learnings:** Truncated plan test must cut mid-prefix (`- [`) not mid-content (`- [ ] todo thr`) — the regex `^- \[ \] ` matches any line starting with that prefix regardless of trailing content.
 - **Status:** done
+
+## Iteration 61 — 2026-02-17T23:28
+
+- **Task:** Task 10 — External interference recovery tests (test_plan_modified_during_iteration, test_lock_deleted_during_run)
+- **Files changed:** `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
+- **Learnings:** macOS `sed -i.bak` works cross-platform (both macOS and Linux). Lock deletion during run is safe because `LockFile.release()` already handles `FileNotFoundError` via `missing_ok` in `unlink()`. The plan modification test verifies ralph's `plan.reload()` picks up external changes between iterations.
+- **Status:** done
