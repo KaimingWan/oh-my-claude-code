@@ -29,3 +29,24 @@ def test_context_manager(tmp_path):
     with LockFile(lock_path) as lf:
         assert lock_path.exists()
     assert not lock_path.exists()
+
+def test_concurrent_acquire(tmp_path):
+    import threading
+    lock_path = tmp_path / ".lock"
+    results = []
+    
+    def acquire_lock():
+        lf = LockFile(lock_path)
+        lf.acquire()
+        results.append(lf.path.read_text().strip())
+    
+    t1 = threading.Thread(target=acquire_lock)
+    t2 = threading.Thread(target=acquire_lock)
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+    
+    assert len(results) == 2
+    assert lock_path.exists()
+    assert lock_path.read_text().strip() in results

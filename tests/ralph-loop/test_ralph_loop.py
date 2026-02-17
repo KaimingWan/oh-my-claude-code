@@ -285,3 +285,33 @@ def test_summary_failure(tmp_path):
         assert "Remaining Items" in content
     finally:
         summary_file.unlink(missing_ok=True)
+
+def test_double_ralph_no_lock_guard(tmp_path):
+    """Start ralph as background process, then start second ralph with same plan.
+    Second instance overwrites lock and also runs. Both exit without crash."""
+    write_plan(tmp_path)
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    
+    proc1 = subprocess.Popen(
+        ["python3", SCRIPT, "1"],
+        env={
+            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+            "HOME": os.environ.get("HOME", "/tmp"),
+            "PLAN_POINTER_OVERRIDE": str(tmp_path / ".active"),
+            "RALPH_KIRO_CMD": "sleep 60",
+            "RALPH_TASK_TIMEOUT": "60",
+            "RALPH_HEARTBEAT_INTERVAL": "999",
+            "RALPH_SKIP_DIRTY_CHECK": "1",
+        },
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    time.sleep(1)
+    
+    r2 = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "sleep 1"})
+    
+    proc1.terminate()
+    proc1.wait(timeout=5)
+    
+    assert r2.returncode in (0, 1)
+    lock_path.unlink(missing_ok=True)

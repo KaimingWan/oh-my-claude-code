@@ -3,6 +3,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import pytest
+import threading
+import time
 from scripts.lib.plan import PlanFile, TaskInfo
 from scripts.lib.scheduler import build_batches
 
@@ -291,3 +293,46 @@ def test_recompute_after_partial_completion(tmp_path):
     assert len(batches) == 1
     assert batches[0].parallel == True
     assert len(batches[0].tasks) == 3
+
+
+def test_concurrent_reload(tmp_path):
+    p = tmp_path / "plan.md"
+    p.write_text(SAMPLE_PLAN)
+    pf = PlanFile(p)
+    
+    results = []
+    
+    def reader_thread():
+        for _ in range(50):
+            pf.reload()
+            checked = pf.checked
+            unchecked = pf.unchecked
+            results.append((checked, unchecked))
+            time.sleep(0.001)
+    
+    def writer_thread():
+        for i in range(25):
+            if i % 2 == 0:
+                p.write_text(SAMPLE_PLAN.replace("- [ ] item two", "- [x] item two"))
+            else:
+                p.write_text(SAMPLE_PLAN)
+            time.sleep(0.002)
+    
+    threads = []
+    for _ in range(10):
+        t = threading.Thread(target=reader_thread)
+        threads.append(t)
+    
+    writer = threading.Thread(target=writer_thread)
+    threads.append(writer)
+    
+    for t in threads:
+        t.start()
+    
+    for t in threads:
+        t.join()
+    
+    # Verify no crashes, exceptions, or negative values
+    for checked, unchecked in results:
+        assert checked >= 0
+        assert unchecked >= 0

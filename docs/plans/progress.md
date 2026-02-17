@@ -391,3 +391,17 @@
 - **Files changed:** `tests/ralph-loop/conftest.py` (new), `tests/ralph-loop/test_scheduler.py` (added 4 parametric tests), `tests/ralph-loop/test_plan.py` (added 7 edge case tests), `tests/ralph-loop/test_ralph_loop.py` (added 4 prompt structure tests)
 - **Learnings:** All 4 tasks had non-overlapping file sets → full parallel dispatch. Checklist gate hook requires verify commands run individually before each checkoff (batch checkoff blocked). 53 total tests collected, all passing.
 - **Status:** done
+
+## Iteration 57 — 2026-02-17T23:13
+
+- **Task:** Tasks 5-6 of ralph-comprehensive-testing plan — parallel dispatch via 2 executor subagents
+- **Files changed:** `tests/ralph-loop/test_plan.py` (added test_recompute_after_partial_completion), `tests/ralph-loop/test_scheduler.py` (added test_rebatch_after_removal), `tests/ralph-loop/test_ralph_loop.py` (added test_summary_success, test_summary_failure)
+- **Learnings:** Task 5 touches test_plan.py + test_scheduler.py, Task 6 touches test_ralph_loop.py — non-overlapping file sets, full parallel dispatch. Both subagents completed on first attempt. Summary tests need cleanup of docs/plans/.ralph-result since ralph_loop.py writes to project root via os.chdir.
+- **Status:** done
+
+## Iteration 58 — 2026-02-17T23:18
+
+- **Task:** Tasks 7+11 of ralph-comprehensive-testing plan — parallel dispatch via 2 executor subagents
+- **Files changed:** `tests/ralph-loop/test_lock.py` (added test_concurrent_acquire), `tests/ralph-loop/test_ralph_loop.py` (added test_double_ralph_no_lock_guard), `tests/ralph-loop/test_plan.py` (added test_concurrent_reload)
+- **Learnings:** Task 7 (lock contention) and Task 11 (concurrent reload) have non-overlapping file sets (test_lock.py+test_ralph_loop.py vs test_plan.py) — full parallel dispatch. Both subagents completed on first attempt. Lock contention test documents current behavior: acquire() is unconditional write_text with no guard, so second instance simply overwrites.
+- **Status:** done
