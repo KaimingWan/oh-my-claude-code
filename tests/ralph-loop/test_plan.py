@@ -233,6 +233,27 @@ def test_parse_tasks_malformed_header(tmp_path):
     assert len(tasks) == 2
 
 
+def test_partial_task_parse(tmp_path):
+    """Plan with 5 task headers but 2 malformed → parse_tasks() returns 3 valid tasks."""
+    plan = (
+        "# Test\n\n## Tasks\n\n"
+        "### Task 1: Good One\n**Files:**\n- Create: `a.py`\n\n"
+        "### Malformed no number\n**Files:**\n- Create: `bad1.py`\n\n"
+        "### Task 2: Good Two\n**Files:**\n- Create: `b.py`\n\n"
+        "### Also bad header\n**Files:**\n- Create: `bad2.py`\n\n"
+        "### Task 3: Good Three\n**Files:**\n- Create: `c.py`\n\n"
+        "## Checklist\n\n- [ ] one\n- [ ] two\n- [ ] three\n- [ ] four\n- [ ] five\n"
+    )
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    tasks = pf.parse_tasks()
+    assert len(tasks) == 3
+    assert tasks[0].name == "Good One"
+    assert tasks[1].name == "Good Two"
+    assert tasks[2].name == "Good Three"
+
+
 def test_recompute_after_partial_completion(tmp_path):
     plan = """\
 # Test Plan

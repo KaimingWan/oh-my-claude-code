@@ -273,7 +273,7 @@ State transition path tests using KIRO_CMD scripts that manipulate the plan:
 - [x] 并发 reload 无崩溃 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_concurrent_reload -v`
 - [x] 慢测试通过 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_many_iterations_no_hang tests/ralph-loop/test_ralph_loop.py::test_heartbeat_thread_cleanup -v`
 - [x] 状态转换路径通过 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_happy_path_complete tests/ralph-loop/test_ralph_loop.py::test_skip_then_complete tests/ralph-loop/test_ralph_loop.py::test_timeout_then_stale_then_breaker -v`
-- [ ] 半损坏 plan fallback 通过 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_partial_task_parse tests/ralph-loop/test_ralph_loop.py::test_fully_unparseable_plan_fallback tests/ralph-loop/test_ralph_loop.py::test_partial_parse_still_batches -v`
+- [x] 半损坏 plan fallback 通过 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_partial_task_parse tests/ralph-loop/test_ralph_loop.py::test_fully_unparseable_plan_fallback tests/ralph-loop/test_ralph_loop.py::test_partial_parse_still_batches -v`
 - [ ] 全部测试通过（含新增） | `python3 -m pytest tests/ralph-loop/ -v`
 
 ## Errors

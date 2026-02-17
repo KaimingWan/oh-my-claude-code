@@ -569,3 +569,53 @@ def test_timeout_then_stale_then_breaker(tmp_path):
     finally:
         lock_path.unlink(missing_ok=True)
         summary_file.unlink(missing_ok=True)
+
+
+def test_fully_unparseable_plan_fallback(tmp_path):
+    """Plan with checklist items but zero parseable task sections → falls back to build_prompt().
+    Verify no crash and no 'batch' in stdout."""
+    plan_text = PLAN_TEMPLATE.format(
+        items="- [ ] task one | `echo ok`\n- [ ] task two | `echo ok`"
+    )
+    # No ### Task N: headers at all — unchecked_tasks() returns [] but unchecked > 0
+    write_plan(tmp_path, items="- [ ] task one | `echo ok`\n- [ ] task two | `echo ok`")
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"}, max_iter="2")
+        assert r.returncode in (0, 1)
+        assert "Traceback" not in r.stdout
+        assert "Traceback" not in r.stderr
+        assert "batch" not in r.stdout.lower()
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+
+
+def test_partial_parse_still_batches(tmp_path):
+    """Plan with 4 checklist items but only 2 parseable task sections → uses batch mode."""
+    task_section = (
+        "## Tasks\n\n"
+        "### Task 1: Alpha\n\n**Files:**\n- Create: `a.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
+        "### Bad header no number\n\n**Files:**\n- Create: `bad.py`\n\n---\n\n"
+        "### Task 2: Beta\n\n**Files:**\n- Create: `b.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
+        "### Also malformed\n\n**Files:**\n- Create: `bad2.py`\n\n"
+    )
+    plan_text = PLAN_TEMPLATE.format(
+        items="- [ ] alpha | `echo ok`\n- [ ] bad1 | `echo ok`\n- [ ] beta | `echo ok`\n- [ ] bad2 | `echo ok`"
+    )
+    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
+    (tmp_path / "plan.md").write_text(plan_text)
+    (tmp_path / ".active").write_text(str(tmp_path / "plan.md"))
+
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"}, max_iter="1")
+        assert r.returncode in (0, 1)
+        assert "batch" in r.stdout.lower()
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)

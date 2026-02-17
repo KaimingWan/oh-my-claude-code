@@ -440,3 +440,10 @@
 - **Files changed:** `tests/ralph-loop/test_ralph_loop.py` (3 tests added)
 - **Learnings:** The skip_then_complete test uses a conditional script: first invocation marks item 1 as SKIP (grep detects unchecked item 1), second invocation checks off item 2. Ralph's `is_complete` returns True when `unchecked == 0`, and SKIP items don't count as unchecked, so SKIP+checked = complete.
 - **Status:** done
+
+## Iteration 64 — 2026-02-17T23:35
+
+- **Task:** Task 14 — Plan format half-corruption fallback tests (test_partial_task_parse, test_fully_unparseable_plan_fallback, test_partial_parse_still_batches)
+- **Files changed:** `tests/ralph-loop/test_plan.py` (1 test added), `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
+- **Learnings:** The fallback path in ralph_loop.py already works correctly: when `unchecked_tasks()` returns [] but `unchecked > 0`, `batches` is empty and `build_prompt()` is used. For partial parse, `unchecked_tasks()` maps positionally — only parseable tasks at positions with unchecked checklist items are returned, and batch mode kicks in for those.
+- **Status:** done
