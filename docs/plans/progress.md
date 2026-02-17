@@ -495,3 +495,12 @@
 - **Files changed:** None (verification only)
 - **Learnings:** Always verify current state before dispatching subagents. Both tasks were completed in iteration 67's parallel batch and confirmed in iteration 68. Remaining unchecked items (Task 5: Hook Architecture Doc, Task 10 partial: docs/INDEX.md) are outside this dispatch scope.
 - **Status:** done (no-op — already complete)
+
+## Iteration 70 — 2026-02-18T02:29
+
+- **Task:** Tasks 1-2 of release-v1-beta plan — parallel dispatch via 2 executor subagents (Strategy D)
+  - Task 1: Added shields.io release badge after H1 in README.md
+  - Task 2: Created docs/releases/v1.0.0-beta.md with highlights, install, and compare link
+- **Files changed:** `README.md` (badge added), `docs/releases/v1.0.0-beta.md` (new), `docs/plans/2026-02-18-release-v1-beta.md` (5/6 checklist items checked)
+- **Learnings:** `gh release create` requires authentication — `gh auth login` needed before creating GitHub Releases. Checklist gate requires exact command hash match — verify commands must be run as standalone bash calls matching the exact string extracted from the checklist.
+- **Status:** 5/6 done — GitHub Release blocked by `gh` auth (401 Unauthorized)
