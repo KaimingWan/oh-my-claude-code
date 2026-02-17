@@ -174,20 +174,20 @@ Two categories: **fixed** (every round) and **random** (sampled each round).
 
 | Angle | Mission | Output |
 |-------|---------|--------|
-| Goal Alignment | For each Task, answer: does it contribute to the Goal? Is any task needed for the Goal but missing? Trace execution from Task 1 to final state — does it reach the Goal? Findings must cite specific Task numbers. | Missing Tasks / Unnecessary Tasks / Verdict |
+| Goal Alignment | For each Task: 1) state which part of the Goal it serves (quote the specific phrase), 2) check if removing this Task would leave a Goal phrase uncovered. Then: list each Goal phrase and verify at least one Task covers it. Finally: trace the execution order — does Task N's output feed correctly into Task N+1's input? Findings must cite specific Task numbers and Goal phrases. | Missing Coverage / Unnecessary Tasks / Ordering Issues / Verdict |
 | Verify Correctness | For each checklist verify command: 1) state what it confirms, 2) trace exit code for correct implementation, 3) trace exit code for incorrect implementation. Flag only commands where both traces give same exit code (false positive). | False Positives / Weak Verifications / Verdict |
 
 **Random pool (2 sampled per round):**
 
-| Angle | Mission | Output |
-|-------|---------|--------|
-| Completeness | Missing steps, unhandled edge cases, gaps in coverage | Missing Items / Edge Cases / Verdict |
-| Testability | Are checklist verify commands adequate? Can failures be detected? | Weak Verifications / Suggested Improvements / Verdict |
-| Technical Feasibility | Can this be built? API limits, dependency risks, integration complexity | Risks / Blockers / Verdict |
-| Security | Auth, data exposure, injection surfaces, secrets handling | Findings by Category / Severity / Verdict |
-| Compatibility & Rollback | Does this break existing behavior? Can it be reverted if it fails? | Breaking Changes / Rollback Strategy / Verdict |
-| Performance | N+1 calls, expensive loops, context window bloat | Bottlenecks / Recommendations / Verdict |
-| Clarity | Is the plan unambiguous? Could another agent execute it without questions? | Ambiguous Sections / Rewording Suggestions / Verdict |
+| Angle | Mission | Analysis Method | Output |
+|-------|---------|-----------------|--------|
+| Completeness | For each source file in the plan's Files fields: 1) list its public functions/branches, 2) check which are exercised by at least one Task, 3) flag functions/branches with zero coverage. Also: for each error path in source (try/except, if-error-return, signal handler), verify at least one Task exercises it. Findings must cite specific function names and line ranges. | Source-to-task traceability matrix | Uncovered Functions / Unexercised Error Paths / Verdict |
+| Testability | For each Task's test cases: 1) identify the assertion (what property is checked), 2) construct a minimal wrong implementation that would still pass the assertion (false negative analysis), 3) flag tests where such a wrong implementation exists. Focus on: are assertions specific enough to catch real bugs, not just "no crash"? | False negative analysis per test | Weak Assertions / False Negative Risks / Verdict |
+| Technical Feasibility | For each Task: 1) list external dependencies (libraries, OS features, file system assumptions), 2) check if any dependency has platform/version constraints that conflict with Tech Stack, 3) for subprocess-based tests, verify timeout values are sufficient for the operations described. Flag only concrete blockers, not theoretical risks. | Dependency + constraint audit | Blockers / Platform Risks / Verdict |
+| Security | For each Task that touches file I/O, subprocess, or signal handling: 1) trace data flow from external input to execution, 2) check for path traversal, command injection, or symlink attacks in test fixtures, 3) verify temp files use secure creation (tmp_path, not hardcoded paths). | Data flow trace per Task | Injection Surfaces / Unsafe Patterns / Verdict |
+| Compatibility & Rollback | For each modified file in the plan: 1) list existing tests that import or call functions in that file, 2) check if the plan's changes could break those existing tests, 3) verify the plan includes running existing tests (not just new ones). Also: can the plan's changes be reverted with a single `git revert`? | Existing-test impact analysis | Breaking Changes / Revert Safety / Verdict |
+| Performance | For each Task involving subprocess or threading: 1) calculate worst-case wall-clock time (timeout × max_iterations × retry count), 2) sum across all Tasks to get total suite time, 3) flag any single test that could exceed 30s without @pytest.mark.slow. Provide concrete numbers, not estimates. | Quantified time budget per Task | Time Budget Table / Slow Test Violations / Verdict |
+| Clarity | For each Task's "What to implement" section: 1) attempt to write the function signature and key assertions from the description alone (without reading source), 2) flag any Task where you cannot determine the exact test structure from the description. A clear plan = an executor agent can implement without reading source first. | Implementability dry-run | Ambiguous Tasks / Missing Specs / Verdict |
 
 ### Angle Selection
 
@@ -224,7 +224,7 @@ Source files referenced in plan: [list — reviewer must read before claiming co
 
 ### Orchestration
 
-1. Compose the round: Completeness + Testability + 2 random angles
+1. Compose the round: Goal Alignment + Verify Correctness + 2 random angles
 2. Dispatch 4 reviewer subagents in ONE `use_subagent` call. Each reviewer query = review angle mission + plan file path. Reviewer reads the file itself (has read/shell tools). Do NOT paste plan content into query — it bloats payload and breaks 4-way parallelism. **Must pass plan file path, not content.** **Must specify `agent_name: "reviewer"`**. Same `agent_name` can spawn multiple instances in parallel. **Include in each query:** "Read the source files referenced in the plan before making claims about code behavior."
 4. Reviewers in the same round do NOT see each other's feedback
 5. Collect all verdicts. If ANY reviewer REJECTs → fix issues → next round (re-sample 2 random angles)
