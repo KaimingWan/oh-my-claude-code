@@ -7,6 +7,7 @@ _CHECKED = re.compile(r"^- \[x\] ", re.MULTILINE)
 _UNCHECKED = re.compile(r"^- \[ \] ", re.MULTILINE)
 _SKIPPED = re.compile(r"^- \[SKIP\] ", re.MULTILINE)
 _UNCHECKED_LINE = re.compile(r"^- \[ \] .*$", re.MULTILINE)
+_CHECKLIST_ITEM = re.compile(r"^- \[(?:x|SKIP| )\] ", re.MULTILINE)
 
 
 @dataclass
@@ -73,3 +74,16 @@ class PlanFile:
             tasks.append(TaskInfo(number, name, files, section_text))
         
         return tasks
+
+    def unchecked_tasks(self) -> list[TaskInfo]:
+        """Return tasks whose corresponding checklist item is unchecked (positional mapping)."""
+        tasks = self.parse_tasks()
+        if not tasks:
+            return []
+        # Find all checklist items (checked/unchecked/skipped) in order
+        items = _CHECKLIST_ITEM.findall(self._text)
+        unchecked = []
+        for i, task in enumerate(tasks):
+            if i >= len(items) or items[i] == "- [ ] ":
+                unchecked.append(task)
+        return unchecked

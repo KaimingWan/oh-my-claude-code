@@ -258,9 +258,9 @@ Focus on: is the approach correct? Is the task order right? Are verify commands 
 - [x] 串行 prompt 不含 dispatch 指令 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_sequential_prompt_no_dispatch -v`
 - [x] 启动 banner 显示 batch 信息 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_batch_mode_startup_banner -v`
 - [x] 依赖任务标记 sequential | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_dependent_tasks_sequential_banner -v`
-- [ ] unchecked_tasks 过滤已完成任务 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks -v`
-- [ ] unchecked_tasks 全完成返回空 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks_all_done -v`
-- [ ] unchecked_tasks 非连续勾选正确映射 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks_non_contiguous -v`
+- [x] unchecked_tasks 过滤已完成任务 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks -v`
+- [x] unchecked_tasks 全完成返回空 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks_all_done -v`
+- [x] unchecked_tasks 非连续勾选正确映射 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks_non_contiguous -v`
 - [ ] 无 Task 结构的 plan 不崩溃 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_fallback_no_task_structure -v`
 - [ ] planning SKILL.md batch-aware 文档更新 | `grep -q 'ralph_loop.py now auto' skills/planning/SKILL.md`
 - [ ] plan review fixed 角度改为 Goal Alignment + Verify Correctness | `grep -q 'Goal Alignment' skills/planning/SKILL.md && grep -A2 'Goal Alignment' skills/planning/SKILL.md | grep -q 'does it contribute'`

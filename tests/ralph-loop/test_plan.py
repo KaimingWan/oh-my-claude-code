@@ -110,3 +110,51 @@ def test_parse_tasks_empty_plan(tmp_path):
     pf = PlanFile(p)
     tasks = pf.parse_tasks()
     assert tasks == []
+
+
+UNCHECKED_PLAN = """\
+# Test Plan
+**Goal:** Test unchecked filtering
+
+## Tasks
+
+""" + "### " + "Task 1: Alpha\n\n**Files:**\n- Create: `a.py`\n\n**Verify:** `echo ok`\n\n---\n\n" + "### " + "Task 2: Beta\n\n**Files:**\n- Create: `b.py`\n\n**Verify:** `echo ok`\n\n---\n\n" + "### " + "Task 3: Gamma\n\n**Files:**\n- Create: `c.py`\n\n**Verify:** `echo ok`\n\n"
+
+
+def test_unchecked_tasks(tmp_path):
+    text = UNCHECKED_PLAN + "## Checklist\n\n- [x] alpha | `echo ok`\n- [ ] beta | `echo ok`\n- [ ] gamma | `echo ok`\n"
+    p = tmp_path / "plan.md"
+    p.write_text(text)
+    pf = PlanFile(p)
+    result = pf.unchecked_tasks()
+    assert len(result) == 2
+    assert result[0].number == 2
+    assert result[1].number == 3
+
+
+def test_unchecked_tasks_all_done(tmp_path):
+    text = UNCHECKED_PLAN + "## Checklist\n\n- [x] alpha | `echo ok`\n- [x] beta | `echo ok`\n- [x] gamma | `echo ok`\n"
+    p = tmp_path / "plan.md"
+    p.write_text(text)
+    pf = PlanFile(p)
+    assert pf.unchecked_tasks() == []
+
+
+NON_CONTIGUOUS_PLAN = """\
+# Test Plan
+**Goal:** Test non-contiguous
+
+## Tasks
+
+""" + "### " + "Task 1: A\n\n**Files:**\n- Create: `a.py`\n\n**Verify:** `echo ok`\n\n---\n\n" + "### " + "Task 2: B\n\n**Files:**\n- Create: `b.py`\n\n**Verify:** `echo ok`\n\n---\n\n" + "### " + "Task 3: C\n\n**Files:**\n- Create: `c.py`\n\n**Verify:** `echo ok`\n\n---\n\n" + "### " + "Task 4: D\n\n**Files:**\n- Create: `d.py`\n\n**Verify:** `echo ok`\n\n---\n\n" + "### " + "Task 5: E\n\n**Files:**\n- Create: `e.py`\n\n**Verify:** `echo ok`\n\n"
+
+
+def test_unchecked_tasks_non_contiguous(tmp_path):
+    text = NON_CONTIGUOUS_PLAN + "## Checklist\n\n- [x] a | `echo ok`\n- [ ] b | `echo ok`\n- [x] c | `echo ok`\n- [ ] d | `echo ok`\n- [x] e | `echo ok`\n"
+    p = tmp_path / "plan.md"
+    p.write_text(text)
+    pf = PlanFile(p)
+    result = pf.unchecked_tasks()
+    assert len(result) == 2
+    assert result[0].number == 2
+    assert result[1].number == 4
