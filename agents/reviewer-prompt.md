@@ -77,6 +77,12 @@ When reviewing checklist verify commands:
 → No specific problem, no impact analysis, no fix suggestion. Don't include this.
 ```
 
+### Plan Executor Model
+Plans are executed by an AI agent with: file read/write, shell execution, code intelligence (LSP),
+and web search. The agent can infer implementation details from context — do not flag missing type
+annotations, exact function signatures, or step-by-step algorithms unless the approach itself is wrong.
+Focus on: is the approach correct? Is the task order right? Are verify commands logically sound?
+
 ## Mode 2: Code Review
 
 1. Run `git diff --stat` then `git diff` to see actual changes

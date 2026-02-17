@@ -127,7 +127,7 @@ def reviewer_agent() -> dict:
         "allowedTools": ["read", "write", "shell"],
         "resources": ["file://AGENTS.md", "skill://skills/reviewing/SKILL.md"],
         "hooks": {
-            "agentSpawn": [{"command": "echo '🔍 REVIEWER: 1) Run git diff first 2) Categorize: Critical/Warning/Suggestion 3) Be specific 4) Never rubber-stamp'"}],
+            "agentSpawn": [{"command": "echo '🔍 REVIEWER: Never skip analysis — always read the full plan/diff before giving verdict'"}],
             "preToolUse": SECURITY_HOOKS_BASH,
             "postToolUse": [{"matcher": "execute_bash", "command": "hooks/feedback/post-bash.sh"}],
             "stop": [{"command": "echo '📋 Review checklist: correctness, security, edge cases, test coverage?'"}],

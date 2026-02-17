@@ -19,7 +19,7 @@
   "hooks": {
     "agentSpawn": [
       {
-        "command": "echo '🔍 REVIEWER: 1) Run git diff first 2) Categorize: Critical/Warning/Suggestion 3) Be specific 4) Never rubber-stamp'"
+        "command": "echo '🔍 REVIEWER: Never skip analysis — always read the full plan/diff before giving verdict'"
       }
     ],
     "preToolUse": [

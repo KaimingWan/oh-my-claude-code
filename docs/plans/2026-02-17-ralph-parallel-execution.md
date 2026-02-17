@@ -266,9 +266,9 @@ Focus on: is the approach correct? Is the task order right? Are verify commands 
 - [x] plan review fixed 角度改为 Goal Alignment + Verify Correctness | `grep -q 'Goal Alignment' skills/planning/SKILL.md && grep -A2 'Goal Alignment' skills/planning/SKILL.md | grep -q 'does it contribute'`
 - [x] dispatch query 模板已添加 | `grep -q 'Dispatch Query Template' skills/planning/SKILL.md && grep -A3 'Dispatch Query Template' skills/planning/SKILL.md | grep -q 'Non-Goals'`
 - [x] Round 2+ rejected findings 规则已添加 | `grep -q 'Rejected Findings' skills/planning/SKILL.md`
-- [ ] reviewer agentSpawn hook 修复 | `jq -r '.hooks.agentSpawn[0].command' .kiro/agents/reviewer.json | grep -q 'Never skip analysis'`
-- [ ] reviewer-prompt 加 executor model | `grep -q 'Plan Executor Model' agents/reviewer-prompt.md`
-- [ ] generate_configs.py 同步 agentSpawn 改动 | `python3 scripts/generate_configs.py && jq -r '.hooks.agentSpawn[0].command' .kiro/agents/reviewer.json | grep -q 'Never skip analysis'`
+- [x] reviewer agentSpawn hook 修复 | `jq -r '.hooks.agentSpawn[0].command' .kiro/agents/reviewer.json | grep -q 'Never skip analysis'`
+- [x] reviewer-prompt 加 executor model | `grep -q 'Plan Executor Model' agents/reviewer-prompt.md`
+- [x] generate_configs.py 同步 agentSpawn 改动 | `python3 scripts/generate_configs.py && jq -r '.hooks.agentSpawn[0].command' .kiro/agents/reviewer.json | grep -q 'Never skip analysis'`
 - [ ] 全部测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
 
 ## Errors
