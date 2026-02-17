@@ -1,4 +1,5 @@
 # oh-my-claude-code
+[![Release](https://img.shields.io/github/v/release/KaimingWan/oh-my-claude-code?include_prereleases)](https://github.com/KaimingWan/oh-my-claude-code/releases)
 
 **Turn your AI coding agent into a self-evolving, personalized super-intelligence.**
 
