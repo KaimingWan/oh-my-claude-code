@@ -26,7 +26,13 @@ Show the final plan with reviewer verdict. Ask user to confirm before any implem
 After user confirms:
 1. Write the plan file path to `docs/plans/.active` (e.g., `echo "docs/plans/2026-02-14-feature-x.md" > docs/plans/.active`)
 2. Clean up: `unlink .brainstorm-confirmed 2>/dev/null || true`
-3. Tell the user to run `@execute` to start implementation with Ralph Loop discipline (no unnecessary stops, one task at a time, commit after each).
+3. **Auto-commit plan artifacts** — ralph_loop.py requires a clean working tree. Only commit files the agent created/modified during this plan session (plan file, .active, any skill/prompt changes). Do NOT `git add -A` — user may have unrelated edits in progress. Use explicit file paths:
+   ```
+   git add docs/plans/<plan-file>.md docs/plans/.active [other files agent touched]
+   git commit -m "plan: <plan-slug> (reviewed, approved)"
+   ```
+   If `git status --porcelain` still shows untracked/modified files after this commit, warn the user: "You have uncommitted changes outside this plan. Stash or commit them before @execute."
+4. Tell the user to run `@execute` to start implementation with Ralph Loop discipline (no unnecessary stops, one task at a time, commit after each).
 
 ---
 User's requirement:
