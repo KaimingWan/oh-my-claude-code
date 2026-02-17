@@ -344,6 +344,23 @@ def test_sigint_cleanup(tmp_path):
     assert not lock_path.exists(), "Lock file should be cleaned up after SIGINT"
 
 
+def test_active_points_to_missing_file(tmp_path):
+    """Active file points to non-existent plan → ralph exits with clear error."""
+    active = tmp_path / ".active"
+    active.write_text(str(tmp_path / "nonexistent_plan.md"))
+    r = run_ralph(tmp_path)
+    assert r.returncode == 1
+    assert "not found" in r.stdout.lower() or "no such" in r.stdout.lower() or "not found" in r.stderr.lower()
+
+
+def test_empty_active_file(tmp_path):
+    """Active file is empty → Path('') resolves to cwd → crash with returncode != 0."""
+    active = tmp_path / ".active"
+    active.write_text("")
+    r = run_ralph(tmp_path)
+    assert r.returncode != 0
+
+
 def test_child_process_no_orphan(tmp_path):
     """Start ralph with uniquely-named KIRO_CMD script, kill ralph, verify no orphan."""
     write_plan(tmp_path)

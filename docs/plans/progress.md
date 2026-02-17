@@ -412,3 +412,10 @@
 - **Files changed:** `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
 - **Learnings:** ralph_loop.py uses `start_new_session=True` for child processes and `os.killpg` for cleanup — this ensures child process groups are killed on timeout, preventing orphans. SIGINT handler calls `LOCK.release()` then `sys.exit(1)`, so lock cleanup works correctly. The `exec -a` trick in bash gives the sleep process a unique name for reliable `pgrep -f` detection.
 - **Status:** done
+
+## Iteration 60 — 2026-02-17T23:25
+
+- **Task:** Task 9 — Fault tolerance tests for corrupted/abnormal inputs (test_truncated_plan, test_binary_content_in_plan, test_active_points_to_missing_file, test_empty_active_file)
+- **Files changed:** `tests/ralph-loop/test_plan.py` (2 tests added), `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
+- **Learnings:** Truncated plan test must cut mid-prefix (`- [`) not mid-content (`- [ ] todo thr`) — the regex `^- \[ \] ` matches any line starting with that prefix regardless of trailing content.
+- **Status:** done

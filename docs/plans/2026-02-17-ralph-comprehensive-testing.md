@@ -268,7 +268,7 @@ State transition path tests using KIRO_CMD scripts that manipulate the plan:
 - [x] summary 输出验证通过 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_summary_success tests/ralph-loop/test_ralph_loop.py::test_summary_failure -v`
 - [x] lock 竞争测试通过 | `python3 -m pytest tests/ralph-loop/test_lock.py::test_concurrent_acquire tests/ralph-loop/test_ralph_loop.py::test_double_ralph_no_lock_guard -v`
 - [x] 信号清理测试通过 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_sigint_cleanup tests/ralph-loop/test_ralph_loop.py::test_child_process_no_orphan -v`
-- [ ] 异常输入容错通过 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_truncated_plan tests/ralph-loop/test_plan.py::test_binary_content_in_plan tests/ralph-loop/test_ralph_loop.py::test_active_points_to_missing_file tests/ralph-loop/test_ralph_loop.py::test_empty_active_file -v`
+- [x] 异常输入容错通过 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_truncated_plan tests/ralph-loop/test_plan.py::test_binary_content_in_plan tests/ralph-loop/test_ralph_loop.py::test_active_points_to_missing_file tests/ralph-loop/test_ralph_loop.py::test_empty_active_file -v`
 - [ ] 外部干扰恢复通过 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_plan_modified_during_iteration tests/ralph-loop/test_ralph_loop.py::test_lock_deleted_during_run -v`
 - [x] 并发 reload 无崩溃 | `python3 -m pytest tests/ralph-loop/test_plan.py::test_concurrent_reload -v`
 - [ ] 慢测试通过 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_many_iterations_no_hang tests/ralph-loop/test_ralph_loop.py::test_heartbeat_thread_cleanup -v`

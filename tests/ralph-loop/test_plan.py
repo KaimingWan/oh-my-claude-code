@@ -295,6 +295,22 @@ def test_recompute_after_partial_completion(tmp_path):
     assert len(batches[0].tasks) == 3
 
 
+def test_truncated_plan(tmp_path):
+    plan = "# Test\n## Checklist\n- [x] done one\n- [ ] todo two\n- ["
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    assert pf.checked == 1
+    assert pf.unchecked == 1  # third item truncated mid-prefix, regex won't match
+
+
+def test_binary_content_in_plan(tmp_path):
+    p = tmp_path / "plan.md"
+    p.write_bytes(b"\x80\x81\x82\xff\xfe# Not valid UTF-8")
+    with pytest.raises(UnicodeDecodeError):
+        PlanFile(p)
+
+
 def test_concurrent_reload(tmp_path):
     p = tmp_path / "plan.md"
     p.write_text(SAMPLE_PLAN)
