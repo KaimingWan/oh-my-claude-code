@@ -433,3 +433,10 @@
 - **Files changed:** `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
 - **Learnings:** test_many_iterations_no_hang runs 10 iterations with KIRO_CMD=true — hits circuit breaker after MAX_STALE (3) stale rounds, exits cleanly in ~19s total. test_heartbeat_thread_cleanup uses a uniquely-named sleep script with 2s timeout and 1s heartbeat interval — verifies ralph kills child process groups via os.killpg and no orphans remain.
 - **Status:** done
+
+## Iteration 63 — 2026-02-17T23:33
+
+- **Task:** Task 13 — State transition path coverage tests (test_happy_path_complete, test_skip_then_complete, test_timeout_then_stale_then_breaker)
+- **Files changed:** `tests/ralph-loop/test_ralph_loop.py` (3 tests added)
+- **Learnings:** The skip_then_complete test uses a conditional script: first invocation marks item 1 as SKIP (grep detects unchecked item 1), second invocation checks off item 2. Ralph's `is_complete` returns True when `unchecked == 0`, and SKIP items don't count as unchecked, so SKIP+checked = complete.
+- **Status:** done

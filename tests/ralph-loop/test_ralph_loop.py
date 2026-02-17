@@ -493,3 +493,79 @@ def test_heartbeat_thread_cleanup(tmp_path):
     finally:
         lock_path.unlink(missing_ok=True)
         summary_file.unlink(missing_ok=True)
+
+
+def test_happy_path_complete(tmp_path):
+    """KIRO_CMD script checks off all items → ralph exits 0, summary says SUCCESS."""
+    plan = tmp_path / "plan.md"
+    plan_text = PLAN_TEMPLATE.format(items="- [ ] task one | `echo ok`\n- [ ] task two | `echo ok`")
+    plan.write_text(plan_text)
+    active = tmp_path / ".active"
+    active.write_text(str(plan))
+
+    script = tmp_path / "check_all.sh"
+    script.write_text(f"#!/bin/bash\nsed -i.bak 's/- \\[ \\]/- [x]/g' '{plan}'\n")
+    script.chmod(0o755)
+
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": str(script)}, max_iter="5")
+        assert r.returncode == 0
+        assert summary_file.exists()
+        assert "SUCCESS" in summary_file.read_text()
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+
+
+def test_skip_then_complete(tmp_path):
+    """KIRO_CMD script marks item 1 as SKIP, checks off item 2 → ralph exits 0 (all resolved)."""
+    plan = tmp_path / "plan.md"
+    plan_text = PLAN_TEMPLATE.format(items="- [ ] task one | `echo ok`\n- [ ] task two | `echo ok`")
+    plan.write_text(plan_text)
+    active = tmp_path / ".active"
+    active.write_text(str(plan))
+
+    # First call: mark item 1 as SKIP. Second call: check off item 2.
+    script = tmp_path / "skip_then_check.sh"
+    script.write_text(f"""#!/bin/bash
+if grep -q '\\- \\[ \\] task one' '{plan}'; then
+    sed -i.bak 's/- \\[ \\] task one/- [SKIP] task one/' '{plan}'
+else
+    sed -i.bak 's/- \\[ \\] task two/- [x] task two/' '{plan}'
+fi
+""")
+    script.chmod(0o755)
+
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": str(script)}, max_iter="5")
+        assert r.returncode == 0
+        content = plan.read_text()
+        assert "- [SKIP] task one" in content
+        assert "- [x] task two" in content
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+
+
+def test_timeout_then_stale_then_breaker(tmp_path):
+    """KIRO_CMD=sleep 60, timeout=2, max_iter=4 → ralph hits circuit breaker, exits 1."""
+    write_plan(tmp_path, items="- [ ] stuck task | `echo ok`")
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        r = run_ralph(tmp_path, extra_env={
+            "RALPH_KIRO_CMD": "sleep 60",
+            "RALPH_TASK_TIMEOUT": "2",
+        }, max_iter="4")
+        assert r.returncode == 1
+        assert "circuit breaker" in r.stdout.lower() or "no progress" in r.stdout.lower()
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
