@@ -426,3 +426,10 @@
 - **Files changed:** `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
 - **Learnings:** macOS `sed -i.bak` works cross-platform (both macOS and Linux). Lock deletion during run is safe because `LockFile.release()` already handles `FileNotFoundError` via `missing_ok` in `unlink()`. The plan modification test verifies ralph's `plan.reload()` picks up external changes between iterations.
 - **Status:** done
+
+## Iteration 62 — 2026-02-17T23:30
+
+- **Task:** Task 12 — Long-running stability slow tests (test_many_iterations_no_hang, test_heartbeat_thread_cleanup)
+- **Files changed:** `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
+- **Learnings:** test_many_iterations_no_hang runs 10 iterations with KIRO_CMD=true — hits circuit breaker after MAX_STALE (3) stale rounds, exits cleanly in ~19s total. test_heartbeat_thread_cleanup uses a uniquely-named sleep script with 2s timeout and 1s heartbeat interval — verifies ralph kills child process groups via os.killpg and no orphans remain.
+- **Status:** done

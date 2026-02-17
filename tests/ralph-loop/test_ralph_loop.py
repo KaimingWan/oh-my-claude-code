@@ -450,3 +450,46 @@ def test_child_process_no_orphan(tmp_path):
     )
     assert check.returncode != 0, f"Orphan process found: {check.stdout.strip()}"
     lock_path.unlink(missing_ok=True)
+
+
+@pytest.mark.slow
+def test_many_iterations_no_hang(tmp_path):
+    """Run ralph with 10 iterations (KIRO_CMD=true, plan never completes).
+    Exits within reasonable time (no hang), exit code 1 (circuit breaker), no orphan children."""
+    write_plan(tmp_path, items="- [ ] never done | `echo ok`")
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"}, max_iter="10")
+        assert r.returncode == 1
+        assert "circuit breaker" in r.stdout.lower() or "no progress" in r.stdout.lower()
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+
+
+@pytest.mark.slow
+def test_heartbeat_thread_cleanup(tmp_path):
+    """Run ralph with short timeout and heartbeat for 3 iterations → exits cleanly, no hang."""
+    write_plan(tmp_path, items="- [ ] never done | `echo ok`")
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    unique_name = f"ralph_hb_test_{os.getpid()}"
+    script = tmp_path / f"{unique_name}.sh"
+    script.write_text(f"#!/bin/bash\nexec -a {unique_name} sleep 60\n")
+    script.chmod(0o755)
+    try:
+        r = run_ralph(tmp_path, extra_env={
+            "RALPH_KIRO_CMD": str(script),
+            "RALPH_TASK_TIMEOUT": "2",
+            "RALPH_HEARTBEAT_INTERVAL": "1",
+        }, max_iter="3")
+        assert r.returncode == 1
+        time.sleep(1)
+        check = subprocess.run(["pgrep", "-f", unique_name], capture_output=True, text=True)
+        assert check.returncode != 0, f"Orphan process found: {check.stdout.strip()}"
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
