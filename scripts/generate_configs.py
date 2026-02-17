@@ -56,10 +56,14 @@ def claude_settings() -> dict:
                 {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/context-enrichment.sh'},
             ]}],
             "PreToolUse": [
-                {"matcher": "Bash", "hooks": SECURITY_HOOKS_CLAUDE},
+                {"matcher": "Bash", "hooks": SECURITY_HOOKS_CLAUDE + [
+                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/gate/enforce-ralph-loop.sh'},
+                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/gate/require-regression.sh'},
+                ]},
                 {"matcher": "Write|Edit", "hooks": [
                     {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'},
                     {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/gate/pre-write.sh'},
+                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/gate/enforce-ralph-loop.sh'},
                 ]},
             ],
             "PostToolUse": [

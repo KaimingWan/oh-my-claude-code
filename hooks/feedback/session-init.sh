@@ -1,6 +1,6 @@
 #!/bin/bash
 # session-init.sh — Session initialization (once per session)
-# Rules injection, episode cleanup, promotion reminder, delegation reminder, health report
+# Rules injection, episode cleanup, promotion reminder, health report
 # Split from context-enrichment.sh (single responsibility)
 
 INPUT=$(cat)
@@ -60,8 +60,7 @@ if [ -f "knowledge/episodes.md" ]; then
   [ "$PROMOTE" -gt 0 ] && echo "⬆️ $PROMOTE keyword patterns appear ≥3 times in episodes → consider promotion"
 fi
 
-# Delegation reminder
-echo "⚡ Delegation: >3 independent tasks → use subagent per task. Never delegate code/grep/web_search tasks."
+
 
 # KB health report
 if [ -f "knowledge/.health-report.md" ]; then

@@ -87,7 +87,7 @@ gate_check() {
 }
 
 # ============================================================
-# Phase 2: Injection & Secret Scan (from scan-skill-injection.sh)
+# Phase 5: Injection & Secret Scan (from scan-skill-injection.sh)
 # ============================================================
 scan_content() {
   [ -z "$CONTENT" ] && return 0
@@ -113,7 +113,7 @@ Never write secrets directly into files. Use environment variables instead."
 }
 
 # ============================================================
-# Phase 3: Plan Context Injection (from inject-plan-context.sh)
+# Phase 6: Plan Context Injection (from inject-plan-context.sh)
 # ============================================================
 inject_plan_context() {
   # Anti-loop: skip plan/progress/findings
@@ -144,7 +144,7 @@ inject_plan_context() {
 }
 
 # ============================================================
-# Phase 1.5a0: Brainstorming Gate
+# Phase 2: Brainstorming Gate
 # ============================================================
 gate_brainstorm() {
   case "$FILE" in docs/plans/*.md) ;; *) return 0 ;; esac
@@ -156,7 +156,7 @@ Run brainstorming first and confirm direction with user."
 }
 
 # ============================================================
-# Phase 1.5a: Plan Structure Static Rubric
+# Phase 3: Plan Structure Static Rubric
 # ============================================================
 gate_plan_structure() {
   case "$FILE" in
@@ -196,7 +196,7 @@ Required format: - [ ] description | \`verify command\`"
 }
 
 # ============================================================
-# Phase 1.5b: Checklist Check-off Gate
+# Phase 4: Checklist Check-off Gate
 # ============================================================
 gate_checklist() {
   case "$FILE" in

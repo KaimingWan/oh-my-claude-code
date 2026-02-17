@@ -46,6 +46,14 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/security/block-outside-workspace.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/enforce-ralph-loop.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/require-regression.sh"
           }
         ]
       },
@@ -59,6 +67,10 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/pre-write.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/hooks/gate/enforce-ralph-loop.sh"
           }
         ]
       }

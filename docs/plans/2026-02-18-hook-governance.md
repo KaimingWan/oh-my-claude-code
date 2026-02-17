@@ -406,11 +406,11 @@ grep -qi 'hook.*architecture\|hook.*design' knowledge/INDEX.md
 
 ## Checklist
 
-- [ ] llm-eval.sh 已移到 .trash | `test ! -f hooks/_lib/llm-eval.sh && test -f .trash/llm-eval.sh`
-- [ ] enforcement.md 包含所有 15 个 hook | `test $(grep -c '| hooks/' .kiro/rules/enforcement.md) -ge 15`
-- [ ] settings.json 包含 enforce-ralph-loop | `jq -r '.. | .command? // empty' .claude/settings.json | grep -q 'enforce-ralph-loop'`
-- [ ] pre-write.sh Phase 编号连续且无重复 | `grep -oE 'Phase [0-9]+' hooks/gate/pre-write.sh | awk '{print $2}' | sort -n | awk 'NR>1{if($1!=prev+1 || $1==prev){exit 1}}{prev=$1}'`
-- [ ] session-init.sh 无 delegation reminder | `! grep -q 'Delegation:' hooks/feedback/session-init.sh`
+- [x] llm-eval.sh 已移到 .trash | `test ! -f hooks/_lib/llm-eval.sh && test -f .trash/llm-eval.sh`
+- [x] enforcement.md 包含所有 15 个 hook | `test $(grep -c '| .hooks/' .kiro/rules/enforcement.md) -ge 15`
+- [x] settings.json 包含 enforce-ralph-loop | `jq -r '.. | .command? // empty' .claude/settings.json | grep -q 'enforce-ralph-loop'`
+- [x] pre-write.sh Phase 编号连续且无重复 | `grep -oE 'Phase [0-9]+' hooks/gate/pre-write.sh | awk '{print $2}' | sort -n | awk 'NR>1{if($1!=prev+1 || $1==prev){exit 1}}{prev=$1}'`
+- [x] session-init.sh 无 delegation reminder | `! grep -q 'Delegation:' hooks/feedback/session-init.sh`
 - [ ] Hook Architecture Doc 存在且完整 | `test -f docs/designs/2026-02-18-hook-architecture.md && grep -q '## Design Principles' docs/designs/2026-02-18-hook-architecture.md && grep -q '## Hook Registry' docs/designs/2026-02-18-hook-architecture.md && grep -q '## Lifecycle' docs/designs/2026-02-18-hook-architecture.md && grep -q '## Extensibility' docs/designs/2026-02-18-hook-architecture.md`
 - [ ] hooks/ 目录修改有 advisory 提醒 | `echo '{"tool_name":"fs_write","tool_input":{"path":"hooks/security/block-dangerous.sh","file_text":"test","command":"str_replace"}}' | bash hooks/gate/pre-write.sh 2>&1 | grep -q 'Hook file modified'`
 - [ ] generate_configs.py --validate 通过 | `python3 scripts/generate_configs.py --validate`

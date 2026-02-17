@@ -454,3 +454,14 @@
 - **Files changed:** `docs/plans/2026-02-17-ralph-comprehensive-testing.md` (final checklist item checked)
 - **Learnings:** The `pytest.mark.slow` warnings are cosmetic — would need a `pytest.ini` or `pyproject.toml` marker registration to suppress. Not in scope for this plan.
 - **Status:** done
+
+## Iteration 66 — 2026-02-18T01:10
+
+- **Task:** Tasks 1-4 of hook-governance plan — parallel dispatch via 4 executor subagents (Strategy D)
+  - Task 1: 修复注册表 drift + 清理死代码 (enforcement.md + llm-eval.sh → .trash/)
+  - Task 2: 修复 settings.json drift (generate_configs.py + regenerate)
+  - Task 3: 修复 pre-write.sh Phase 编号 (renumber 0-6 sequential)
+  - Task 4: 清理 session-init.sh 低价值输出 (remove delegation reminder)
+- **Files changed:** `.kiro/rules/enforcement.md` (rewritten — 15 hooks, L0 security layer), `hooks/_lib/llm-eval.sh` → `.trash/llm-eval.sh` (moved), `scripts/generate_configs.py` (added enforce-ralph-loop + require-regression to CC settings), `.claude/settings.json` (regenerated), `.kiro/agents/*.json` (regenerated), `hooks/gate/pre-write.sh` (phase renumbering), `hooks/feedback/session-init.sh` (removed delegation reminder)
+- **Learnings:** Checklist verify command `grep -c '| hooks/'` didn't match because enforcement.md uses backtick-wrapped paths (`\`hooks/...\``). Fixed verify to use `'| \`hooks/'`. Also: checklist gate requires each verify command run as standalone bash execution with exact hash match — combined commands in a single bash call don't satisfy individual item hashes.
+- **Status:** done
