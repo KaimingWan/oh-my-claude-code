@@ -277,6 +277,13 @@ for i in range(1, MAX_ITERATIONS + 1):
 
     time.sleep(2)
 
+    # Early completion check — avoid wasting a full iteration
+    plan.reload()
+    if plan.is_complete:
+        print(f"\n✅ All {plan.checked} checklist items complete!", flush=True)
+        final_exit = 0
+        break
+
 else:
     plan.reload()
     if not plan.is_complete:
