@@ -486,3 +486,12 @@
 - **Files changed:** `knowledge/INDEX.md` (added hook architecture routing + quick link + version bump), `docs/plans/2026-02-18-hook-governance.md` (Task 10 checked off)
 - **Learnings:** Tasks 6 and 9 were already completed in iteration 67 — always verify current state before dispatching subagents to avoid redundant work.
 - **Status:** done
+
+## Iteration 69 — 2026-02-18T01:30
+
+- **Task:** Tasks 6+9 of hook-governance plan — dispatch skipped, already complete
+  - Task 6: pre-write.sh advisory for hooks/ modifications — verified PASS (implemented in iteration 67)
+  - Task 9: planning SKILL.md fill-in templates + SCOPE guard — verified PASS (implemented in iteration 67)
+- **Files changed:** None (verification only)
+- **Learnings:** Always verify current state before dispatching subagents. Both tasks were completed in iteration 67's parallel batch and confirmed in iteration 68. Remaining unchecked items (Task 5: Hook Architecture Doc, Task 10 partial: docs/INDEX.md) are outside this dispatch scope.
+- **Status:** done (no-op — already complete)
