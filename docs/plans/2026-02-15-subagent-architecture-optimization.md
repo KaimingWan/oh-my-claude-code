@@ -28,7 +28,7 @@
 {
   "mcpServers": {
     "ripgrep": {
-      "command": "/Users/wanshao/.nvm/versions/node/v23.9.0/bin/npx",
+      "command": "npx",
       "args": ["-y", "mcp-ripgrep@latest"]
     }
   }

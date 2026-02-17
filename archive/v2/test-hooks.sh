@@ -1,6 +1,6 @@
 #!/bin/bash
 # Test all hooks on macOS
-cd /Users/wanshao/project/oh-my-claude-code
+cd "$(git rev-parse --show-toplevel)"
 
 echo "=========================================="
 echo "  COMPREHENSIVE HOOK TEST SUITE"
