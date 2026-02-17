@@ -447,3 +447,10 @@
 - **Files changed:** `tests/ralph-loop/test_plan.py` (1 test added), `tests/ralph-loop/test_ralph_loop.py` (2 tests added)
 - **Learnings:** The fallback path in ralph_loop.py already works correctly: when `unchecked_tasks()` returns [] but `unchecked > 0`, `batches` is empty and `build_prompt()` is used. For partial parse, `unchecked_tasks()` maps positionally — only parseable tasks at positions with unchecked checklist items are returned, and batch mode kicks in for those.
 - **Status:** done
+
+## Iteration 65 — 2026-02-17T23:40
+
+- **Task:** Final integration verification — ran full test suite `python3 -m pytest tests/ralph-loop/ -v`, all 76 tests pass (0 failures, 2 warnings for unregistered `slow` mark)
+- **Files changed:** `docs/plans/2026-02-17-ralph-comprehensive-testing.md` (final checklist item checked)
+- **Learnings:** The `pytest.mark.slow` warnings are cosmetic — would need a `pytest.ini` or `pyproject.toml` marker registration to suppress. Not in scope for this plan.
+- **Status:** done
