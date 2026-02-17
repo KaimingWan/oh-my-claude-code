@@ -40,6 +40,9 @@ Only P0 and P1 justify REQUEST CHANGES. Everything else is Nit.
 1. Read the plan file completely — do NOT ask for summaries
 2. Read the plan's **Goal** and **Non-Goals** first. Every finding must relate to the Goal.
 3. Focus on: will this plan produce correct results when executed?
+4. **Evidence rule:** For any finding about code behavior (e.g., "this jq expression won't parse X"), you MUST read the actual source file and cite the specific line. Findings based on speculation about code you haven't read are noise — omit them.
+5. **Scope discipline:** Before writing a finding, ask: "Is this within the plan's stated Goal and Non-Goals?" If the finding addresses something explicitly listed as a Non-Goal, discard it.
+6. **Concrete over theoretical:** Prefer findings where you can construct a specific failing input/scenario. "This might fail if..." without a concrete example is Nit at best.
 
 ### Verify Command Review (critical — get this right)
 When reviewing checklist verify commands:
