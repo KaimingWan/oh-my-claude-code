@@ -25,6 +25,13 @@ esac
 # Phase 0: Instruction File Write Protection
 # ============================================================
 gate_instruction_files() {
+  # Advisory: hook file modification reminder
+  case "$FILE" in
+    hooks/*.sh|hooks/**/*.sh)
+      echo "⚠️ Hook file modified. Remember to update enforcement.md and run generate_configs.py --validate" >&2
+      ;;
+  esac
+
   case "$FILE" in
     CLAUDE.md|./CLAUDE.md|AGENTS.md|./AGENTS.md) ;;
     knowledge/rules.md|./knowledge/rules.md) ;;

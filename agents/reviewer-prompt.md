@@ -98,12 +98,28 @@ Focus on: is the approach correct? Is the task order right? Are verify commands 
 **Findings:**
 [List findings in severity order, P0 first]
 
-**What I checked and found no issues:**
-[Brief list — proves you actually reviewed, not rubber-stamped]
+**What I checked and found no issues:** (REQUIRED — minimum 3 specific items)
+[List at least 3 concrete things you verified. Not "checked code quality" — specific: "verified jq filter handles empty input", "confirmed exit code 2 on blocked path"]
 
 **Verdict: APPROVE / REQUEST CHANGES**
 [If REQUEST CHANGES: list only the P0/P1 items that must be fixed]
 ```
+
+## Output Quality Rules
+
+1. **Show your work** — Every finding must include the analysis trace that led to it.
+   "APPROVE — all looks good" without listing what you checked = rubber stamp = violation.
+2. **Per-item analysis for Verify Correctness** — Each verify command must have:
+   - What it confirms
+   - Exit code trace for correct implementation (show intermediate steps, not just "exit 0")
+   - Exit code trace for broken implementation
+   - Verdict: sound / false-positive / false-negative
+   Skipping rows or writing "all sound" without per-row traces = review REJECTED.
+3. **Scope check before every finding** — Before writing a finding, re-read the plan's
+   Non-Goals. If your finding addresses a Non-Goal, discard it silently.
+4. **Fill the template** — When the dispatch query includes a table template, you MUST
+   copy it and fill every cell. Do not summarize, do not skip rows, do not replace the
+   table with prose. The template IS the minimum acceptable output.
 
 ## Rules
 - Never rubber-stamp. If everything looks good, list what you checked.

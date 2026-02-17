@@ -6,10 +6,59 @@ Replaces generate-platform-configs.sh. Outputs:
   .kiro/agents/{pilot,reviewer,researcher,executor}.json
 """
 import json
+import re
 import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# ── Validation ───────────────────────────────────────────────────────────
+
+def validate() -> int:
+    """Check consistency between hook files and enforcement.md registry."""
+    hooks_dir = PROJECT_ROOT / "hooks"
+    enforcement_md = PROJECT_ROOT / ".kiro" / "rules" / "enforcement.md"
+    
+    # Collect .sh files on disk (exclude _lib/)
+    on_disk = set()
+    for sh_file in hooks_dir.rglob("*.sh"):
+        rel = sh_file.relative_to(PROJECT_ROOT)
+        if "_lib" not in rel.parts:
+            on_disk.add(str(rel))
+    
+    # Parse enforcement.md registry (only Hook Registry table)
+    in_registry = set()
+    text = enforcement_md.read_text()
+    in_hook_registry = False
+    for line in text.splitlines():
+        if "## Hook Registry" in line:
+            in_hook_registry = True
+            continue
+        if in_hook_registry and line.startswith("## "):
+            break
+        if in_hook_registry and "|" in line and "hooks/" in line and not line.startswith("|---"):
+            match = re.search(r'`(hooks/[^`*]+\.sh)`', line)
+            if match:
+                in_registry.add(match.group(1))
+    
+    errors = 0
+    # Files on disk but not registered
+    for f in sorted(on_disk - in_registry):
+        print(f"  ❌ On disk but not in enforcement.md: {f}")
+        errors += 1
+    # Registered but missing from disk
+    for f in sorted(in_registry - on_disk):
+        if (PROJECT_ROOT / f).exists():
+            continue
+        print(f"  ❌ In enforcement.md but not on disk: {f}")
+        errors += 1
+    
+    if errors:
+        print(f"\n❌ {errors} inconsistency(ies) found.")
+        return 1
+    print("✅ Hook registry is consistent with files on disk.")
+    return 0
+
 
 # ── Shared hook definitions ──────────────────────────────────────────────
 
@@ -203,6 +252,10 @@ def write_json(path: Path, data: dict) -> None:
 
 
 def main() -> int:
+    if validate() != 0:
+        print("\n🚫 Fix inconsistencies before generating configs.")
+        return 1
+    
     print("🔧 Generating platform configs from unified source...")
 
     targets = [
@@ -233,4 +286,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    if "--validate" in sys.argv:
+        sys.exit(validate())
     sys.exit(main())
