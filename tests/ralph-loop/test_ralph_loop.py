@@ -186,3 +186,14 @@ def test_dependent_tasks_sequential_banner(tmp_path):
     (tmp_path / "plan.md").write_text(plan_text)
     r = run_ralph(tmp_path)
     assert "sequential" in r.stdout.lower()
+
+
+def test_fallback_no_task_structure(tmp_path):
+    """Plan with checklist but no task sections → runs without crash, exits normally."""
+    write_plan(tmp_path, items="- [ ] simple task | `echo ok`")
+    r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"}, max_iter="2")
+    # Should not crash — either completes or hits circuit breaker
+    assert r.returncode in (0, 1)
+    # Should not contain traceback
+    assert "Traceback" not in r.stdout
+    assert "Traceback" not in r.stderr
