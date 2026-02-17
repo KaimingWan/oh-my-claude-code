@@ -14,6 +14,9 @@ case "$TOOL_NAME" in
     FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)
     CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.file_text // .tool_input.new_str // ""' 2>/dev/null)
     COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
+    # Normalize absolute path to relative (Kiro sends absolute paths)
+    WORKSPACE=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
+    case "$FILE" in "$WORKSPACE"/*) FILE="${FILE#$WORKSPACE/}" ;; esac
     ;;
   *) exit 0 ;;
 esac

@@ -120,11 +120,11 @@ Update README Compatibility section to reflect actual Kiro hook support includin
 - [x] Test harness covers all 12 wired hooks | `for hook in block-dangerous block-secrets block-sed-json block-outside-workspace pre-write enforce-ralph-loop correction-detect session-init context-enrichment post-write post-bash verify-completion; do grep -q "$hook" tests/hooks/test-kiro-compat.sh || exit 1; done`
 - [x] block-outside-workspace blocks external fs_write | `echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"fs_write","tool_input":{"command":"create","path":"/tmp/evil.txt","file_text":"x"}}' | bash hooks/security/block-outside-workspace.sh 2>&1; test $? -eq 2`
 - [x] block-outside-workspace allows internal fs_write | `echo '{"hook_event_name":"preToolUse","cwd":"'$(pwd)'","tool_name":"fs_write","tool_input":{"command":"create","path":"'$(pwd)'/tests/hooks/.marker","file_text":"x"}}' | bash hooks/security/block-outside-workspace.sh 2>&1; test $? -eq 0`
-- [ ] block-dangerous blocks rm -rf | `echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"rm -rf /"}}' | bash hooks/security/block-dangerous.sh 2>&1; test $? -eq 2`
-- [ ] block-dangerous allows safe command | `echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"ls -la"}}' | bash hooks/security/block-dangerous.sh 2>&1; test $? -eq 0`
-- [ ] block-sed-json blocks sed on .json | `echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"sed -i s/old/new/ config.json"}}' | bash hooks/security/block-sed-json.sh 2>&1; test $? -eq 2`
-- [ ] pre-write blocks CLAUDE.md write | `echo '{"hook_event_name":"preToolUse","cwd":"'$(pwd)'","tool_name":"fs_write","tool_input":{"command":"create","path":"'$(pwd)'/CLAUDE.md","file_text":"hijack"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
-- [ ] All test harness tests pass | `bash tests/hooks/test-kiro-compat.sh 2>/dev/null | grep -c FAIL | grep -q '^0$'`
+- [x] block-dangerous blocks rm -rf | `echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"rm -rf /"}}' | bash hooks/security/block-dangerous.sh 2>&1; test $? -eq 2`
+- [x] block-dangerous allows safe command | `echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"ls -la"}}' | bash hooks/security/block-dangerous.sh 2>&1; test $? -eq 0`
+- [x] block-sed-json blocks sed on .json | `echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"sed -i s/old/new/ config.json"}}' | bash hooks/security/block-sed-json.sh 2>&1; test $? -eq 2`
+- [x] pre-write blocks CLAUDE.md write | `echo '{"hook_event_name":"preToolUse","cwd":"'$(pwd)'","tool_name":"fs_write","tool_input":{"command":"create","path":"'$(pwd)'/CLAUDE.md","file_text":"hijack"}}' | bash hooks/gate/pre-write.sh 2>&1; test $? -eq 2`
+- [x] All test harness tests pass | `bash tests/hooks/test-kiro-compat.sh 2>/dev/null | grep -c FAIL | grep -q '^0$'`
 - [ ] Compatibility matrix doc exists | `test -f docs/kiro-hook-compatibility.md`
 - [ ] README updated with Kiro hook details | `grep -q "agentSpawn" README.md`
 

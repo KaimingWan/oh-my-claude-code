@@ -47,3 +47,17 @@
 **Impact:** When executing the final checklist items outside ralph-loop, the verify commands can't be run via bash. Must use alternative tools (grep tool, md5 command, fs_read) or run inside ralph-loop.
 
 **Recommendation:** Consider adding `python3 -m pytest`, `diff`, and `bash -c 'test ...'` to the read-only allowlist, or make the pipe detection smarter (distinguish `|` in grep patterns from actual shell pipes).
+
+## pre-write.sh Absolute Path Bug (Kiro Compatibility)
+
+**Problem:** Kiro CLI sends absolute paths in `tool_input.path` (e.g. `/Users/.../CLAUDE.md`), but `gate_instruction_files` in pre-write.sh only matched relative paths (`CLAUDE.md`, `./CLAUDE.md`). This meant the instruction file write protection was silently bypassed when running under Kiro.
+
+**Fix:** Added workspace-relative path normalization immediately after FILE extraction:
+```bash
+WORKSPACE=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
+case "$FILE" in "$WORKSPACE"/*) FILE="${FILE#$WORKSPACE/}" ;; esac
+```
+
+**Impact:** Same pattern already existed in `enforce-ralph-loop.sh`. Any hook that does path-based matching on `tool_input.path`/`tool_input.file_path` must normalize to relative paths first.
+
+**Rule:** All hooks parsing file paths from tool_input must normalize absolute→relative before pattern matching.
