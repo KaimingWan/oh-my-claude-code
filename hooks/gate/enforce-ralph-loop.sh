@@ -68,10 +68,19 @@ if [ "$MODE" = "bash" ]; then
   # Extract first command (before any pipe/chain) for allowlist checks
   FIRST_CMD=$(echo "$CMD" | sed 's/[|;&].*//' | sed 's/^[[:space:]]*//')
 
+  # Test commands — read-only diagnostics, always allowed
+  if echo "$FIRST_CMD" | grep -qE '^python3?[[:space:]]+-m[[:space:]]+pytest[[:space:]]'; then
+    exit 0
+  fi
+  if echo "$FIRST_CMD" | grep -qE '^bash[[:space:]]+tests/'; then
+    exit 0
+  fi
+
   # Read-only allowlist — checked BEFORE chaining so pipes between read-only cmds are allowed
   if echo "$FIRST_CMD" | grep -qE '^(git[[:space:]]+(status|log|diff|show|branch|stash[[:space:]]+list)|ls|cat|head|tail|grep|rg|wc|file|stat|test|md5|shasum|date|pwd|which|type|jq|printf|echo|awk|sed[[:space:]]+-n|find[[:space:]])'; then
     # Allow piping between read-only commands, but block destructive writes
-    if ! echo "$CMD" | grep -qE '(>\s|>>|rm |mv |cp |python|bash |sh |curl |wget )'; then
+    # Note: >[^&] avoids matching 2>&1 stderr redirects
+    if ! echo "$CMD" | grep -qE '(>[^&]|>>|rm |mv |cp |python|bash |sh |curl |wget )'; then
       exit 0
     fi
   fi
