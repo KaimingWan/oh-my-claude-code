@@ -124,6 +124,8 @@ Extract CLI detection into `detect_cli() -> list[str]` function. For Claude Code
 
 Note: `Task` is required for subagent dispatch (reviewer, executor). `WebSearch`/`WebFetch` for researcher. Without `Task`, CC mode cannot use subagents.
 
+Note: `claude -p` requires authentication. If not logged in, it exits 1 with "Not logged in". `detect_cli()` should verify auth status with `claude -p "ping" --output-format text` and fall back to Kiro if CC is not authenticated.
+
 Adjust `Popen` call in main loop:
 - Current: `cmd = ["kiro-cli", "chat", "--no-interactive", ..., prompt]` — prompt is last arg
 - CC mode: `cmd = ["claude", "-p", prompt, "--allowedTools", "Bash,Read,Write,Edit,Task,WebSearch,WebFetch"]` — prompt is positional arg after `-p`
@@ -201,7 +203,7 @@ End-to-end integration tests using `claude -p` (headless mode):
 - `test-subagent-dispatch.sh`: verify reviewer/researcher subagents can be delegated to (requires `--allowedTools` including `Task`)
 - `test-knowledge-retrieval.sh`: verify knowledge base queries return relevant results
 - `test-plan-workflow.sh`: verify plan awareness and enforce-ralph-loop gating
-- `run.sh`: orchestrator that checks `which claude` first; if not found, prints "SKIP: claude not in PATH" and exits 0 (not failure). This ensures CI environments without Claude Code don't fail. Each `claude -p` call must be wrapped with `timeout 60s` to prevent indefinite hangs on API timeouts.
+- `run.sh`: orchestrator that checks `which claude` first; if not found, prints "SKIP: claude not in PATH" and exits 0 (not failure). Also checks auth with a quick `claude -p "ping"` — if not logged in, prints "SKIP: claude not authenticated" and exits 0. This ensures CI environments without Claude Code don't fail. Each `claude -p` call must be wrapped with a portable timeout (use `gtimeout 60` if available, else `perl -e 'alarm 60; exec @ARGV' --` as fallback — macOS lacks `timeout`).
 - `README.md`: prerequisites (Claude Code installed, API key configured, `claude` in PATH), how to run, expected behavior
 
 **CI skip strategy:** The checklist verify for this task only checks file existence and executability, not actual `claude -p` execution. Live CC tests require manual invocation or a CI environment with Claude Code configured.
