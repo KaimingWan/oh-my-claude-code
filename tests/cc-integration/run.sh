@@ -58,7 +58,10 @@ run_integration "skills-load" "$SCRIPT_DIR/test-skills-load.sh"
 run_integration "subagent-dispatch" "$SCRIPT_DIR/test-subagent-dispatch.sh"
 run_integration "knowledge-retrieval" "$SCRIPT_DIR/test-knowledge-retrieval.sh"
 run_integration "plan-workflow" "$SCRIPT_DIR/test-plan-workflow.sh"
+run_integration "workspace-boundary" "$SCRIPT_DIR/test-workspace-boundary.sh"
+run_integration "instruction-guard"  "$SCRIPT_DIR/test-instruction-guard.sh"
+run_integration "post-tooluse"       "$SCRIPT_DIR/test-posttooluse.sh"
 
 echo ""
-echo "=== CC Integration Results: $PASS passed, $FAIL failed, $SKIP skipped ==="
+echo "=== CC Integration Results: $PASS passed, $FAIL failed, $SKIP skipped ($((PASS+FAIL+SKIP)) total) ==="
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1

@@ -28,6 +28,9 @@
 2026-02-16 | active | plan,review,verification | Plan review跳过Round 3: 修复reviewer反馈后自行判定"改好了"跳过验证轮次. 违反"证据→声明"原则. 规则: fix后必须re-dispatch reviewer, all APPROVE in one round才能停, 不能自行判定通过
 2026-02-16 | active | plan,review,subagent,context | Plan review packet太精简(只传header+checklist+3句摘要)导致reviewer误判率高: 看不到Task完整代码/执行顺序/Create标注. 修复: 改为传完整plan文件给reviewer, 避免摘要过程丢失细节
 2026-02-16 | resolved | subagent,reviewer,dispatch,bug | ~~错误归因: 以为省略agent_name找kiro_default不存在~~ 真因: availableAgents白名单只有["researcher","reviewer"], 内置default subagent被白名单拦截. Kiro官方文档确认省略agent_name用内置default subagent(kiro.dev/docs/cli/chat/subagents). reviewer dispatch仍需agent_name:"reviewer"
+2026-02-18 | active | hooks,ws_hash,verify_log | WS_HASH不在common.sh里: 每个hook各自inline定义`WS_HASH=$(pwd | shasum 2>/dev/null | cut -c1-8 || echo "default")`(SHA-1, 非SHA-256). 文件: post-bash.sh:17, pre-write.sh:216. 任何需要读verify-log的外部脚本必须用相同计算, 否则路径不匹配导致永远找不到log
+2026-02-18 | active | hooks,block-outside-workspace,tmp | block-outside-workspace.sh OUTSIDE_WRITE_PATTERNS第60行有`'>+\s*/tmp/'`, 即`echo x > /tmp/foo`会被拦截. 4个reviewer中1个反复错读(漏掉第60行)导致P1争议. 教训: review声称代码行为与直觉矛盾时必须主agent亲自读源文件验证
+2026-02-18 | active | bash,sed,macos,portability | macOS BSD sed -i不带extension suffix会报错(非修改文件), 导致测试假阳性. 跨平台JSON内容修改应用`perl -i -pe 's/a/b/'`代替`sed -i`. block-sed-json pattern`(sed|awk|perl).*\.json`同样命中perl, 行为一致
 2026-02-16 | active | config,drift,generator | generate-platform-configs.sh重新生成会覆盖手动编辑的JSON. enforce-ralph-loop.sh在c902220手动注册到default.json, 被a27860d的config generator覆盖丢失. 教训: 所有hook注册必须加到generator脚本, 不能只手动改JSON
 2026-02-16 | active | subagent,availableAgents,whitelist | availableAgents白名单限制subagent spawn范围. 省略agent_name时用Kiro内置default subagent, 但如果availableAgents不含通配符或内置default, 会被拦截. 需要执行task的subagent必须在白名单中
 2026-02-16 | active | subagent,reviewer,parallel,performance | Plan review应1批4个reviewer并发, 不是2批×2个. 同一agent_name可spawn多个实例. use_subagent限制是每次调用最多4个subagent, 不是4个不同agent. 拆批会串行等待浪费时间
