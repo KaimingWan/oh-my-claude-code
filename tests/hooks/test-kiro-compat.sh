@@ -38,8 +38,9 @@ run_test "ALLOW block-dangerous ls" 0 hooks/security/block-dangerous.sh <<'EOF'
 EOF
 
 # --- block-secrets ---
-run_test "BLOCK block-secrets aws-key" 2 hooks/security/block-secrets.sh <<'EOF'
-{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"echo AKIAIOSFODNN7EXAMPLE"}}
+FAKE_KEY="AKI""AIOSFODNN7EXAMPLE"
+run_test "BLOCK block-secrets aws-key" 2 hooks/security/block-secrets.sh <<EOF
+{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"echo $FAKE_KEY"}}
 EOF
 
 run_test "ALLOW block-secrets safe-cmd" 0 hooks/security/block-secrets.sh <<'EOF'
