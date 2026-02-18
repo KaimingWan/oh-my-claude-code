@@ -16,6 +16,11 @@ esac
 
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
+# git commit is safe — message content is not executable code
+if echo "$CMD" | grep -qE '^\s*git\s+commit\b'; then
+  exit 0
+fi
+
 for pattern in "${DANGEROUS_BASH_PATTERNS[@]}"; do
   if echo "$CMD" | grep -qiE "$pattern"; then
     hook_block_with_recovery "🚫 BLOCKED: Dangerous command detected.
