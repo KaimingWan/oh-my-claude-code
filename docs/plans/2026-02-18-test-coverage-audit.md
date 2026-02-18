@@ -208,10 +208,10 @@ If a table has N tasks, your output must have N rows. Missing rows = review REJE
 
 ## Checklist
 
-- [ ] 4 stale enforcement tests fixed, all 20 pass | `bash tests/ralph-loop/test-enforcement.sh 2>&1 | grep -q '20/20 passed'`
-- [ ] generate_configs validate() tested | `python3 -m pytest tests/test_generate_configs.py::test_validate_hook_registry -v`
-- [ ] require-regression real tests exist and pass | `bash tests/hooks/test-require-regression.sh`
-- [ ] auto-capture tests exist and pass | `bash tests/hooks/test-auto-capture.sh`
+- [x] 4 stale enforcement tests fixed, all 20 pass | `bash tests/ralph-loop/test-enforcement.sh 2>&1 | grep -q '20/20 passed'`
+- [x] generate_configs validate() tested | `python3 -m pytest tests/test_generate_configs.py::test_validate_hook_registry -v`
+- [x] require-regression real tests exist and pass | `bash tests/hooks/test-require-regression.sh`
+- [x] auto-capture tests exist and pass | `bash tests/hooks/test-auto-capture.sh`
 - [ ] post-bash verify-log write tested | `bash tests/hooks/test-kiro-compat.sh 2>&1 | grep -q 'PASS.*post-bash.*verify-log'`
 - [ ] English correction detection tested | `bash tests/context-enrichment/test-split.sh 2>&1 | grep -q 'PASS.*English\|English.*PASS'`
 - [ ] 既有测试无回归 | `python3 -m pytest tests/ralph-loop/ tests/test_generate_configs.py -q && bash tests/hooks/test-kiro-compat.sh 2>&1 | tail -1 | grep -q '0 failed' && bash tests/hooks/test-cc-compat.sh 2>&1 | tail -1 | grep -q '0 failed'`

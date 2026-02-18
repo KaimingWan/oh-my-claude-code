@@ -557,3 +557,14 @@
 - **Files changed:** None (all 4 files already updated: `docs/kiro-hook-compatibility.md`, `docs/INDEX.md`, `.kiro/rules/enforcement.md`, `README.md`)
 - **Learnings:** Task 7 was fully completed in iteration 73's parallel batch. Verify command passes: `grep -q "Claude Code" docs/INDEX.md && grep -q "claude-code-gap-analysis" docs/INDEX.md`. Checklist item already `[x]`.
 - **Status:** done (no-op — already complete)
+
+## Iteration 75 — 2026-02-19T00:08
+
+- **Batch:** Tasks 1-4 of test-coverage-audit plan (parallel verification, 4 tasks)
+  - Task 1: Fix 4 stale enforcement tests — already implemented in commit fd1ad34, verified 20/20 pass
+  - Task 2: Add generate_configs.py validate() test — already implemented, verified passing
+  - Task 3: Add require-regression.sh real tests — already implemented (4 tests: blocked, allowed, non-ralph, non-commit), verified passing
+  - Task 4: Add auto-capture.sh tests — already implemented (6 tests: gate 1 question, gate 1 no-action, gate 2 no-keywords, happy path, gate 3 dedup, gate 4 capacity), verified passing
+- **Files changed:** `docs/plans/2026-02-18-test-coverage-audit.md` (4 checklist items checked)
+- **Learnings:** All 4 tasks were already implemented in prior commit fd1ad34 — this iteration was verification-only. The checklist gate hook requires running exact verify commands before checking items off; piped commands like `bash ... | grep -q` must be run as-is to match the hash.
+- **Status:** done — 4/8 checklist items complete, 4 remaining (Tasks 5-7)
