@@ -22,9 +22,19 @@ quality reporting (hook does it).
 
 | Scenario | Target |
 |----------|--------|
+| Top-level principle (user approved) | AGENTS.md / CLAUDE.md (Principles section) |
 | Promotion (≥3 same pattern) | knowledge/rules.md (matching keyword section) |
 | Complex insight | knowledge/episodes.md |
 | Code-enforceable rule | .kiro/rules/enforcement.md |
+
+## Writing to Protected Files (AGENTS.md / CLAUDE.md / .claude/rules/)
+
+When user explicitly approves writing to a protected instruction file:
+1. `touch .skip-instruction-guard`
+2. Write the change
+3. `rm -f .skip-instruction-guard`
+
+This bypasses the pre-write hook temporarily. Only do this when user has clearly approved the content.
 
 ## Episode Format
 

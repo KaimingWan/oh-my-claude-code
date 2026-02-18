@@ -3,6 +3,8 @@
 > Timestamped events. ≤30 entries. Auto-captured by hook + manual via @reflect.
 
 <!-- FORMAT: DATE | STATUS | KEYWORDS | SUMMARY -->
+2026-02-19 | active | research,socratic,depth,compaction | 调研复杂问题(long-running agent优化)时跳过苏格拉底自检直接输出6个优化方向. 根因: 调研后进入"拿锤子找钉子"模式——看到论文说X是问题就认为框架也有X问题, 没先验证现有方案是否已覆盖(Ralph Loop iteration重启=最强compaction, 被误判为"缺失"). 机制修复: 调研产出的每个"建议/差距"在写入findings前必须过苏格拉底三层: ①这个问题在当前框架里真的存在吗(检查现有方案) ②在目标平台上可行吗(Kiro/CC约束) ③收益>维护成本吗. 触发条件: "调研结论输出"本身就是关键决策点, 不只是"设计/方案选择"才触发
+2026-02-19 | active | principle,reform,courage | 做方案时因为"改动大"而选择凑合方案(如progress.md只读最后50行而非按plan隔离). 用户纠正: 效果为王质量优先, 不怕改动大不怕推翻旧流程. 新原则"Bold reform over timid patches"待加入AGENTS.md Principles
 <!-- STATUS: active / resolved / promoted -->
 <!-- Promotion candidates are computed at runtime (keyword freq ≥3), not stored -->
 

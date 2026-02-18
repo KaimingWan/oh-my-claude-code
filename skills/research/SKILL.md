@@ -90,7 +90,16 @@ Supported: `numbered` (default), `mla`, `apa`, `chicago`
 
 ## Post-Research 沉淀 Checkpoint
 
-After completing research, before moving on:
-1. Record key findings in `docs/plans/findings.md` (if working on a plan)
+After completing research, before writing findings or recommendations:
+
+**Socratic validation (mandatory for each recommendation/gap/optimization):**
+1. Does this problem actually exist in the current codebase? Check existing solutions first.
+2. Is the proposed fix feasible on all target platforms (Kiro + CC)? Check constraints.
+3. Does the benefit outweigh the maintenance cost?
+
+If any answer is "no" → drop that recommendation. Don't include it in findings.
+
+**Then persist:**
+1. Record validated findings in `docs/plans/findings.md` (if working on a plan)
 2. If findings reveal reusable patterns → write to `knowledge/episodes.md`
 3. Cite sources with URLs — no hallucinated references

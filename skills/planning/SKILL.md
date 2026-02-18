@@ -51,7 +51,14 @@ If no supplementary questions needed, proceed directly to Phase 1.
 
 ### Transition to Phase 1
 
-After Phase 0 completes, proceed to Phase 1 (Writing the Plan) with the accumulated understanding. All context gathered — user answers, research findings, codebase observations — feeds directly into plan writing.
+After Phase 0 completes, before writing the plan, validate each major design decision with Socratic self-check:
+1. **Essence** — What is the core problem this decision solves?
+2. **Framework** — Does the current codebase already solve this? What known patterns apply?
+3. **Application** — Is this feasible on all target platforms? Does benefit > maintenance cost?
+
+Drop any decision that fails step 2 (already solved) or step 3 (infeasible/not worth it).
+
+Then proceed to Phase 1 with the accumulated understanding.
 
 ### Error Handling
 
@@ -185,7 +192,7 @@ Two categories: **fixed** (every round) and **random** (sampled each round).
 | **All angles** | Before writing any finding, verify it is within the plan's stated Goal and NOT in Non-Goals. Findings outside scope are noise — discard silently. | — | — |
 | Completeness | For each source file in the plan's Files fields: 1) list its public functions/branches, 2) check which are exercised by at least one Task, 3) flag functions/branches with zero coverage. Also: for each error path in source (try/except, if-error-return, signal handler), verify at least one Task exercises it. Findings must cite specific function names and line ranges. SCOPE: Only analyze functions/branches in files that the plan MODIFIES (listed in Files: fields). Do NOT flag functions in files the plan merely reads or references. The plan is not obligated to test every function in every file it touches — only the functions it changes. | Source-to-task traceability matrix | Uncovered Functions / Unexercised Error Paths / Verdict |
 | Testability | For each Task's test cases: 1) identify the assertion (what property is checked), 2) construct a minimal wrong implementation that would still pass the assertion (false negative analysis), 3) flag tests where such a wrong implementation exists. Focus on: are assertions specific enough to catch real bugs, not just "no crash"? | False negative analysis per test | Weak Assertions / False Negative Risks / Verdict |
-| Technical Feasibility | For each Task: 1) list external dependencies (libraries, OS features, file system assumptions), 2) check if any dependency has platform/version constraints that conflict with Tech Stack, 3) for subprocess-based tests, verify timeout values are sufficient for the operations described. Flag only concrete blockers, not theoretical risks. | Dependency + constraint audit | Blockers / Platform Risks / Verdict |
+| Technical Feasibility | For each Task: 1) list external dependencies (libraries, OS features, file system assumptions), 2) check if any dependency has platform/version constraints that conflict with Tech Stack, 3) for subprocess-based tests, verify timeout values are sufficient for the operations described, 4) for tests that run commands in tmp_path or isolated dirs, trace whether the command will behave correctly outside the project root (e.g. pytest rootdir detection, missing config files). Flag only concrete blockers, not theoretical risks. | Dependency + constraint audit | Blockers / Platform Risks / Verdict |
 | Security | For each Task that touches file I/O, subprocess, or signal handling: 1) trace data flow from external input to execution, 2) check for path traversal, command injection, or symlink attacks in test fixtures, 3) verify temp files use secure creation (tmp_path, not hardcoded paths). | Data flow trace per Task | Injection Surfaces / Unsafe Patterns / Verdict |
 | Compatibility & Rollback | For each modified file in the plan: 1) list existing tests that import or call functions in that file, 2) check if the plan's changes could break those existing tests, 3) verify the plan includes running existing tests (not just new ones). Also: can the plan's changes be reverted with a single `git revert`? | Existing-test impact analysis | Breaking Changes / Revert Safety / Verdict |
 | Performance | For each Task involving subprocess or threading: 1) calculate worst-case wall-clock time (timeout × max_iterations × retry count), 2) sum across all Tasks to get total suite time, 3) flag any single test that could exceed 30s without @pytest.mark.slow. Provide concrete numbers, not estimates. | Quantified time budget per Task | Time Budget Table / Slow Test Violations / Verdict |
@@ -229,6 +236,12 @@ Before making ANY claim about code behavior, you MUST:
 2. Cite the specific line number in your finding
 3. If you haven't read the file, do NOT speculate — read it first
 Findings about code behavior without file:line citations will be discarded.
+
+## Output Requirements
+Your last line MUST be exactly one of:
+  Verdict: APPROVE
+  Verdict: REQUEST CHANGES
+Missing verdict = review REJECTED and will be re-dispatched.
 ```
 
 ### Orchestration
@@ -237,6 +250,7 @@ Findings about code behavior without file:line citations will be discarded.
 2. Dispatch 4 reviewer subagents in ONE `use_subagent` call. Each reviewer query = review angle mission + plan file path. Reviewer reads the file itself (has read/shell tools). Do NOT paste plan content into query — it bloats payload and breaks 4-way parallelism. **Must pass plan file path, not content.** **Must specify `agent_name: "reviewer"`**. Same `agent_name` can spawn multiple instances in parallel. **Include in each query:** "Read the source files referenced in the plan before making claims about code behavior."
 4. Reviewers in the same round do NOT see each other's feedback
 5. Collect all verdicts. If ANY reviewer REJECTs → fix issues → next round (re-sample 2 random angles)
+   **Verdict enforcement:** If a reviewer's output does not end with `Verdict: APPROVE` or `Verdict: REQUEST CHANGES`, treat it as malformed → re-dispatch that single angle.
 6. **Round 2+ rule:** When re-dispatching after fixes, include in each query a "Rejected Findings" section with one-line summaries of findings rejected in previous rounds and why. Reviewers must not re-raise these.
 7. Repeat until all APPROVE in a single round, or 5 rounds reached
 8. After 5 rounds: stop and tell user "Plan too complex for automated review. Consider breaking into smaller plans."
