@@ -22,6 +22,7 @@ os.chdir(PROJECT_ROOT)
 from scripts.lib.plan import PlanFile
 from scripts.lib.lock import LockFile
 from scripts.lib.scheduler import build_batches, Batch
+from scripts.lib.cli_detect import detect_cli
 
 # --- Configuration from env ---
 MAX_ITERATIONS = int(sys.argv[1]) if len(sys.argv) > 1 else 10
@@ -245,11 +246,13 @@ for i in range(1, MAX_ITERATIONS + 1):
 
     # Launch kiro-cli with process group isolation
     with LOG_FILE.open("a") as log_fd:
-        if KIRO_CMD:
-            cmd = KIRO_CMD.split()
+        base_cmd = detect_cli()
+        if base_cmd[0] == 'claude':
+            # claude -p <prompt> [flags...] — prompt is positional after -p
+            cmd = [base_cmd[0], '-p', prompt] + base_cmd[2:]
         else:
-            cmd = ["kiro-cli", "chat", "--no-interactive", "--trust-all-tools",
-                   "--agent", "pilot", prompt]
+            # kiro-cli chat ... <prompt> — prompt is last arg
+            cmd = base_cmd + [prompt]
 
         proc = subprocess.Popen(
             cmd, stdout=log_fd, stderr=subprocess.STDOUT,

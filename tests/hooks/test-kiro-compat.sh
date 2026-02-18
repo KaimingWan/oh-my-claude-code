@@ -116,6 +116,11 @@ run_test "ALLOW verify-completion normal" 0 hooks/feedback/verify-completion.sh 
 {"hook_event_name":"stop"}
 EOF
 
+# --- verify-completion stop_hook_active ---
+run_test "ALLOW verify-completion stop_hook_active" 0 hooks/feedback/verify-completion.sh <<'EOF'
+{"stop_hook_active":true}
+EOF
+
 # ============================================================
 # Summary
 # ============================================================

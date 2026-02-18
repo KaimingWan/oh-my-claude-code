@@ -251,6 +251,114 @@ def write_json(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
 
+def write_md(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content)
+
+
+def cc_reviewer_agent() -> str:
+    prompt = (PROJECT_ROOT / "agents" / "reviewer-prompt.md").read_text()
+    return f"""---
+name: reviewer
+description: "Review expert. Plan review: challenge decisions, find gaps. Code review: check quality, security, SOLID."
+tools: Read, Write, Bash, Grep, Glob
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-dangerous.sh'
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-secrets.sh'
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-sed-json.sh'
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
+    - matcher: "Write|Edit"
+      hooks:
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
+  PostToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/post-bash.sh'
+  Stop:
+    - hooks:
+        - type: command
+          command: 'echo "📋 Review checklist: correctness, security, edge cases, test coverage?"'
+---
+
+{prompt}
+"""
+
+
+def cc_researcher_agent() -> str:
+    prompt = (PROJECT_ROOT / "agents" / "researcher-prompt.md").read_text()
+    return f"""---
+name: researcher
+description: "Research specialist. Web research via fetch MCP + code search via ripgrep MCP + Tavily via shell."
+tools: Read, Bash, Grep, Glob, WebSearch, WebFetch
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-dangerous.sh'
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-secrets.sh'
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-sed-json.sh'
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
+  PostToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/post-bash.sh'
+  Stop:
+    - hooks:
+        - type: command
+          command: 'echo "📝 Research complete. Did you: cite sources, cross-verify, report gaps?"'
+---
+
+{prompt}
+"""
+
+
+def cc_executor_agent() -> str:
+    return """---
+name: executor
+description: "Task executor for parallel plan execution. Implements code + runs verify. Does NOT edit plan files or git commit."
+tools: Read, Write, Edit, Bash, Grep, Glob
+permissionMode: bypassPermissions
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-dangerous.sh'
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-secrets.sh'
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-sed-json.sh'
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
+    - matcher: "Write|Edit"
+      hooks:
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
+  PostToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/post-bash.sh'
+---
+
+⚡ EXECUTOR: 1) Implement assigned task 2) Run verify command 3) Report result 4) Do NOT git commit or edit plan files
+"""
+
+
 def main() -> int:
     if validate() != 0:
         print("\n🚫 Fix inconsistencies before generating configs.")
@@ -276,6 +384,16 @@ def main() -> int:
         except json.JSONDecodeError:
             print(f"  ❌ INVALID JSON: {path.relative_to(PROJECT_ROOT)}")
             errors += 1
+
+    # CC agent markdown files
+    cc_targets = [
+        (PROJECT_ROOT / ".claude" / "agents" / "reviewer.md", cc_reviewer_agent()),
+        (PROJECT_ROOT / ".claude" / "agents" / "researcher.md", cc_researcher_agent()),
+        (PROJECT_ROOT / ".claude" / "agents" / "executor.md", cc_executor_agent()),
+    ]
+    for path, content in cc_targets:
+        write_md(path, content)
+        print(f"  ✅ {path.relative_to(PROJECT_ROOT)}")
 
     if errors:
         print(f"\n❌ {errors} config(s) have invalid JSON!")

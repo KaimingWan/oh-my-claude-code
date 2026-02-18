@@ -619,3 +619,40 @@ def test_partial_parse_still_batches(tmp_path):
     finally:
         lock_path.unlink(missing_ok=True)
         summary_file.unlink(missing_ok=True)
+
+from unittest.mock import patch
+
+def test_detect_claude_cli():
+    """When claude is available and authenticated, detect_cli returns claude command."""
+    from scripts.lib.cli_detect import detect_cli
+    with patch('shutil.which', side_effect=lambda x: '/usr/bin/claude' if x == 'claude' else None), \
+         patch('subprocess.run') as mock_run:
+        mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0, stdout='pong', stderr='')
+        cmd = detect_cli()
+        assert cmd[0] == 'claude'
+        assert '-p' in cmd
+
+
+def test_detect_kiro_cli():
+    """When only kiro-cli is available, detect_cli returns kiro command."""
+    from scripts.lib.cli_detect import detect_cli
+    with patch('shutil.which', side_effect=lambda x: '/usr/bin/kiro-cli' if x == 'kiro-cli' else None):
+        cmd = detect_cli()
+        assert cmd[0] == 'kiro-cli'
+        assert 'chat' in cmd
+
+
+def test_env_override():
+    """RALPH_KIRO_CMD env var takes precedence over auto-detection."""
+    from scripts.lib.cli_detect import detect_cli
+    with patch.dict(os.environ, {'RALPH_KIRO_CMD': 'my-custom-cli --flag'}):
+        cmd = detect_cli()
+        assert cmd == ['my-custom-cli', '--flag']
+
+
+def test_no_cli_found():
+    """When neither CLI is found, detect_cli raises SystemExit."""
+    from scripts.lib.cli_detect import detect_cli
+    with patch('shutil.which', return_value=None), \
+         pytest.raises(SystemExit):
+        detect_cli()
