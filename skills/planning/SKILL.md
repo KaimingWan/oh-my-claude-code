@@ -175,7 +175,7 @@ Two categories: **fixed** (every round) and **random** (sampled each round).
 
 | Angle | Mission | Output |
 |-------|---------|--------|
-| Goal Alignment | Copy and fill this table for EVERY task:\n\n\| Task # \| Goal phrase served (quote exact words) \| If removed, which Goal phrase loses coverage? \|\n\|--------\|---------------------------------------\|----------------------------------------------\|\n\| 1 \| [quote] \| [answer] \|\n\nThen copy and fill the coverage matrix:\n\n\| Goal phrase (copy from plan header) \| Covered by Task #s \|\n\|-------------------------------------\|-------------------\|\n\| [phrase 1] \| [list] \|\n\nFinally: trace the execution order — does Task N's output feed correctly into Task N+1's input? Findings must cite specific Task numbers and Goal phrases. | Missing Coverage / Unnecessary Tasks / Ordering Issues / Verdict |
+| Goal Alignment | You MUST copy each table below and fill EVERY cell. Do NOT summarize or skip rows. If a table has N tasks, your output must have N rows. Missing rows = review REJECTED. Copy and fill this table for EVERY task:\n\n\| Task # \| Goal phrase served (quote exact words) \| If removed, which Goal phrase loses coverage? \|\n\|--------\|---------------------------------------\|----------------------------------------------\|\n\| 1 \| [quote] \| [answer] \|\n\nThen copy and fill the coverage matrix:\n\n\| Goal phrase (copy from plan header) \| Covered by Task #s \|\n\|-------------------------------------\|-------------------\|\n\| [phrase 1] \| [list] \|\n\nFinally: trace the execution order — does Task N's output feed correctly into Task N+1's input? Findings must cite specific Task numbers and Goal phrases. | Missing Coverage / Unnecessary Tasks / Ordering Issues / Verdict |
 | Verify Correctness | For each checklist verify command, you MUST copy this table and fill in EVERY cell:\n\n\| # \| Verify command \| Confirms what \| Exit code (correct impl) \| Exit code (broken impl) \| Sound? \|\n\|---\|---------------\|---------------\|--------------------------|--------------------------|--------\|\n\| 1 \| [copy from plan] \| [fill] \| [trace: ... → exit ?] \| [trace: ... → exit ?] \| [Y/N + reason] \|\n\nRules: EVERY row must show the shell execution trace, not just "exit 0". If you skip a row or write "all sound" without per-row traces, your review is REJECTED. Only flag commands where correct and broken give the SAME exit code. | False Positives / Weak Verifications / Verdict |
 
 **Random pool (2 sampled per round):**
@@ -222,6 +222,13 @@ Source files referenced in plan: [list — reviewer must read before claiming co
 - Do not suggest alternative approaches that are equally valid
 - Do not flag missing implementation details that an executor agent can infer
 - [plan-specific anti-patterns if any]
+
+## Mandatory Source Reading
+Before making ANY claim about code behavior, you MUST:
+1. Read the actual source file (use Bash: cat <file>)
+2. Cite the specific line number in your finding
+3. If you haven't read the file, do NOT speculate — read it first
+Findings about code behavior without file:line citations will be discarded.
 ```
 
 ### Orchestration

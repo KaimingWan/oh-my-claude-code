@@ -13,4 +13,6 @@ t "correction detected" "echo '{\"prompt\":\"你错了\"}' | bash hooks/feedback
 t "research reminder works" "echo '{\"prompt\":\"调研一下\"}' | bash hooks/feedback/context-enrichment.sh 2>&1 | grep -q Research"
 t "correction moved out" "! grep -q 'CORRECTION DETECTED' hooks/feedback/context-enrichment.sh"
 t "rules injection moved out" "! grep -q 'inject_rules' hooks/feedback/context-enrichment.sh"
+t "English correction detected" "echo '{\"prompt\":\"you are wrong\"}' | bash hooks/feedback/correction-detect.sh 2>&1 | grep -q CORRECTION"
+t "non-correction no trigger" "! echo '{\"prompt\":\"hello world\"}' | bash hooks/feedback/correction-detect.sh 2>&1 | grep -q CORRECTION"
 echo "Results: $PASS passed, $FAIL failed"; [ "$FAIL" -eq 0 ]

@@ -112,6 +112,24 @@ run_test "ALLOW post-bash normal" 0 hooks/feedback/post-bash.sh <<'EOF'
 {"hook_event_name":"postToolUse","tool_name":"execute_bash","tool_input":{"command":"ls"},"tool_output":{"exit_code":0}}
 EOF
 
+# --- post-bash verify-log write ---
+WS_HASH=$(pwd | shasum | cut -c1-8)
+LOG_FILE="/tmp/verify-log-${WS_HASH}.jsonl"
+BEFORE=$(wc -l < "$LOG_FILE" 2>/dev/null || echo 0)
+echo '{"hook_event_name":"postToolUse","tool_name":"execute_bash","tool_input":{"command":"echo test-verify-log"},"tool_output":{"exit_code":0}}' | bash hooks/feedback/post-bash.sh >/dev/null 2>&1
+AFTER=$(wc -l < "$LOG_FILE" 2>/dev/null || echo 0)
+LAST_LINE=$(tail -1 "$LOG_FILE")
+CMD_HASH_EXPECTED=$(echo "echo test-verify-log" | shasum | cut -c1-40)
+CMD_HASH_ACTUAL=$(echo "$LAST_LINE" | jq -r '.cmd_hash')
+HAS_FIELDS=$(echo "$LAST_LINE" | jq -r 'has("cmd_hash") and has("cmd") and has("exit_code") and has("ts")')
+if [ "$AFTER" -gt "$BEFORE" ] && [ "$HAS_FIELDS" = "true" ] && [ "$CMD_HASH_ACTUAL" = "$CMD_HASH_EXPECTED" ]; then
+  echo "PASS post-bash verify-log write"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL post-bash verify-log write (after=$AFTER before=$BEFORE fields=$HAS_FIELDS hash_match=$([ "$CMD_HASH_ACTUAL" = "$CMD_HASH_EXPECTED" ] && echo yes || echo no))"
+  FAIL=$((FAIL + 1))
+fi
+
 # --- verify-completion ---
 run_test "ALLOW verify-completion normal" 0 hooks/feedback/verify-completion.sh <<'EOF'
 {"hook_event_name":"stop"}

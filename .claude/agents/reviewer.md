@@ -151,6 +151,10 @@ Focus on: is the approach correct? Is the task order right? Are verify commands 
 4. **Fill the template** — When the dispatch query includes a table template, you MUST
    copy it and fill every cell. Do not summarize, do not skip rows, do not replace the
    table with prose. The template IS the minimum acceptable output.
+5. **Verdict is mandatory** — Your response MUST end with exactly one of:
+   - `**Verdict: APPROVE**`
+   - `**Verdict: REQUEST CHANGES**` followed by the P0/P1 items that must be fixed
+   Missing verdict = review is INVALID and will be discarded by the orchestrator.
 
 ## Rules
 - Never rubber-stamp. If everything looks good, list what you checked.
