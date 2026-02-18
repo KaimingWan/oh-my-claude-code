@@ -46,6 +46,14 @@ class PlanFile:
     def is_complete(self) -> bool:
         return self.unchecked == 0
 
+    @property
+    def progress_path(self) -> Path:
+        return self.path.parent / f"{self.path.stem}.progress.md"
+
+    @property
+    def findings_path(self) -> Path:
+        return self.path.parent / f"{self.path.stem}.findings.md"
+
     def next_unchecked(self, n: int = 5) -> list[str]:
         return _UNCHECKED_LINE.findall(self._text)[:n]
 

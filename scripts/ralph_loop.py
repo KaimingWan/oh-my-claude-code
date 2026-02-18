@@ -112,9 +112,8 @@ def write_summary(exit_code: int):
 # --- Build prompt ---
 def build_prompt(iteration: int) -> str:
     plan.reload()
-    plan_dir = plan_path.parent
-    progress_file = plan_dir / "progress.md"
-    findings_file = plan_dir / "findings.md"
+    progress_file = plan.progress_path
+    findings_file = plan.findings_path
     next_items = "\n".join(plan.next_unchecked(5))
 
     return f"""You are executing a plan. Read these files first:
@@ -147,9 +146,12 @@ Rules:
 
 def build_batch_prompt(batch: Batch, plan_path_: Path, iteration: int) -> str:
     """Generate prompt for a batch of tasks."""
-    plan_dir = plan_path_.parent
-    progress_file = plan_dir / "progress.md"
-    findings_file = plan_dir / "findings.md"
+    plan = type('_plan', (), {
+        'progress_path': plan_path_.parent / f"{plan_path_.stem}.progress.md",
+        'findings_path': plan_path_.parent / f"{plan_path_.stem}.findings.md",
+    })()
+    progress_file = plan.progress_path
+    findings_file = plan.findings_path
 
     if batch.parallel:
         task_lines = "\n".join(

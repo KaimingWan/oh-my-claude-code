@@ -332,6 +332,14 @@ def test_binary_content_in_plan(tmp_path):
         PlanFile(p)
 
 
+def test_state_files_scoped_to_plan(tmp_path):
+    plan = tmp_path / "2026-01-01-my-feature.md"
+    plan.write_text("# Test\n## Checklist\n- [ ] item | `true`\n")
+    pf = PlanFile(plan)
+    assert pf.progress_path == tmp_path / "2026-01-01-my-feature.progress.md"
+    assert pf.findings_path == tmp_path / "2026-01-01-my-feature.findings.md"
+
+
 def test_concurrent_reload(tmp_path):
     p = tmp_path / "plan.md"
     p.write_text(SAMPLE_PLAN)
