@@ -34,6 +34,9 @@
 | 2026-02-16 | plan | Codebase Review Cleanup | [link](plans/2026-02-16-codebase-review-cleanup.md) |
 | 2026-02-18 | design | Hook Architecture | [link](designs/2026-02-18-hook-architecture.md) |
 | 2026-02-18 | plan | Hook Governance | [link](plans/2026-02-18-hook-governance.md) |
+| 2026-02-18 | reference | Claude Code Gap Analysis | [link](claude-code-gap-analysis.md) |
+| 2026-02-18 | reference | Dual-Platform Compatibility Matrix | [link](kiro-hook-compatibility.md) |
+| 2026-02-18 | plan | Claude Code Parity | [link](plans/2026-02-18-claude-code-parity.md) |
 
 ---
-*Last updated: 2026-02-17*
+*Last updated: 2026-02-18*

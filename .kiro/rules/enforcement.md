@@ -34,4 +34,4 @@
 ## Config Generation
 
 Single source: `scripts/generate_configs.py`
-Generates: `.claude/settings.json` + `.kiro/agents/*.json`
+Generates: `.claude/settings.json` + `.kiro/agents/*.json` + `.claude/agents/*.md`
