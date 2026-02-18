@@ -168,7 +168,8 @@ Create `tests/hooks/test-cc-compat.sh` — mirrors `test-kiro-compat.sh` but use
 - `tool_input.file_path` + `tool_input.old_string`/`tool_input.new_string` for Edit
 - CC DOES send `hook_event_name` and `cwd` as common fields (confirmed from official docs)
 - CC also sends `session_id`, `transcript_path`, `permission_mode`
-- Tests all 12 wired hooks with CC-format stdin
+- Tests ALL wired hooks from `.claude/settings.json` with CC-format stdin (enumerate from settings.json, do NOT just mirror test-kiro-compat.sh — it is missing `require-regression.sh`)
+- Also add `require-regression.sh` BLOCK+ALLOW tests to `test-kiro-compat.sh` (existing gap)
 - If any fail, fix the hook with additive jq fallbacks
 
 Note: Previous `docs/kiro-hook-compatibility.md` incorrectly stated CC doesn't send `hook_event_name`/`cwd`. The official CC hooks reference confirms these are common input fields for ALL events. Update the compatibility doc in Task 7.
