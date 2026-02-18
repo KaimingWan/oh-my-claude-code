@@ -65,7 +65,7 @@ echo "=== enforce-ralph-loop.sh tests ==="
 
 # T1: bash blocked when plan active
 begin_test "T1: bash write blocked when plan active"
-RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"mkdir -p foo"}}')
+RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"python3 -c \"import os\""}}')
 assert_exit "$RC" 2
 
 # T2: ralph_loop.py allowed
@@ -80,7 +80,7 @@ assert_exit "$RC" 0
 
 # T4: chained command blocked
 begin_test "T4: chained command (&&) blocked"
-RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"cat foo && mkdir bar"}}')
+RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"python3 x.py && echo done"}}')
 assert_exit "$RC" 2
 
 # T5: fs_write to source blocked
@@ -96,7 +96,7 @@ assert_exit "$RC" 0
 # T7: stale lock cleaned + blocked
 begin_test "T7: stale lock (dead PID) cleaned and blocked"
 echo "99999999" > "$LOCK_FILE"
-RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"mkdir x"}}')
+RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"python3 -c \"pass\""}}')
 LOCK_GONE=true; [ -f "$LOCK_FILE" ] && LOCK_GONE=false
 assert_true "[ $RC -eq 2 ] && [ $LOCK_GONE = true ]"
 
@@ -155,7 +155,7 @@ assert_exit "$RC" 0
 
 # T17: piped command blocked
 begin_test "T17: piped command blocked"
-RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"cat foo | tee bar"}}')
+RC=$(run_hook '{"tool_name":"execute_bash","tool_input":{"command":"python3 x.py | tee bar"}}')
 assert_exit "$RC" 2
 
 # T18: redirect blocked

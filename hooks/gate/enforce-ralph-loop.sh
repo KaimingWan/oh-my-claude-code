@@ -59,6 +59,9 @@ block_msg() {
 if [ "$MODE" = "bash" ]; then
   CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
+  # Strip leading "cd <path> &&" prefix (kiro-cli prepends this)
+  CMD=$(echo "$CMD" | sed 's|^cd[[:space:]]\+[^;&|]*&&[[:space:]]*||')
+
   # Allow ralph-loop invocations
   echo "$CMD" | grep -qE 'ralph[-_.]loop|ralph_loop' && exit 0
 

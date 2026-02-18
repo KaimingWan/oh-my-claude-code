@@ -82,3 +82,9 @@ def test_cc_agent_has_hooks():
     content = p.read_text()
     assert "PreToolUse" in content
     assert "block-dangerous" in content
+
+
+def test_validate_hook_registry():
+    """validate() returns 0 when hook registry is consistent."""
+    from scripts.generate_configs import validate
+    assert validate() == 0
