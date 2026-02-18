@@ -30,7 +30,7 @@ run_test() {
 
 # --- block-dangerous ---
 run_test "BLOCK block-dangerous rm-rf" 2 hooks/security/block-dangerous.sh <<'EOF'
-{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"rm -rf /"}}
+{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-test-path"}}
 EOF
 
 run_test "ALLOW block-dangerous ls" 0 hooks/security/block-dangerous.sh <<'EOF'

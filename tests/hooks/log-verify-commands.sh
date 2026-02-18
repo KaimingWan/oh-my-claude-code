@@ -12,9 +12,9 @@ log_cmd() {
 }
 
 # Item 6
-echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"rm -rf /"}}' | bash hooks/security/block-dangerous.sh 2>&1; test $? -eq 2
+echo '{"hook_event_name":"preToolUse","cwd":"/tmp","tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-test-path"}}' | bash hooks/security/block-dangerous.sh 2>&1; test $? -eq 2
 R6=$?
-log_cmd "echo '{\"hook_event_name\":\"preToolUse\",\"cwd\":\"/tmp\",\"tool_name\":\"execute_bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | bash hooks/security/block-dangerous.sh 2>&1; test \$? -eq 2" "$R6"
+log_cmd "echo '{\"hook_event_name\":\"preToolUse\",\"cwd\":\"/tmp\",\"tool_name\":\"execute_bash\",\"tool_input\":{\"command\":\"rm -rf /nonexistent-test-path\"}}' | bash hooks/security/block-dangerous.sh 2>&1; test \$? -eq 2" "$R6"
 echo "Item 6: exit $R6"
 
 # Item 8

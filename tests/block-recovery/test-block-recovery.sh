@@ -27,21 +27,21 @@ run_hook() {
 
 # Test 1: block-dangerous first block → RETRY
 cleanup
-OUTPUT=$(run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /tmp/test"}}')
+OUTPUT=$(run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-test-path"}}')
 assert "dangerous-first-retry" "RETRY (1/3)" "$OUTPUT"
 
 # Test 2: block-dangerous 3rd block → SKIP
 cleanup
-run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /tmp/test"}}' >/dev/null
-run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /tmp/test"}}' >/dev/null
-OUTPUT=$(run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /tmp/test"}}')
+run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-test-path"}}' >/dev/null
+run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-test-path"}}' >/dev/null
+OUTPUT=$(run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-test-path"}}')
 assert "dangerous-third-skip" "SKIP" "$OUTPUT"
 
 # Test 3: different commands have independent counts
 cleanup
-run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /a"}}' >/dev/null
-run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /a"}}' >/dev/null
-OUTPUT=$(run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /b"}}')
+run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-a"}}' >/dev/null
+run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-a"}}' >/dev/null
+OUTPUT=$(run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-b"}}')
 assert "independent-counts" "RETRY (1/3)" "$OUTPUT"
 
 # Test 4: block-outside-workspace has recovery
@@ -56,7 +56,7 @@ assert "sed-json-retry" "RETRY" "$OUTPUT"
 
 # Test 6: still blocks (BLOCKED message preserved)
 cleanup
-OUTPUT=$(run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /tmp/test"}}')
+OUTPUT=$(run_hook "block-dangerous.sh" '{"tool_name":"execute_bash","tool_input":{"command":"rm -rf /nonexistent-test-path"}}')
 assert "still-blocks" "BLOCKED" "$OUTPUT"
 
 echo ""

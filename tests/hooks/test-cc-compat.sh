@@ -32,7 +32,7 @@ run_test() {
 
 # --- block-dangerous ---
 run_test "CC-BLOCK block-dangerous rm-rf" 2 hooks/security/block-dangerous.sh <<'EOF'
-{"hook_event_name":"PreToolUse","session_id":"s1","cwd":"/tmp","permission_mode":"default","tool_name":"Bash","tool_input":{"command":"rm -rf /","description":"nuke"}}
+{"hook_event_name":"PreToolUse","session_id":"s1","cwd":"/tmp","permission_mode":"default","tool_name":"Bash","tool_input":{"command":"rm -rf /nonexistent-test-path","description":"nuke"}}
 EOF
 
 run_test "CC-ALLOW block-dangerous ls" 0 hooks/security/block-dangerous.sh <<'EOF'
