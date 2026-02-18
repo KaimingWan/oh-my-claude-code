@@ -10,6 +10,14 @@
 
 **Architecture:** Extend `generate_configs.py` to emit `.claude/agents/*.md` alongside existing `.kiro/agents/*.json`. Add CLI auto-detection to `ralph_loop.py`. Create a dual-platform test harness that runs hook unit tests with both Kiro and CC JSON formats, plus CC headless (`claude -p`) integration tests.
 
+**Prerequisites for CC integration tests (Task 6):**
+- Claude Code must be authenticated: `claude auth status` → `loggedIn: true`
+- Either OAuth login (needs browser) or `ANTHROPIC_API_KEY` env var
+- macOS: `timeout` not available, scripts must use `gtimeout` or `perl -e 'alarm'` fallback
+- If CC not authenticated, Task 6 tests SKIP gracefully (exit 0)
+
+**Knowledge base:** `knowledge/claude-code-research.md` — comprehensive CC reference (auth, headless, hooks, tool names, agent format, macOS compat)
+
 **Tech Stack:** Python 3, Bash, jq, `claude -p` (headless mode), pytest
 
 ---
