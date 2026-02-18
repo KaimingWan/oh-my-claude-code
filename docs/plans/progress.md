@@ -568,3 +568,13 @@
 - **Files changed:** `docs/plans/2026-02-18-test-coverage-audit.md` (4 checklist items checked)
 - **Learnings:** All 4 tasks were already implemented in prior commit fd1ad34 — this iteration was verification-only. The checklist gate hook requires running exact verify commands before checking items off; piped commands like `bash ... | grep -q` must be run as-is to match the hash.
 - **Status:** done — 4/8 checklist items complete, 4 remaining (Tasks 5-7)
+
+## Iteration 76 — 2026-02-19T00:13
+
+- **Batch:** Tasks 5-7 of test-coverage-audit plan (parallel fan-out, 3 executor subagents)
+  - Task 5: Add post-bash.sh verify-log write test to test-kiro-compat.sh — validates JSONL structure (cmd_hash, cmd, exit_code, ts) and cmd_hash matches expected shasum
+  - Task 6: Add English correction detection tests to test-split.sh — "you are wrong" triggers CORRECTION, "hello world" does not (negative test)
+  - Task 7: Improve reviewer quality (3 fixes) — verdict mandate (rule 5) in both reviewer prompts, Mandatory Source Reading in planning dispatch template, Goal Alignment explicit table-filling requirement
+- **Files changed:** `tests/hooks/test-kiro-compat.sh` (1 test added), `tests/context-enrichment/test-split.sh` (2 tests added), `agents/reviewer-prompt.md` (rule 5), `.claude/agents/reviewer.md` (rule 5), `skills/planning/SKILL.md` (2 additions)
+- **Learnings:** Checklist gate hook requires verify commands run from `working_dir` param (not `cd` prefix) to match hash — the `cd /path &&` prefix changes the command string and thus the shasum hash. All 3 subagents completed on first attempt with zero failures.
+- **Status:** done — 8/8 checklist items complete, plan fully executed
