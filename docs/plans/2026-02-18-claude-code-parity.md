@@ -120,11 +120,13 @@ Run: `python3 -m pytest tests/ralph-loop/test_ralph_loop.py -v -k "detect"`
 Expected: FAIL
 
 **Step 3: Write implementation**
-Extract CLI detection into `detect_cli() -> list[str]` function. For Claude Code: `["claude", "-p", "--allowedTools", "Bash,Read,Write,Edit", "--output-format", "text"]`. For Kiro: existing `["kiro-cli", "chat", "--no-interactive", "--trust-all-tools", "--agent", "pilot"]`. Env var `RALPH_KIRO_CMD` overrides both.
+Extract CLI detection into `detect_cli() -> list[str]` function. For Claude Code: `["claude", "-p", "--allowedTools", "Bash,Read,Write,Edit,Task,WebSearch,WebFetch", "--output-format", "text"]`. For Kiro: existing `["kiro-cli", "chat", "--no-interactive", "--trust-all-tools", "--agent", "pilot"]`. Env var `RALPH_KIRO_CMD` overrides both.
+
+Note: `Task` is required for subagent dispatch (reviewer, executor). `WebSearch`/`WebFetch` for researcher. Without `Task`, CC mode cannot use subagents.
 
 Adjust `Popen` call in main loop:
 - Current: `cmd = ["kiro-cli", "chat", "--no-interactive", ..., prompt]` — prompt is last arg
-- CC mode: `cmd = ["claude", "-p", prompt, "--allowedTools", "Bash,Read,Write,Edit"]` — prompt is positional arg after `-p`
+- CC mode: `cmd = ["claude", "-p", prompt, "--allowedTools", "Bash,Read,Write,Edit,Task,WebSearch,WebFetch"]` — prompt is positional arg after `-p`
 - Kiro mode: `cmd = ["kiro-cli", "chat", "--no-interactive", "--trust-all-tools", "--agent", "pilot", prompt]` — prompt is last arg
 - Both modes: stdout/stderr go to log file, `start_new_session=True` for process group isolation
 - `detect_cli()` returns the base command (without prompt); prompt is appended at call site
@@ -194,9 +196,9 @@ bash tests/hooks/test-cc-compat.sh && echo PASS
 
 **What to implement:**
 End-to-end integration tests using `claude -p` (headless mode):
-- `test-hooks-fire.sh`: verify security hooks block dangerous commands, feedback hooks fire
+- `test-hooks-fire.sh`: verify security hooks block dangerous commands, feedback hooks fire. Note: `PermissionRequest` hooks do NOT fire in `-p` mode (official docs); use `PreToolUse` hooks instead — our hooks already use `PreToolUse`, so no issue.
 - `test-skills-load.sh`: verify skills are discoverable and invocable
-- `test-subagent-dispatch.sh`: verify reviewer/researcher subagents can be delegated to
+- `test-subagent-dispatch.sh`: verify reviewer/researcher subagents can be delegated to (requires `--allowedTools` including `Task`)
 - `test-knowledge-retrieval.sh`: verify knowledge base queries return relevant results
 - `test-plan-workflow.sh`: verify plan awareness and enforce-ralph-loop gating
 - `run.sh`: orchestrator that checks `which claude` first; if not found, prints "SKIP: claude not in PATH" and exits 0 (not failure). This ensures CI environments without Claude Code don't fail. Each `claude -p` call must be wrapped with `timeout 60s` to prevent indefinite hangs on API timeouts.
