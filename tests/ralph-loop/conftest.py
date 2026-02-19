@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -9,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from scripts.lib.plan import PlanFile, TaskInfo
 from scripts.lib.scheduler import Batch
+import scripts.ralph_loop as ralph_loop
 
 
 @pytest.fixture
@@ -20,16 +20,16 @@ def plan_factory(tmp_path):
             skip_pattern = []
         if file_sets is None:
             file_sets = [{f"file{i}.txt"} for i in range(task_count)]
-        
+
         plan_path = tmp_path / "plan.md"
         active_path = tmp_path / ".active"
-        
+
         content = "# Plan\n\n## Tasks\n\n"
         for i in range(task_count):
             content += f"### Task {i+1}: Task_{i+1}\n\n"
             content += f"**Files:** {', '.join(file_sets[i])}\n\n"
             content += "**Verify:** `echo ok`\n\n"
-        
+
         content += "## Checklist\n\n"
         for i in range(task_count):
             if i in skip_pattern:
@@ -38,14 +38,14 @@ def plan_factory(tmp_path):
                 content += f"- [x] Task {i+1}\n"
             else:
                 content += f"- [ ] Task {i+1}\n"
-        
+
         content += "\n## Errors\n\n| Task | Error |\n|------|-------|\n"
-        
+
         plan_path.write_text(content)
         active_path.write_text(str(plan_path))
-        
+
         return plan_path, active_path
-    
+
     return factory
 
 
@@ -63,17 +63,5 @@ def ralph_env(tmp_path):
 
 
 def import_ralph_fn(fn_name):
-    import importlib.util
-    
-    ralph_path = Path(__file__).resolve().parent.parent.parent / "scripts" / "ralph_loop.py"
-    if not ralph_path.exists():
-        return None
-    
-    content = ralph_path.read_text()
-    match = re.search(rf'^def {re.escape(fn_name)}\(.*?^(?=def|\Z)', content, re.MULTILINE | re.DOTALL)
-    if not match:
-        return None
-    
-    namespace = {"Path": Path, "Batch": Batch, "TaskInfo": TaskInfo, "PlanFile": PlanFile}
-    exec(match.group(0), namespace)
-    return namespace.get(fn_name)
+    """Return a function from scripts.ralph_loop by name (direct import, no exec hack)."""
+    return getattr(ralph_loop, fn_name, None)
