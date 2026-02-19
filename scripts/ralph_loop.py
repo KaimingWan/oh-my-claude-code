@@ -322,7 +322,10 @@ def run_parallel_batch(batch: Batch, iteration: int) -> list[str]:
             print(f"⚠️  Failed to create worktree for task {task.number}: {e}", flush=True)
             continue
 
-        prompt = build_worker_prompt(task.name, sorted(task.files), task.verify_cmd, str(plan_path))
+        # Extract verify command from section_text (line starting with **Verify:**)
+        verify_match = re.search(r'\*\*Verify:\*\*\s*`(.+?)`', task.section_text)
+        verify_cmd = verify_match.group(1) if verify_match else "echo 'no verify command found'"
+        prompt = build_worker_prompt(task.name, sorted(task.files), verify_cmd, str(plan_path))
         if base_cmd[0] == "claude":
             cmd = [base_cmd[0], "-p", prompt] + base_cmd[2:]
         else:
