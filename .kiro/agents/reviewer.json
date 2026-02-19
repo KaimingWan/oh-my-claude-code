@@ -13,7 +13,6 @@
     "shell"
   ],
   "resources": [
-    "file://AGENTS.md",
     "skill://skills/reviewing/SKILL.md"
   ],
   "hooks": {

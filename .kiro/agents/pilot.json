@@ -10,7 +10,8 @@
   "resources": [
     "file://AGENTS.md",
     "file://knowledge/INDEX.md",
-    "skill://skills/**/SKILL.md"
+    "skill://skills/planning/SKILL.md",
+    "skill://skills/reviewing/SKILL.md"
   ],
   "hooks": {
     "userPromptSubmit": [

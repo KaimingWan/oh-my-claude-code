@@ -25,7 +25,6 @@
     "@fetch"
   ],
   "resources": [
-    "file://AGENTS.md",
     "skill://skills/research/SKILL.md"
   ],
   "hooks": {

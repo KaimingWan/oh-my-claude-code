@@ -139,7 +139,8 @@ def pilot_agent() -> dict:
         "resources": [
             "file://AGENTS.md",
             "file://knowledge/INDEX.md",
-            "skill://skills/**/SKILL.md",
+            "skill://skills/planning/SKILL.md",
+            "skill://skills/reviewing/SKILL.md",
         ],
         "hooks": {
             "userPromptSubmit": [
@@ -179,7 +180,7 @@ def reviewer_agent() -> dict:
         "prompt": "file://../../agents/reviewer-prompt.md",
         "tools": ["read", "write", "shell"],
         "allowedTools": ["read", "write", "shell"],
-        "resources": ["file://AGENTS.md", "skill://skills/reviewing/SKILL.md"],
+        "resources": ["skill://skills/reviewing/SKILL.md"],
         "hooks": {
             "agentSpawn": [{"command": "echo '🔍 REVIEWER: Never skip analysis — always read the full plan/diff before giving verdict'"}],
             "preToolUse": SECURITY_HOOKS_BASH,
@@ -206,7 +207,7 @@ def researcher_agent() -> dict:
         },
         "tools": ["read", "shell", "@ripgrep", "@fetch"],
         "allowedTools": ["read", "shell", "@ripgrep", "@fetch"],
-        "resources": ["file://AGENTS.md", "skill://skills/research/SKILL.md"],
+        "resources": ["skill://skills/research/SKILL.md"],
         "hooks": {
             "agentSpawn": [{"command": "echo '🔬 RESEARCHER: 1) Cite sources 2) Cross-verify claims 3) Report gaps explicitly'"}],
             "preToolUse": SECURITY_HOOKS_BASH,
