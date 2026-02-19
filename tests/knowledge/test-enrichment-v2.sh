@@ -76,21 +76,21 @@ cat > knowledge/episodes.md << 'EOF'
 2026-02-03 | resolved | python,typing | Python typing resolved
 EOF
 OUT=$(run_context_enrichment "fix the docker container")
-assert_contains "$OUT" "📌 Episode:.*Docker"
-echo "  [resolved should not appear]"
-assert_not_contains "$OUT" "📌 Episode:.*Python"
+assert_contains "$OUT" "📌 1 related episodes found"
+echo "  [resolved should not appear in count]"
+assert_not_contains "$OUT" "Episode:.*Docker"
 teardown_sandbox
 record_result "E4" "episode hints"
 
-# ── E5: archive hint when dir exists ──
-begin_test "E5-archive-hint"
+# ── E5: archive hint removed ──
+begin_test "E5-archive-hint-removed"
 setup_sandbox; clear_session_flags; cd "$SANDBOX"
 mkdir -p knowledge/archive
 echo "archived content" > knowledge/archive/episodes-2026-01.md
 OUT=$(run_context_enrichment "test")
-assert_contains "$OUT" "📦 Archive available"
+assert_not_contains "$OUT" "📦 Archive available"
 teardown_sandbox
-record_result "E5" "archive hint"
+record_result "E5" "archive hint removed"
 
 # ── E6: session-init no longer outputs rules ──
 begin_test "E6-session-init-no-rules"
