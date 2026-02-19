@@ -125,28 +125,21 @@ elif [ -f "$RULES_FILE" ] && [ -s "$RULES_FILE" ]; then
   fi
 fi
 
-# ── Layer 3: Episode index hints ──
+# ── Layer 3: Episode index hints (count only) ──
 if [ -f "knowledge/episodes.md" ]; then
   MSG_LOWER=$(echo "$USER_MSG" | tr '[:upper:]' '[:lower:]')
-  HINTS=""
+  EP_COUNT=0
   while IFS='|' read -r date status keywords summary; do
     status=$(echo "$status" | tr -d ' ')
     [ "$status" != "active" ] && continue
     for kw in $(echo "$keywords" | tr ',' '\n' | sed 's/^ *//;s/ *$//'); do
       if echo "$MSG_LOWER" | grep -qiw "$kw"; then
-        HINT=$(echo "$summary" | head -c 40 | tr -d '\n')
-        HINTS="${HINTS:+$HINTS
-}📌 Episode: ${HINT}..."
+        EP_COUNT=$((EP_COUNT + 1))
         break
       fi
     done
   done < <(grep '| active |' "knowledge/episodes.md" 2>/dev/null)
-  [ -n "$HINTS" ] && echo "$HINTS"
-fi
-
-# ── Layer 4: Archive hint ──
-if [ -d "knowledge/archive" ] && [ "$(ls -A knowledge/archive 2>/dev/null | grep -v '.gitkeep')" ]; then
-  echo "📦 Archive available: knowledge/archive/"
+  [ "$EP_COUNT" -gt 0 ] && echo "📌 $EP_COUNT related episodes found"
 fi
 
 exit 0
