@@ -136,7 +136,7 @@ Do NOT run git commit"""
 
 
 # --- Build prompt ---
-def build_prompt(iteration: int) -> str:
+def build_prompt(iteration: int, prev_exit: int = -1) -> str:
     plan.reload()
     progress_file = plan.progress_path
     findings_file = plan.findings_path
@@ -144,6 +144,8 @@ def build_prompt(iteration: int) -> str:
 
     if SKIP_PRECHECK:
         env_status = "⏭️ Precheck skipped"
+    elif prev_exit == 0:
+        env_status = "✅ Environment OK (cached — last iteration succeeded)"
     else:
         precheck_ok, precheck_out = run_precheck(PROJECT_ROOT)
         env_status = f"✅ Environment OK" if precheck_ok else f"❌ Environment FAILING:\n{precheck_out}"
@@ -288,6 +290,7 @@ print(flush=True)
 prev_checked = 0
 stale_rounds = 0
 final_exit = 1
+prev_exit = -1  # -1 = no previous iteration; 0 = last CLI exited OK (precheck cacheable)
 
 for i in range(1, MAX_ITERATIONS + 1):
     plan.reload()
@@ -330,7 +333,7 @@ for i in range(1, MAX_ITERATIONS + 1):
     elif i == 1 and plan.checked == 0:
         prompt = build_init_prompt()
     else:
-        prompt = build_prompt(i)
+        prompt = build_prompt(i, prev_exit=prev_exit)
 
     # Launch kiro-cli with process group isolation
     with LOG_FILE.open("a") as log_fd:
@@ -367,7 +370,7 @@ for i in range(1, MAX_ITERATIONS + 1):
         stop_event.set()
         hb.join(timeout=2)
 
-    time.sleep(2)
+    prev_exit = proc.returncode if proc.returncode is not None else 1
 
     # Early completion check — avoid wasting a full iteration
     plan.reload()

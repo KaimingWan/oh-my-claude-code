@@ -797,3 +797,15 @@ def test_worker_prompt_no_plan_update():
     assert "docs/plans/test.md" in prompt
     assert "Do NOT modify docs/plans/" in prompt
     assert "Do NOT run git commit" in prompt
+
+
+def test_sleep_removed_from_source():
+    """time.sleep(2) must not be present in ralph_loop.py (Task 5)."""
+    source = Path("scripts/ralph_loop.py").read_text()
+    assert "time.sleep(2)" not in source, "time.sleep(2) should have been removed from ralph_loop.py"
+
+
+def test_prev_exit_in_source():
+    """prev_exit variable must be present for precheck caching (Task 5)."""
+    source = Path("scripts/ralph_loop.py").read_text()
+    assert "prev_exit" in source, "prev_exit not found in ralph_loop.py"
