@@ -380,3 +380,114 @@ def test_concurrent_reload(tmp_path):
     for checked, unchecked in results:
         assert checked >= 0
         assert unchecked >= 0
+
+
+MANY_TO_MANY_PLAN = """\
+# Hardening Sprint Plan
+**Goal:** Fix bugs
+
+## Tasks
+
+### Task 1: Fix parser
+**Files:**
+- Modify: `scripts/lib/plan.py`
+
+**Verify:** `echo ok`
+
+---
+
+### Task 2: Fix scheduler
+**Files:**
+- Modify: `scripts/lib/scheduler.py`
+
+**Verify:** `echo ok`
+
+---
+
+### Task 3: Fix ralph loop
+**Files:**
+- Modify: `scripts/ralph_loop.py`
+
+**Verify:** `echo ok`
+
+---
+
+### Task 4: Fix worktree
+**Files:**
+- Modify: `scripts/lib/worktree.py`
+
+**Verify:** `echo ok`
+
+---
+
+### Task 5: Add integration tests
+**Files:**
+- Test: `tests/ralph-loop/test_integration.py`
+
+**Verify:** `echo ok`
+
+---
+
+### Task 6: Update documentation
+**Files:**
+- Modify: `skills/planning/SKILL.md`
+
+**Verify:** `echo ok`
+
+## Checklist
+
+- [x] parser unit tests pass | `echo ok`
+- [x] parser handles edge cases | `echo ok`
+- [x] scheduler builds batches correctly | `echo ok`
+- [x] scheduler handles conflicts | `echo ok`
+- [x] ralph loop orphan cleanup | `echo ok`
+- [x] ralph loop rate limit throttling | `echo ok`
+- [x] ralph loop checklist persistence | `echo ok`
+- [x] worktree squash merge | `echo ok`
+- [x] worktree cleanup on failure | `echo ok`
+- [x] integration test end-to-end | `echo ok`
+- [x] integration test parallel mode | `echo ok`
+- [ ] fix scheduler unchecked_tasks N:M | `echo ok`
+- [ ] documentation updated | `echo ok`
+"""
+
+
+def test_unchecked_tasks_many_to_many(tmp_path):
+    """6 tasks, 13 checklist items, 11 checked off.
+    unchecked_tasks() must return only tasks with unchecked items, not all 6."""
+    p = tmp_path / "plan.md"
+    p.write_text(MANY_TO_MANY_PLAN)
+    pf = PlanFile(p)
+    result = pf.unchecked_tasks()
+    # Only tasks whose keyword matches unchecked items should be returned
+    # "fix scheduler unchecked_tasks N:M" → Task 2 (Fix scheduler)
+    # "documentation updated" → Task 6 (Update documentation)
+    assert len(result) < 6, f"Should not return all tasks, got {len(result)}: {[t.name for t in result]}"
+    task_numbers = {t.number for t in result}
+    assert 1 not in task_numbers, "Task 1 (parser) should be done — all its items are checked"
+    assert 3 not in task_numbers, "Task 3 (ralph loop) should be done — all its items are checked"
+    assert 4 not in task_numbers, "Task 4 (worktree) should be done — all its items are checked"
+    assert 5 not in task_numbers, "Task 5 (integration tests) should be done — all its items are checked"
+
+
+def test_unchecked_tasks_no_match_fallback(tmp_path):
+    """Task names don't match any checklist item text → safe fallback: return all tasks."""
+    plan = (
+        "# Test Plan\n"
+        "**Goal:** Test fallback\n\n"
+        "## Tasks\n\n"
+        "### Task 1: Zeta implementation\n"
+        "**Files:**\n- Create: `z.py`\n\n"
+        "### Task 2: Omega refactor\n"
+        "**Files:**\n- Modify: `o.py`\n\n"
+        "## Checklist\n\n"
+        "- [x] completely unrelated item one | `echo ok`\n"
+        "- [ ] another unrelated item two | `echo ok`\n"
+        "- [ ] third unrelated item three | `echo ok`\n"
+    )
+    p = tmp_path / "plan.md"
+    p.write_text(plan)
+    pf = PlanFile(p)
+    result = pf.unchecked_tasks()
+    # No task name keywords match the checklist items → safe fallback returns all tasks
+    assert len(result) == 2, f"Should return all tasks as fallback, got {len(result)}"
