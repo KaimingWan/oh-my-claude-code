@@ -736,3 +736,40 @@ def test_recursion_guard(tmp_path):
     })
     assert r.returncode == 1
     assert "nested" in r.stdout.lower() or "recursion" in r.stdout.lower()
+
+
+def test_no_orphan_after_ralph_killed(tmp_path):
+    """Killing ralph_loop.py also kills its child CLI process (no orphans)."""
+    write_plan(tmp_path)
+    unique_name = f"ralph_orphan_test_{os.getpid()}"
+    script = tmp_path / f"{unique_name}.sh"
+    script.write_text(f"#!/bin/bash\nexec -a {unique_name} sleep 120\n")
+    script.chmod(0o755)
+
+    proc = subprocess.Popen(
+        ["python3", SCRIPT, "1"],
+        env={
+            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+            "HOME": os.environ.get("HOME", "/tmp"),
+            "PLAN_POINTER_OVERRIDE": str(tmp_path / ".active"),
+            "RALPH_KIRO_CMD": str(script),
+            "RALPH_TASK_TIMEOUT": "60",
+            "RALPH_HEARTBEAT_INTERVAL": "999",
+            "RALPH_SKIP_DIRTY_CHECK": "1",
+        },
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    # Wait for child to start (poll loop instead of sleep)
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        check = subprocess.run(["pgrep", "-f", unique_name], capture_output=True, text=True)
+        if check.returncode == 0:
+            break
+        time.sleep(0.2)
+    # Kill ralph (SIGTERM)
+    proc.terminate()
+    proc.wait(timeout=5)
+    time.sleep(1)
+    # Child should NOT be orphaned
+    check = subprocess.run(["pgrep", "-f", unique_name], capture_output=True, text=True)
+    assert check.returncode != 0, f"Orphan child found: {check.stdout.strip()}"

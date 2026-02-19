@@ -39,6 +39,8 @@ LOG_FILE = Path(".ralph-loop.log")
 LOCK = LockFile(Path(".ralph-loop.lock"))
 SUMMARY_FILE = Path("docs/plans/.ralph-result")
 
+_child_proc: subprocess.Popen | None = None
+
 
 def die(msg: str) -> None:
     print(f"❌ {msg}")
@@ -73,6 +75,11 @@ if plan.total == 0:
 
 # --- Signal handling + cleanup ---
 def _cleanup_handler(signum=None, frame=None):
+    if _child_proc is not None:
+        try:
+            os.killpg(os.getpgid(_child_proc.pid), signal.SIGTERM)
+        except (ProcessLookupError, OSError):
+            pass
     LOCK.release()
     sys.exit(1)
 
@@ -328,6 +335,7 @@ for i in range(1, MAX_ITERATIONS + 1):
             cmd, stdout=log_fd, stderr=subprocess.STDOUT,
             start_new_session=True,
         )
+        _child_proc = proc
 
         stop_event = threading.Event()
         hb = threading.Thread(target=_heartbeat, args=(proc, i, stop_event), daemon=True)
