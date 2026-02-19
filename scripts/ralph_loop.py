@@ -24,6 +24,7 @@ from scripts.lib.lock import LockFile
 from scripts.lib.scheduler import build_batches, Batch
 from scripts.lib.cli_detect import detect_cli
 from scripts.lib.precheck import run_precheck
+from scripts.lib.worktree import WorktreeManager
 
 # --- Configuration from env ---
 MAX_ITERATIONS = int(sys.argv[1]) if len(sys.argv) > 1 else 10
@@ -39,8 +40,11 @@ MAX_STALE = 3
 LOG_FILE = Path(".ralph-loop.log")
 LOCK = LockFile(Path(".ralph-loop.lock"))
 SUMMARY_FILE = Path("docs/plans/.ralph-result")
+WORKER_LOG_DIR = Path(".ralph-logs")
 
 _child_proc: subprocess.Popen | None = None
+_child_procs: list[subprocess.Popen] = []
+wt_manager = WorktreeManager()
 
 
 def die(msg: str) -> None:
@@ -76,11 +80,23 @@ if plan.total == 0:
 
 # --- Signal handling + cleanup ---
 def _cleanup_handler(signum=None, frame=None):
+    # Kill singular child proc (sequential mode)
     if _child_proc is not None:
         try:
             os.killpg(os.getpgid(_child_proc.pid), signal.SIGTERM)
         except (ProcessLookupError, OSError):
             pass
+    # Kill all parallel worker procs
+    for p in _child_procs:
+        try:
+            os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+        except (ProcessLookupError, OSError):
+            pass
+    # Cleanup any orphaned worktrees
+    try:
+        wt_manager.cleanup_stale()
+    except Exception:
+        pass
     LOCK.release()
     sys.exit(1)
 
@@ -286,6 +302,98 @@ Rules:
 4. Commit: feat: <task description>."""
 
 
+# --- Parallel batch executor ---
+def run_parallel_batch(batch: Batch, iteration: int) -> list[str]:
+    """Spawn N worker CLI processes in isolated worktrees, wait, merge successful ones.
+
+    Returns list of worker names that succeeded (exit 0).
+    """
+    global _child_procs
+    WORKER_LOG_DIR.mkdir(exist_ok=True)
+    workers = []  # list of (name, worktree_path, proc, log_path)
+
+    base_cmd = detect_cli()
+
+    for task in batch.tasks:
+        name = f"w{task.number}-i{iteration}"
+        try:
+            wt_path = wt_manager.create(name)
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️  Failed to create worktree for task {task.number}: {e}", flush=True)
+            continue
+
+        prompt = build_worker_prompt(task.name, sorted(task.files), task.verify_cmd, str(plan_path))
+        if base_cmd[0] == "claude":
+            cmd = [base_cmd[0], "-p", prompt] + base_cmd[2:]
+        else:
+            cmd = base_cmd + [prompt]
+
+        log_path = WORKER_LOG_DIR / f"worker-{name}.log"
+        log_fd = open(log_path, "w")
+        proc = subprocess.Popen(
+            cmd,
+            stdout=log_fd,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+            cwd=str(wt_path),
+            env={**os.environ, "_RALPH_LOOP_RUNNING": "1"},
+        )
+        _child_procs.append(proc)
+        workers.append((name, wt_path, proc, log_fd))
+        print(f"  🚀 Worker {name}: task '{task.name}' → {wt_path.name}", flush=True)
+
+    succeeded = []
+    for name, wt_path, proc, log_fd in workers:
+        try:
+            proc.wait(timeout=TASK_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            ts = datetime.now().strftime("%H:%M:%S")
+            print(f"  ⏰ [{ts}] Worker {name} timed out — killing", flush=True)
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                proc.wait(timeout=5)
+            except (subprocess.TimeoutExpired, ProcessLookupError, OSError):
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                    proc.wait()
+                except (ProcessLookupError, OSError):
+                    pass
+        finally:
+            log_fd.close()
+        if proc.returncode == 0:
+            succeeded.append(name)
+            print(f"  ✅ Worker {name} succeeded", flush=True)
+        else:
+            print(f"  ❌ Worker {name} failed (exit {proc.returncode})", flush=True)
+
+    # Remove from _child_procs tracking
+    _child_procs = [p for _, _, p, _ in workers if p.poll() is None]
+
+    # Merge successful workers into main branch
+    for name in succeeded:
+        ok = wt_manager.merge(name)
+        if ok:
+            print(f"  🔀 Merged worker {name}", flush=True)
+        else:
+            print(f"  ⚠️  Merge conflict for worker {name} — skipping", flush=True)
+            succeeded.remove(name)
+
+    # Cleanup all worktrees
+    for name, _, _, _ in workers:
+        try:
+            wt_manager.remove(name)
+        except Exception:
+            pass
+
+    return succeeded
+
+
+# --- Startup: remove stale worktrees from previous runs ---
+try:
+    wt_manager.cleanup_stale()
+except Exception:
+    pass
+
 # --- Startup banner ---
 plan.reload()
 unchecked = plan.unchecked_tasks()
@@ -343,50 +451,58 @@ for i in range(1, MAX_ITERATIONS + 1):
         print(f" Iteration {i}/{MAX_ITERATIONS} — {plan.unchecked} remaining, {plan.checked} done", flush=True)
     print(f"{'=' * 63}", flush=True)
 
-    # Use batch-aware prompt if batches available, otherwise fallback
-    if batches:
-        prompt = build_batch_prompt(batches[0], plan_path, i)
-    elif i == 1 and plan.checked == 0:
-        prompt = build_init_prompt()
+    # Route: parallel batch → worktree workers; sequential/fallback → single CLI
+    if batches and batches[0].parallel:
+        current_batch = batches[0]
+        names = ", ".join(f"T{t.number}" for t in current_batch.tasks)
+        print(f"  ⚡ Launching parallel worktree workers: [{names}]", flush=True)
+        succeeded = run_parallel_batch(current_batch, i)
+        prev_exit = 0 if succeeded else 1
     else:
-        prompt = build_prompt(i, prev_exit=prev_exit)
-
-    # Launch kiro-cli with process group isolation
-    with LOG_FILE.open("a") as log_fd:
-        base_cmd = detect_cli()
-        if base_cmd[0] == 'claude':
-            # claude -p <prompt> [flags...] — prompt is positional after -p
-            cmd = [base_cmd[0], '-p', prompt] + base_cmd[2:]
+        # Build prompt for sequential/fallback mode
+        if batches:
+            prompt = build_batch_prompt(batches[0], plan_path, i)
+        elif i == 1 and plan.checked == 0:
+            prompt = build_init_prompt()
         else:
-            # kiro-cli chat ... <prompt> — prompt is last arg
-            cmd = base_cmd + [prompt]
+            prompt = build_prompt(i, prev_exit=prev_exit)
 
-        proc = subprocess.Popen(
-            cmd, stdout=log_fd, stderr=subprocess.STDOUT,
-            start_new_session=True,
-        )
-        _child_proc = proc
+        # Launch kiro-cli with process group isolation
+        with LOG_FILE.open("a") as log_fd:
+            base_cmd = detect_cli()
+            if base_cmd[0] == 'claude':
+                # claude -p <prompt> [flags...] — prompt is positional after -p
+                cmd = [base_cmd[0], '-p', prompt] + base_cmd[2:]
+            else:
+                # kiro-cli chat ... <prompt> — prompt is last arg
+                cmd = base_cmd + [prompt]
 
-        stop_event = threading.Event()
-        hb = threading.Thread(target=_heartbeat, args=(proc, i, stop_event), daemon=True)
-        hb.start()
+            proc = subprocess.Popen(
+                cmd, stdout=log_fd, stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+            _child_proc = proc
 
-        try:
-            proc.wait(timeout=TASK_TIMEOUT)
-        except subprocess.TimeoutExpired:
-            ts = datetime.now().strftime("%H:%M:%S")
-            print(f"⏰ [{ts}] Iteration {i} timed out after {TASK_TIMEOUT}s — killing", flush=True)
-            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+            stop_event = threading.Event()
+            hb = threading.Thread(target=_heartbeat, args=(proc, i, stop_event), daemon=True)
+            hb.start()
+
             try:
-                proc.wait(timeout=5)
+                proc.wait(timeout=TASK_TIMEOUT)
             except subprocess.TimeoutExpired:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                proc.wait()
+                ts = datetime.now().strftime("%H:%M:%S")
+                print(f"⏰ [{ts}] Iteration {i} timed out after {TASK_TIMEOUT}s — killing", flush=True)
+                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                    proc.wait()
 
-        stop_event.set()
-        hb.join(timeout=2)
+            stop_event.set()
+            hb.join(timeout=2)
 
-    prev_exit = proc.returncode if proc.returncode is not None else 1
+        prev_exit = proc.returncode if proc.returncode is not None else 1
 
     # Early completion check — avoid wasting a full iteration
     plan.reload()

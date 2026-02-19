@@ -799,6 +799,40 @@ def test_worker_prompt_no_plan_update():
     assert "Do NOT run git commit" in prompt
 
 
+def test_parallel_batch_creates_worktrees(tmp_path):
+    """Plan with 2 independent tasks → ralph attempts parallel worktree execution.
+    Stdout must contain 'parallel' or 'worktree' (from the launch message).
+    """
+    task_section = (
+        "## Tasks\n\n"
+        "### Task 1: Alpha\n\n**Files:**\n- Create: `a_par.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
+        "### Task 2: Beta\n\n**Files:**\n- Create: `b_par.py`\n\n**Verify:** `echo ok`\n\n"
+    )
+    plan_text = PLAN_TEMPLATE.format(items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
+    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
+    write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
+    (tmp_path / "plan.md").write_text(plan_text)
+
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        r = run_ralph(tmp_path, extra_env={
+            "RALPH_KIRO_CMD": "true",
+            "RALPH_TASK_TIMEOUT": "5",
+        }, max_iter="1")
+        stdout_lower = r.stdout.lower()
+        assert "parallel" in stdout_lower or "worktree" in stdout_lower, (
+            f"Expected 'parallel' or 'worktree' in stdout, got:\n{r.stdout[:800]}"
+        )
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+        # Cleanup any leftover worktrees from test
+        import subprocess as sp
+        sp.run(["git", "worktree", "prune"], capture_output=True)
+
+
 def test_sleep_removed_from_source():
     """time.sleep(2) must not be present in ralph_loop.py (Task 5)."""
     source = Path("scripts/ralph_loop.py").read_text()
