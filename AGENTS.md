@@ -27,6 +27,7 @@
 - Agent 自主：读文件、跑测试、探索代码、web search
 - 需用户确认：改 plan 方向、跳过 skill 流程、git push
 - 仅人操作：修改 CLAUDE.md / .claude/rules/（hook enforced）
+  - 例外：用户在对话中明确确认内容后，agent 可代执行 `.skip-instruction-guard` 三步流程写入保护文件（touch → write → rm）
 
 ## Skill Routing
 
