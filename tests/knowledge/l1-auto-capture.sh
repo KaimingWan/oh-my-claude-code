@@ -59,7 +59,7 @@ BEFORE=$(wc -l < knowledge/episodes.md | tr -d ' ')
 OUT=$(run_auto_capture "必须用 jq 处理 JSON"); RC=$?
 AFTER=$(wc -l < knowledge/episodes.md | tr -d ' ')
 assert_exit_code 0 "$RC"
-assert_contains "$OUT" "Already in rules"
+# Should silently skip (no output about rules)
 [ "$BEFORE" -eq "$AFTER" ] && pass || fail "wrote despite being in rules"
 teardown_sandbox
 record_result "C5" "already in rules"

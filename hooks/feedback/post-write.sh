@@ -50,18 +50,7 @@ run_test() {
   return 0
 }
 
-# === Remind progress (advisory) ===
-remind_progress() {
-  case "$FILE" in
-    */progress.md|*/findings.md|docs/plans/*|*.json|*.md) return 0 ;;
-  esac
-  [ -f "docs/plans/.active" ] || return 0
-  echo "📝 File updated. If this completes a checklist item, update the plan and progress.md."
-  return 0
-}
-
 # --- Execute all ---
 run_lint || true
-remind_progress || true
 run_test
 exit $?

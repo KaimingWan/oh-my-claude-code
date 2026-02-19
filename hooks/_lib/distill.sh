@@ -68,7 +68,7 @@ distill_check() {
     distilled=$((distilled + 1))
   done <<< "$kw_counts"
 
-  [ "$distilled" -gt 0 ] && echo "⚗️ Distilled $distilled keyword groups into rules"
+  [ "$distilled" -gt 0 ] && : # distilled silently
 }
 
 # ── archive_promoted ──
@@ -89,7 +89,6 @@ archive_promoted() {
 
   local count
   count=$(echo "$to_archive" | wc -l | tr -d ' ')
-  echo "📦 Archived $count episodes → $archive_file"
 }
 
 # ── section_cap_enforce ──

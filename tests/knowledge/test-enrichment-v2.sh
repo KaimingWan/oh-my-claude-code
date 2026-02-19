@@ -121,10 +121,10 @@ cat > knowledge/.health-report.md << 'EOF'
 ⚠️ rules.md approaching limit
 EOF
 OUT=$(run_session_init "test")
-echo "  [check promoted cleanup]"
-assert_contains "$OUT" "🧹 Cleaned"
-echo "  [check health report]"
-assert_contains "$OUT" "📊 KB has"
+echo "  [check promoted cleanup runs silently]"
+assert_not_contains "$OUT" "🧹 Cleaned"
+echo "  [check health report removed]"
+assert_not_contains "$OUT" "📊 KB has"
 # Verify promoted actually removed from file
 REMAINING=$(grep -c '| promoted |' knowledge/episodes.md 2>/dev/null || true)
 echo "  [promoted remaining: $REMAINING]"

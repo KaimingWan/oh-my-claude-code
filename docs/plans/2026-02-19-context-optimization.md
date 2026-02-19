@@ -125,28 +125,28 @@ Verdict: APPROVE
 
 ## Checklist
 
-- [ ] generate_configs.py resources 改为只加载 planning + reviewing | `python3 scripts/generate_configs.py && jq '.resources' .kiro/agents/pilot.json | grep -c 'skill://' | grep -q '^2$'`
-- [ ] subagent 不再加载 AGENTS.md | `python3 scripts/generate_configs.py && ! jq '.resources[]' .kiro/agents/reviewer.json 2>/dev/null | grep -q 'AGENTS.md'`
-- [ ] brainstorming 合并入 planning Phase 0 并移除 | `test ! -d skills/brainstorming && grep -q 'Design presentation' skills/planning/SKILL.md`
-- [ ] commands/plan.md 不再引用 brainstorming | `! grep -q 'brainstorming' commands/plan.md`
-- [ ] AGENTS.md Skill Routing 表更新 | `grep -q '加载方式' AGENTS.md`
-- [ ] CLAUDE.md 与 AGENTS.md 同步 | `diff AGENTS.md CLAUDE.md`
-- [ ] context-enrichment episode hints 精简为计数 | `echo '{"prompt":"test subagent code"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '📌' && ! echo '{"prompt":"test subagent code"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q 'Episode:'`
-- [ ] archive hint 已移除 | `! echo '{"prompt":"test"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '📦'`
-- [ ] session-init 移除 cleanup/health 输出 | `! grep -q '🧹\|📊' hooks/feedback/session-init.sh`
-- [ ] auto-capture 移除 dedup 诊断输出 | `! grep -q 'Already in rules\|Similar episode exists' hooks/feedback/auto-capture.sh`
-- [ ] verify-completion 移除装饰线 | `! grep -q '═══' hooks/feedback/verify-completion.sh`
-- [ ] post-write 移除低价值提醒 | `! grep -q 'File updated' hooks/feedback/post-write.sh`
-- [ ] distill.sh 静默执行 | `! grep -qE 'echo.*Distilled|echo.*Archived' hooks/_lib/distill.sh`
-- [ ] enforce-ralph-loop block_msg 函数精简为1行输出 | `awk '/^block_msg/,/^}/' hooks/gate/enforce-ralph-loop.sh | grep -c 'echo' | grep -q '^1$'`
-- [ ] episodes 蒸馏完成（active ≤ 30） | `test $(grep -c '| active |' knowledge/episodes.md) -le 30`
-- [ ] rules.md 有蒸馏产出 | `grep -c '^## \[' knowledge/rules.md | grep -qv '^0$'`
-- [ ] 测试通过: enrichment | `bash tests/knowledge/test-enrichment-v2.sh`
-- [ ] 测试通过: distill | `bash tests/knowledge/test-distill.sh`
-- [ ] 测试通过: integration | `bash tests/knowledge/test-integration.sh`
-- [ ] 测试通过: auto-capture | `bash tests/hooks/test-auto-capture.sh`
-- [ ] 测试通过: severity-tracking | `bash tests/knowledge/test-severity-tracking.sh`
-- [ ] 生成配置验证通过 | `python3 scripts/generate_configs.py --validate`
+- [x] generate_configs.py resources 改为只加载 planning + reviewing | `python3 scripts/generate_configs.py && jq '.resources' .kiro/agents/pilot.json | grep -c 'skill://' | grep -q '^2$'`
+- [x] subagent 不再加载 AGENTS.md | `python3 scripts/generate_configs.py && ! jq '.resources[]' .kiro/agents/reviewer.json 2>/dev/null | grep -q 'AGENTS.md'`
+- [x] brainstorming 合并入 planning Phase 0 并移除 | `test ! -d skills/brainstorming && grep -q 'Design presentation' skills/planning/SKILL.md`
+- [x] commands/plan.md 不再引用 brainstorming | `! grep -q 'brainstorming' commands/plan.md`
+- [x] AGENTS.md Skill Routing 表更新 | `grep -q '加载方式' AGENTS.md`
+- [x] CLAUDE.md 与 AGENTS.md 同步 | `diff AGENTS.md CLAUDE.md`
+- [x] context-enrichment episode hints 精简为计数 | `echo '{"prompt":"test subagent code"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '📌' && ! echo '{"prompt":"test subagent code"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q 'Episode:'`
+- [x] archive hint 已移除 | `! echo '{"prompt":"test"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '📦'`
+- [x] session-init 移除 cleanup/health 输出 | `! grep -q '🧹\|📊' hooks/feedback/session-init.sh`
+- [x] auto-capture 移除 dedup 诊断输出 | `! grep -q 'Already in rules\|Similar episode exists' hooks/feedback/auto-capture.sh`
+- [x] verify-completion 移除装饰线 | `! grep -q '═══' hooks/feedback/verify-completion.sh`
+- [x] post-write 移除低价值提醒 | `! grep -q 'File updated' hooks/feedback/post-write.sh`
+- [x] distill.sh 静默执行 | `! grep -qE 'echo.*Distilled|echo.*Archived' hooks/_lib/distill.sh`
+- [x] enforce-ralph-loop block_msg 函数精简为1行输出 | `awk '/^block_msg/,/^}/' hooks/gate/enforce-ralph-loop.sh | grep -c 'echo' | grep -q '^1$'`
+- [x] episodes 蒸馏完成（active ≤ 30） | `test $(grep -c '| active |' knowledge/episodes.md) -le 30`
+- [x] rules.md 有蒸馏产出 | `grep -c '^## \[' knowledge/rules.md | grep -qv '^0$'`
+- [x] 测试通过: enrichment | `bash tests/knowledge/test-enrichment-v2.sh`
+- [x] 测试通过: distill | `bash tests/knowledge/test-distill.sh`
+- [x] 测试通过: integration | `bash tests/knowledge/test-integration.sh`
+- [x] 测试通过: auto-capture | `bash tests/hooks/test-auto-capture.sh`
+- [x] 测试通过: severity-tracking | `bash tests/knowledge/test-severity-tracking.sh`
+- [x] 生成配置验证通过 | `python3 scripts/generate_configs.py --validate`
 
 ## Errors
 

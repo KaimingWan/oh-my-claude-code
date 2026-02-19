@@ -53,11 +53,7 @@ fi
 # --- Active plan, unchecked items, no ralph-loop ---
 
 block_msg() {
-  echo "🚫 BLOCKED: Active plan has $UNCHECKED unchecked items." >&2
-  echo "   Plan: $PLAN_FILE" >&2
-  [ -n "$1" ] && echo "   Reason: $1" >&2
-  echo "   You MUST run: python3 scripts/ralph_loop.py" >&2
-  echo "   Do NOT execute plan tasks directly." >&2
+  echo "🚫 BLOCKED: Run python3 scripts/ralph_loop.py ($UNCHECKED items remaining${1:+, $1})" >&2
   exit 2
 }
 

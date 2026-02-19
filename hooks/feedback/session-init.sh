@@ -1,6 +1,6 @@
 #!/bin/bash
 # session-init.sh — Session initialization (once per session)
-# Cold-start: promoted episode cleanup, promotion reminder, health report
+# Cold-start: promoted episode cleanup, promotion reminder
 # Rules injection moved to context-enrichment.sh (per-message, keyword-matched)
 
 INPUT=$(cat)
@@ -14,7 +14,6 @@ if [ -f "knowledge/episodes.md" ]; then
   PROMOTED_COUNT=$(grep -c '| promoted |' "knowledge/episodes.md" 2>/dev/null || true)
   if [ "${PROMOTED_COUNT:-0}" -gt 0 ]; then
     grep -v '| promoted |' "knowledge/episodes.md" > /tmp/episodes-clean.tmp && mv /tmp/episodes-clean.tmp "knowledge/episodes.md"
-    echo "🧹 Cleaned $PROMOTED_COUNT promoted episodes (consolidated to rules)"
   fi
 fi
 
@@ -22,12 +21,6 @@ fi
 if [ -f "knowledge/episodes.md" ]; then
   PROMOTE=$(grep '| active |' "knowledge/episodes.md" 2>/dev/null | cut -d'|' -f3 | tr ',' '\n' | sed 's/^ *//;s/ *$//' | sort | uniq -c | awk '$1 >= 3' | wc -l | tr -d ' ')
   [ "$PROMOTE" -gt 0 ] && echo "⬆️ $PROMOTE keyword patterns appear ≥3 times in episodes → consider promotion"
-fi
-
-# KB health report
-if [ -f "knowledge/.health-report.md" ]; then
-  ISSUES=$(grep -cE '⬆️|⚠️|🧹' "knowledge/.health-report.md" 2>/dev/null || true)
-  [ "$ISSUES" -gt 0 ] && echo "📊 KB has $ISSUES issues → knowledge/.health-report.md"
 fi
 
 touch "$LESSONS_FLAG"

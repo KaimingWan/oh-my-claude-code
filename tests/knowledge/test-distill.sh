@@ -26,8 +26,7 @@ cat > "$EPISODES_FILE" << 'EOF'
 EOF
 > "$RULES_FILE"
 OUT=$(distill_check)
-assert_contains "$OUT" "Distilled"
-# Rule should be written
+# Rule should be written (distill runs silently now)
 assert_contains "$(cat "$RULES_FILE")" "foobar"
 # "必须" → 🔴
 assert_contains "$(cat "$RULES_FILE")" "🔴"
@@ -84,8 +83,7 @@ cat > "$EPISODES_FILE" << 'EOF'
 2026-01-02 | active | new,stuff | Active entry
 EOF
 OUT=$(archive_promoted)
-assert_contains "$OUT" "Archived 1"
-# Promoted removed from episodes
+# Archive runs silently; check file instead
 assert_not_contains "$(cat "$EPISODES_FILE")" "promoted"
 # Active still there
 assert_contains "$(cat "$EPISODES_FILE")" "active"
@@ -101,7 +99,7 @@ cat > "$EPISODES_FILE" << 'EOF'
 2026-01-02 | active | live,thing | Active entry
 EOF
 OUT=$(archive_promoted)
-assert_contains "$OUT" "Archived 1"
+# Archive runs silently; check result
 assert_not_contains "$(cat "$EPISODES_FILE")" "resolved"
 assert_contains "$(cat "$EPISODES_FILE")" "active"
 teardown_sandbox

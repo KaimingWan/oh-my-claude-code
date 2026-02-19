@@ -32,7 +32,6 @@ KEYWORD_PATTERN=$(echo "$KEYWORDS" | tr ',' '|')
 
 # 已在 rules.md → 跳过（已有规则覆盖）
 if grep -qiwE "$KEYWORD_PATTERN" "$RULES" 2>/dev/null; then
-  echo "📚 Already in rules.md — skipping capture."
   exit 0
 fi
 
@@ -41,9 +40,9 @@ MATCH_COUNT=$(grep -ciwE "$KEYWORD_PATTERN" "$EPISODES" 2>/dev/null | tail -1 ||
 MATCH_COUNT=${MATCH_COUNT:-0}
 if [ "$MATCH_COUNT" -gt 0 ]; then
   if [ "$MATCH_COUNT" -ge 2 ]; then
-    echo "🔥 Similar pattern ×$((MATCH_COUNT+1)) in episodes. Consider promoting to rules.md or creating a hook."
+    echo "📚 Similar episode ×$((MATCH_COUNT+1))"
   else
-    echo "📚 Similar episode exists — skipping duplicate."
+    : # duplicate, skip silently
   fi
   exit 0
 fi
