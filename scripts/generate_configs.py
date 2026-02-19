@@ -130,18 +130,59 @@ def claude_settings() -> dict:
     }
 
 
+def _main_agent_resources() -> list:
+    return [
+        "file://AGENTS.md",
+        "file://knowledge/INDEX.md",
+        "skill://skills/planning/SKILL.md",
+        "skill://skills/reviewing/SKILL.md",
+    ]
+
+
+def default_agent() -> dict:
+    return {
+        "name": "default",
+        "description": "Main orchestrator agent with deterministic workflow gates",
+        "tools": ["*"],
+        "allowedTools": ["*"],
+        "resources": _main_agent_resources(),
+        "hooks": {
+            "userPromptSubmit": [
+                {"command": "hooks/feedback/correction-detect.sh"},
+                {"command": "hooks/feedback/session-init.sh"},
+                {"command": "hooks/feedback/context-enrichment.sh"},
+            ],
+            "preToolUse": SECURITY_HOOKS_BASH + [
+                {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
+                {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
+                {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
+            ],
+            "postToolUse": [
+                {"matcher": "fs_write", "command": "hooks/feedback/post-write.sh"},
+                {"matcher": "execute_bash", "command": "hooks/feedback/post-bash.sh"},
+            ],
+            "stop": [{"command": "hooks/feedback/verify-completion.sh"}],
+        },
+        "toolsSettings": {
+            "subagent": {
+                "availableAgents": ["researcher", "reviewer", "executor"],
+                "trustedAgents": ["researcher", "reviewer", "executor"],
+            },
+            "shell": {
+                "autoAllowReadonly": True,
+                "deniedCommands": DENIED_COMMANDS_STRICT,
+            },
+        },
+    }
+
+
 def pilot_agent() -> dict:
     return {
         "name": "pilot",
         "description": "Main orchestrator agent with deterministic workflow gates",
         "tools": ["*"],
         "allowedTools": ["*"],
-        "resources": [
-            "file://AGENTS.md",
-            "file://knowledge/INDEX.md",
-            "skill://skills/planning/SKILL.md",
-            "skill://skills/reviewing/SKILL.md",
-        ],
+        "resources": _main_agent_resources(),
         "hooks": {
             "userPromptSubmit": [
                 {"command": "hooks/feedback/correction-detect.sh"},
@@ -369,6 +410,7 @@ def main() -> int:
 
     targets = [
         (PROJECT_ROOT / ".claude" / "settings.json", claude_settings()),
+        (PROJECT_ROOT / ".kiro" / "agents" / "default.json", default_agent()),
         (PROJECT_ROOT / ".kiro" / "agents" / "pilot.json", pilot_agent()),
         (PROJECT_ROOT / ".kiro" / "agents" / "reviewer.json", reviewer_agent()),
         (PROJECT_ROOT / ".kiro" / "agents" / "researcher.json", researcher_agent()),
