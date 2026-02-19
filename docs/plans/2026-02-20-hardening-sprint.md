@@ -172,19 +172,19 @@ In the "Writing to Protected Files" section, clarify that agent SHOULD execute t
 **Final verdict: APPROVE (Round 2 unanimous)**
 
 ## Checklist
-- [ ] verify-completion 不再执行 verify commands 和 test suite | `! grep -q 'detect_test_command\|alarm(30)' hooks/feedback/verify-completion.sh`
-- [ ] verify-completion 语法正确 | `bash -n hooks/feedback/verify-completion.sh`
-- [ ] worktree create 幂等（重复创建不崩溃） | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_create_duplicate_name -v`
-- [ ] worktree merge 无 docs/plans 变更时不报错 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_no_docs_plans -v`
-- [ ] worktree remove 已删除时不报错 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_remove_already_removed -v`
-- [ ] worktree cleanup_stale 处理注册但已删除的 worktree | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_cleanup_stale_with_registered_worktree -v`
-- [ ] worktree 测试有 teardown 安全保障 | `python3 -m pytest tests/ralph-loop/test_worktree.py -v`
-- [ ] ralph_loop.py 函数可直接 import | `python3 -c "from scripts.ralph_loop import build_batch_prompt, build_worker_prompt; print('ok')"`
-- [ ] 测试不再用 exec hack 导入函数 | `! grep -q '_import_build_batch_prompt\|import_ralph_fn' tests/ralph-loop/test_ralph_loop.py`
-- [ ] pytest slow mark 已注册（无 warning） | `! python3 -m pytest tests/ralph-loop/ --co -q 2>&1 | grep -q 'PytestUnknownMarkWarning'`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
-- [ ] AGENTS.md 包含 agent 代执行授权 | `grep -q '代执行' AGENTS.md`
-- [ ] self-reflect SKILL.md 明确 agent 可自动执行 | `grep -qiE 'autonomously|自动执行' skills/self-reflect/SKILL.md`
+- [x] verify-completion 不再执行 verify commands 和 test suite | `! grep -q 'detect_test_command\|alarm(30)' hooks/feedback/verify-completion.sh`
+- [x] verify-completion 语法正确 | `bash -n hooks/feedback/verify-completion.sh`
+- [x] worktree create 幂等（重复创建不崩溃） | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_create_duplicate_name -v`
+- [x] worktree merge 无 docs/plans 变更时不报错 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_no_docs_plans -v`
+- [x] worktree remove 已删除时不报错 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_remove_already_removed -v`
+- [x] worktree cleanup_stale 处理注册但已删除的 worktree | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_cleanup_stale_with_registered_worktree -v`
+- [x] worktree 测试有 teardown 安全保障 | `python3 -m pytest tests/ralph-loop/test_worktree.py -v`
+- [x] ralph_loop.py 函数可直接 import | `python3 -c "from scripts.ralph_loop import build_batch_prompt, build_worker_prompt; print('ok')"`
+- [x] 测试不再用 exec hack 导入函数 | `! grep -q '_import_build_batch_prompt\|import_ralph_fn' tests/ralph-loop/test_ralph_loop.py`
+- [x] pytest slow mark 已注册（无 warning） | `! python3 -m pytest tests/ralph-loop/ --co -q 2>&1 | grep -q 'PytestUnknownMarkWarning'`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
+- [x] AGENTS.md 包含 agent 代执行授权 | `grep -q '代执行' AGENTS.md`
+- [x] self-reflect SKILL.md 明确 agent 可自动执行 | `grep -qiE 'autonomously|自动执行' skills/self-reflect/SKILL.md`
 
 ## Errors
 
