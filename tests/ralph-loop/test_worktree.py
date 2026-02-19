@@ -13,20 +13,25 @@ def git_repo(tmp_path):
     subprocess.run(["git", "init"], check=True)
     subprocess.run(["git", "config", "user.name", "Test"], check=True)
     subprocess.run(["git", "config", "user.email", "test@test.com"], check=True)
-    
+
     # Create initial commit
     (tmp_path / "README.md").write_text("# Test")
     subprocess.run(["git", "add", "README.md"], check=True)
     subprocess.run(["git", "commit", "-m", "Initial commit"], check=True)
-    
+
     # Create docs/plans directory
     plans_dir = tmp_path / "docs" / "plans"
     plans_dir.mkdir(parents=True)
     (plans_dir / "plan.md").write_text("# Plan")
     subprocess.run(["git", "add", "docs/"], check=True)
     subprocess.run(["git", "commit", "-m", "Add plans"], check=True)
-    
+
+    wm = WorktreeManager()
     yield tmp_path
+    try:
+        wm.cleanup_all()
+    except Exception:
+        pass
     os.chdir(original_dir)
 
 
@@ -140,3 +145,69 @@ def test_plan_restoration_after_merge(git_repo):
     assert main_plan.read_text() == original_plan
     assert main_code.exists()
     assert main_code.read_text() == "print('hello')"
+
+
+def test_create_duplicate_name(git_repo):
+    wm = WorktreeManager()
+
+    path = wm.create("dup")
+    assert path.exists()
+
+    # Second create with same name should not crash
+    path2 = wm.create("dup")
+    assert path2.exists()
+    assert path2 == path
+
+    wm.cleanup_all()
+
+
+def test_cleanup_stale_with_registered_worktree(git_repo):
+    wm = WorktreeManager()
+
+    # Create a real worktree so it's registered in git
+    path = wm.create("stale-test")
+    assert path.exists()
+
+    # Manually delete the directory to simulate stale state
+    shutil.rmtree(path)
+    assert not path.exists()
+
+    # cleanup_stale should prune git metadata and delete leftover branches
+    wm.cleanup_stale()
+
+    # Branch should be gone
+    result = subprocess.run(
+        ["git", "branch", "--list", "ralph-worker-stale-test"],
+        capture_output=True, text=True
+    )
+    assert result.stdout.strip() == ""
+
+
+def test_merge_no_docs_plans(git_repo):
+    wm = WorktreeManager()
+
+    # Create worktree and add a file that does NOT touch docs/plans/
+    worktree_path = wm.create("no-plans-test")
+    code_file = worktree_path / "feature.py"
+    code_file.write_text("x = 1")
+
+    subprocess.run(["git", "add", "feature.py"], cwd=worktree_path, check=True)
+    subprocess.run(["git", "commit", "-m", "Add feature without plans"], cwd=worktree_path, check=True)
+
+    # Merge should succeed without error even though docs/plans/ wasn't changed
+    result = wm.merge("no-plans-test")
+    assert result is True
+
+    main_feature = git_repo / "feature.py"
+    assert main_feature.exists()
+
+
+def test_remove_already_removed(git_repo):
+    wm = WorktreeManager()
+
+    # Create and then remove
+    wm.create("remove-test")
+    wm.remove("remove-test")
+
+    # Second remove should not raise
+    wm.remove("remove-test")
