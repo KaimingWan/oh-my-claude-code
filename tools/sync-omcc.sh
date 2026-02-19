@@ -1,0 +1,133 @@
+#!/bin/bash
+# Sync a project with the latest OMCC framework
+#
+# Usage: sync-omcc.sh [PROJECT_ROOT]
+#   PROJECT_ROOT: path to project directory (default: current directory)
+#
+# Steps:
+#   1. Submodule update (if project uses OMCC as a submodule)
+#   2. Validate project overlay (.omcc-overlay.json)
+#   3. Generate agent configs (generate_configs.py --overlay)
+#   4. Update AGENTS.md framework sections (BEGIN/END OMCC markers)
+#
+# Exit 0: success
+# Exit 1: error
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+OMCC_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+PROJECT_ROOT="${1:-$(pwd)}"
+
+err() { echo "ERROR: $*" >&2; exit 1; }
+info() { echo "ℹ️  $*"; }
+ok() { echo "✅ $*"; }
+
+[ -d "$PROJECT_ROOT" ] || err "PROJECT_ROOT does not exist: $PROJECT_ROOT"
+
+echo "🔄 Syncing OMCC for project: $PROJECT_ROOT"
+echo ""
+
+# ─── Step 1: Submodule update ─────────────────────────────────────────────────
+# Only run if the project root is a git repo and has OMCC as a submodule
+if [ -f "$PROJECT_ROOT/.gitmodules" ] && grep -q "oh-my-claude-code\|omcc" "$PROJECT_ROOT/.gitmodules" 2>/dev/null; then
+  info "Step 1: Updating OMCC submodule..."
+  (cd "$PROJECT_ROOT" && git submodule update --init --remote oh-my-claude-code 2>/dev/null || \
+   git submodule update --init --remote omcc 2>/dev/null || \
+   git submodule update --init --remote 2>/dev/null) || {
+    echo "⚠️  Submodule update failed or not applicable, continuing..."
+  }
+  ok "Step 1: Submodule up to date"
+else
+  info "Step 1: No OMCC submodule detected, skipping submodule update"
+fi
+
+# ─── Step 2: Validate project overlay ────────────────────────────────────────
+info "Step 2: Validating project overlay..."
+VALIDATE_SCRIPT="$OMCC_ROOT/tools/validate-project.sh"
+if [ ! -f "$VALIDATE_SCRIPT" ]; then
+  err "validate-project.sh not found at: $VALIDATE_SCRIPT"
+fi
+
+if ! bash "$VALIDATE_SCRIPT" "$PROJECT_ROOT"; then
+  err "Step 2: Validation failed — fix errors before syncing"
+fi
+ok "Step 2: Validation passed"
+
+# ─── Step 3: Generate agent configs ──────────────────────────────────────────
+info "Step 3: Generating agent configs..."
+GENERATE_SCRIPT="$OMCC_ROOT/scripts/generate_configs.py"
+if [ ! -f "$GENERATE_SCRIPT" ]; then
+  err "generate_configs.py not found at: $GENERATE_SCRIPT"
+fi
+
+OVERLAY_FILE="$PROJECT_ROOT/.omcc-overlay.json"
+GENERATE_CMD="python3 $GENERATE_SCRIPT --project-root $PROJECT_ROOT --skip-validate"
+if [ -f "$OVERLAY_FILE" ]; then
+  GENERATE_CMD="$GENERATE_CMD --overlay $OVERLAY_FILE"
+fi
+
+if ! eval "$GENERATE_CMD"; then
+  err "Step 3: Config generation failed"
+fi
+ok "Step 3: Agent configs generated"
+
+# ─── Step 4: Update AGENTS.md framework sections ──────────────────────────────
+info "Step 4: Updating AGENTS.md framework sections..."
+AGENTS_MD="$PROJECT_ROOT/AGENTS.md"
+OMCC_AGENTS_MD="$OMCC_ROOT/AGENTS.md"
+
+if [ ! -f "$AGENTS_MD" ]; then
+  info "No AGENTS.md in project, skipping section update"
+elif [ ! -f "$OMCC_AGENTS_MD" ]; then
+  info "No AGENTS.md in OMCC root, skipping section update"
+else
+  # For each BEGIN/END OMCC section in the OMCC AGENTS.md, update matching section in project
+  SECTIONS_UPDATED=0
+  SECTIONS_SKIPPED=0
+
+  # Extract section names from OMCC AGENTS.md
+  while IFS= read -r section_name; do
+    [ -z "$section_name" ] && continue
+
+    # Check if project AGENTS.md has this section
+    if ! grep -q "<!-- BEGIN OMCC $section_name -->" "$AGENTS_MD" 2>/dev/null; then
+      SECTIONS_SKIPPED=$((SECTIONS_SKIPPED + 1))
+      continue
+    fi
+
+    # Extract section content from OMCC AGENTS.md (including markers)
+    OMCC_SECTION=$(awk "/<!-- BEGIN OMCC $section_name -->/,/<!-- END OMCC $section_name -->/" "$OMCC_AGENTS_MD" 2>/dev/null || true)
+    if [ -z "$OMCC_SECTION" ]; then
+      SECTIONS_SKIPPED=$((SECTIONS_SKIPPED + 1))
+      continue
+    fi
+
+    # Create temp file for updated AGENTS.md
+    TMP_AGENTS=$(mktemp)
+    trap 'rm -f "$TMP_AGENTS"' EXIT
+
+    # Replace section in project AGENTS.md using awk
+    awk -v section="$section_name" -v new_content="$OMCC_SECTION" '
+      /<!-- BEGIN OMCC / && index($0, "<!-- BEGIN OMCC " section " -->") > 0 {
+        print new_content
+        skip = 1
+        next
+      }
+      /<!-- END OMCC / && index($0, "<!-- END OMCC " section " -->") > 0 {
+        skip = 0
+        next
+      }
+      !skip { print }
+    ' "$AGENTS_MD" > "$TMP_AGENTS"
+
+    mv "$TMP_AGENTS" "$AGENTS_MD"
+    SECTIONS_UPDATED=$((SECTIONS_UPDATED + 1))
+  done < <(grep -oP '(?<=<!-- BEGIN OMCC ).*(?= -->)' "$OMCC_AGENTS_MD" 2>/dev/null || true)
+
+  ok "Step 4: AGENTS.md updated ($SECTIONS_UPDATED sections updated, $SECTIONS_SKIPPED skipped)"
+fi
+
+echo ""
+echo "✅ Sync complete for: $PROJECT_ROOT"
