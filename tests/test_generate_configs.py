@@ -1,6 +1,9 @@
 """Tests for generate_configs.py."""
-import subprocess, json
+import subprocess, json, sys, os
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from scripts.generate_configs import _main_agent_resources, load_overlay, default_agent, pilot_agent
 
 
 def test_generates_valid_json():
@@ -74,3 +77,82 @@ def test_validate_hook_registry():
     """validate() returns 0 when hook registry is consistent."""
     from scripts.generate_configs import validate
     assert validate() == 0
+
+
+# ── Overlay tests ──────────────────────────────────────────────────────────
+
+def test_no_overlay_backward_compatible():
+    """Running without --overlay produces same output as before (backward compat)."""
+    r = subprocess.run(
+        ["python3", "scripts/generate_configs.py"],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, f"stderr: {r.stderr}"
+    cfg = json.loads(Path(".kiro/agents/pilot.json").read_text())
+    # Original resources are present
+    assert "file://AGENTS.md" in cfg["resources"]
+    assert "skill://skills/planning/SKILL.md" in cfg["resources"]
+    # No spurious extra resources
+    extra = [r for r in cfg["resources"] if r not in (
+        "file://AGENTS.md", "file://knowledge/INDEX.md",
+        "skill://skills/planning/SKILL.md", "skill://skills/reviewing/SKILL.md",
+    )]
+    assert extra == [], f"Unexpected extra resources: {extra}"
+
+
+def test_overlay_extra_skills(tmp_path):
+    """extra_skills from overlay are appended to agent resources."""
+    # Create a fake skill directory with SKILL.md
+    skill_dir = tmp_path / "skills" / "my-skill"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text("# My Skill\n")
+
+    overlay = tmp_path / ".omcc-overlay.json"
+    overlay.write_text(json.dumps({"extra_skills": ["skills/my-skill"]}))
+
+    extra_skills, extra_hooks = load_overlay(overlay, tmp_path)
+    assert extra_skills == ["skills/my-skill"]
+    assert extra_hooks == {}
+
+    resources = _main_agent_resources(extra_skills)
+    assert "skill://skills/my-skill/SKILL.md" in resources
+    # Original resources still present
+    assert "file://AGENTS.md" in resources
+    assert "skill://skills/planning/SKILL.md" in resources
+
+
+def test_overlay_extra_hooks(tmp_path):
+    """extra_hooks from overlay are merged into agent hook arrays."""
+    # Create a fake hook script
+    hook_dir = tmp_path / "hooks" / "project"
+    hook_dir.mkdir(parents=True)
+    hook_script = hook_dir / "my-hook.sh"
+    hook_script.write_text("#!/bin/bash\necho ok\n")
+    hook_script.chmod(0o755)
+
+    overlay = tmp_path / ".omcc-overlay.json"
+    overlay.write_text(json.dumps({
+        "extra_hooks": {
+            "preToolUse": [{"matcher": "execute_bash", "command": "hooks/project/my-hook.sh"}]
+        }
+    }))
+
+    extra_skills, extra_hooks = load_overlay(overlay, tmp_path)
+    assert extra_hooks == {
+        "preToolUse": [{"matcher": "execute_bash", "command": "hooks/project/my-hook.sh"}]
+    }
+
+    # Verify agent builder merges the hook
+    cfg = pilot_agent(extra_skills=[], extra_hooks=extra_hooks)
+    pre_tool_cmds = [h.get("command", "") for h in cfg["hooks"]["preToolUse"]]
+    assert "hooks/project/my-hook.sh" in pre_tool_cmds
+
+
+def test_overlay_invalid_skill_path(tmp_path):
+    """Overlay with extra_skills path missing SKILL.md raises ValueError."""
+    import pytest
+    overlay = tmp_path / ".omcc-overlay.json"
+    overlay.write_text(json.dumps({"extra_skills": ["skills/nonexistent"]}))
+
+    with pytest.raises(ValueError, match="missing SKILL.md"):
+        load_overlay(overlay, tmp_path)
