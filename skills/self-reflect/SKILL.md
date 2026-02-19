@@ -29,12 +29,12 @@ quality reporting (hook does it).
 
 ## Writing to Protected Files (AGENTS.md / CLAUDE.md / .claude/rules/)
 
-When user explicitly approves writing to a protected instruction file:
+When user explicitly approves writing to a protected instruction file, agent MUST autonomously execute the full three-step flow — do NOT wait for the human to do it manually:
 1. `touch .skip-instruction-guard`
 2. Write the change
 3. `rm -f .skip-instruction-guard`
 
-This bypasses the pre-write hook temporarily. Only do this when user has clearly approved the content.
+This bypasses the pre-write hook temporarily. Only do this when user has clearly approved the content in the current conversation.
 
 ## Episode Format
 
