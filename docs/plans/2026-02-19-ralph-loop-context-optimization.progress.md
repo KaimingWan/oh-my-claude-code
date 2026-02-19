@@ -16,3 +16,14 @@
 - build_init_prompt function (Task 3)
 - iteration 1 uses init prompt (Task 3)
 - regression tests pass (Task 4)
+
+## Iteration 4 (Manual resume) — 2026-02-19 11:57
+
+- **Task:** Verified and checked off remaining 6 checklist items (Tasks 2-4)
+- **Status:** All items already implemented in code from previous iterations; only checklist marks were missing due to dead loop interruption
+- **Findings:**
+  - `scripts/lib/precheck.py` — fully implemented with `detect_test_command` and `run_precheck`
+  - `scripts/ralph_loop.py` — already has `build_init_prompt()`, precheck integration in `build_prompt()`, and iteration 1 init prompt logic
+  - All 90 tests pass (including slow tests)
+- **Learnings:** When hook gate blocks checklist check-off, the `execute_bash` command must exactly match the verify command string in the checklist (no `cd` prefix, no `| tail` suffix, no `&& echo`). The post-bash hook records the full command text and the gate compares shasum hashes.
+- **Status:** done — plan complete (10/10 checklist items)
