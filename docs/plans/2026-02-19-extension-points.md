@@ -122,21 +122,21 @@
 
 ## Checklist
 
-- [ ] generate_configs.py --project-root --overlay backward compatible | `python3 -m pytest tests/test_generate_configs.py::test_no_overlay_backward_compatible -v`
-- [ ] overlay extra_skills merged into resources | `python3 -m pytest tests/test_generate_configs.py::test_overlay_extra_skills -v`
-- [ ] overlay extra_hooks merged into hooks | `python3 -m pytest tests/test_generate_configs.py::test_overlay_extra_hooks -v`
-- [ ] invalid overlay skill path rejected | `python3 -m pytest tests/test_generate_configs.py::test_overlay_invalid_skill_path -v`
-- [ ] validate catches errors E1,E2,E8 | `bash tests/test-validate-project.sh`
-- [ ] validate reports warning W1 | `bash tests/test-validate-project.sh`
-- [ ] section templates exist with markers | `bash tests/test-agents-template.sh`
-- [ ] assembled AGENTS.md under 200 lines | `bash tests/test-agents-template.sh`
-- [ ] init --type coding correct output | `bash tests/test-init-project.sh`
-- [ ] init --type gtm correct output | `bash tests/test-init-project.sh`
-- [ ] init creates .omcc-overlay.json | `bash tests/test-init-project.sh`
-- [ ] install-skill registers to overlay | `bash tests/test-install-skill.sh`
-- [ ] sync-omcc calls validate before generate | `bash tests/test-install-skill.sh`
-- [ ] EXTENSION-GUIDE.md under 60 lines | `wc -l docs/EXTENSION-GUIDE.md | awk '{exit ($1 > 60)}'`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
+- [x] generate_configs.py --project-root --overlay backward compatible | `python3 -m pytest tests/test_generate_configs.py::test_no_overlay_backward_compatible -v`
+- [x] overlay extra_skills merged into resources | `python3 -m pytest tests/test_generate_configs.py::test_overlay_extra_skills -v`
+- [x] overlay extra_hooks merged into hooks | `python3 -m pytest tests/test_generate_configs.py::test_overlay_extra_hooks -v`
+- [x] invalid overlay skill path rejected | `python3 -m pytest tests/test_generate_configs.py::test_overlay_invalid_skill_path -v`
+- [x] validate catches errors E1,E2,E8 | `bash tests/test-validate-project.sh`
+- [x] validate reports warning W1 | `bash tests/test-validate-project.sh`
+- [x] section templates exist with markers | `bash tests/test-agents-template.sh`
+- [x] assembled AGENTS.md under 200 lines | `bash tests/test-agents-template.sh`
+- [x] init --type coding correct output | `bash tests/test-init-project.sh`
+- [x] init --type gtm correct output | `bash tests/test-init-project.sh`
+- [x] init creates .omcc-overlay.json | `bash tests/test-init-project.sh`
+- [x] install-skill registers to overlay | `bash tests/test-install-skill.sh`
+- [x] sync-omcc calls validate before generate | `bash tests/test-install-skill.sh`
+- [x] EXTENSION-GUIDE.md under 60 lines | `wc -l docs/EXTENSION-GUIDE.md | awk '{exit ($1 > 60)}'`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
 
 ## Errors
 
