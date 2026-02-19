@@ -107,8 +107,17 @@ def test_large_task_set():
 def test_empty_file_sets():
     tasks = [make_task(i, []) for i in range(3)]
     batches = build_batches(tasks)
-    assert len(batches) == 1
-    assert len(batches[0].tasks) == 3
+    assert len(batches) == 3
+    for batch in batches:
+        assert len(batch.tasks) == 1
+        assert batch.parallel == False
+
+def test_empty_file_sets_sequential():
+    tasks = [make_task(i, []) for i in range(3)]
+    batches = build_batches(tasks)
+    assert len(batches) == 3
+    for batch in batches:
+        assert batch.parallel == False
 
 def test_rebatch_after_removal():
     tasks = [

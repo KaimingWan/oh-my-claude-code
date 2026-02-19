@@ -124,6 +124,17 @@ def write_summary(exit_code: int):
     print(f"\n{'=' * 63}\n{summary}\n{'=' * 63}", flush=True)
 
 
+# --- Build worker prompt ---
+def build_worker_prompt(task_name: str, task_files: list, verify_cmd: str, plan_path: str) -> str:
+    return f"""Task: {task_name}
+Files: {', '.join(task_files)}
+Verify: {verify_cmd}
+Plan: {plan_path}
+
+Do NOT modify docs/plans/
+Do NOT run git commit"""
+
+
 # --- Build prompt ---
 def build_prompt(iteration: int) -> str:
     plan.reload()

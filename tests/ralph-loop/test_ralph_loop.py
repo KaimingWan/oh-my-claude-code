@@ -1,5 +1,5 @@
 """Tests for ralph_loop.py core logic (no live kiro-cli needed)."""
-import subprocess, os, time, signal, pytest, textwrap
+import subprocess, os, time, signal, pytest, textwrap, re
 from pathlib import Path
 
 PLAN_TEMPLATE = textwrap.dedent("""\
@@ -773,3 +773,27 @@ def test_no_orphan_after_ralph_killed(tmp_path):
     # Child should NOT be orphaned
     check = subprocess.run(["pgrep", "-f", unique_name], capture_output=True, text=True)
     assert check.returncode != 0, f"Orphan child found: {check.stdout.strip()}"
+
+
+def test_worker_prompt_no_plan_update():
+    """Test that build_worker_prompt excludes plan update instructions."""
+    from conftest import import_ralph_fn
+    
+    build_worker_prompt = import_ralph_fn("build_worker_prompt")
+    assert build_worker_prompt is not None, "build_worker_prompt not found"
+    
+    prompt = build_worker_prompt("Test Task", ["file1.py", "file2.py"], "pytest", "docs/plans/test.md")
+    
+    # Should NOT contain plan-update or progress keywords
+    assert not re.search(r'change.*\[ \].*\[x\]', prompt, re.IGNORECASE)
+    assert 'progress.md' not in prompt.lower()
+    assert 'checklist' not in prompt.lower()
+    
+    # Should contain required elements
+    assert "Test Task" in prompt
+    assert "file1.py" in prompt
+    assert "file2.py" in prompt
+    assert "pytest" in prompt
+    assert "docs/plans/test.md" in prompt
+    assert "Do NOT modify docs/plans/" in prompt
+    assert "Do NOT run git commit" in prompt

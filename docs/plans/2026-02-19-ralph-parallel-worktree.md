@@ -186,14 +186,14 @@ Run full regression. Fix any tests broken by changes. Expected: All pass.
 
 ## Checklist
 
-- [ ] WorktreeManager.create 创建 worktree + 分支 | `python3 -c "from scripts.lib.worktree import WorktreeManager; print('import ok')"`
-- [ ] WorktreeManager.merge 合并 worker 分支 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_success -v`
-- [ ] WorktreeManager.merge 冲突返回 False | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_conflict_returns_false -v`
-- [ ] Merge 后 plan 文件恢复 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_restore_plan_after_merge -v`
-- [ ] WorktreeManager.cleanup_all 清理所有 worktree | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_create_multiple -v`
-- [ ] enforce-ralph-loop 环境变量放行 | `grep -q '_RALPH_LOOP_RUNNING' hooks/gate/enforce-ralph-loop.sh`
-- [ ] build_worker_prompt 不含 plan 更新指令 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_worker_prompt_no_plan_update -v`
-- [ ] 空文件集 task 不并行 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_empty_file_sets_sequential -v`
+- [x] WorktreeManager.create 创建 worktree + 分支 | `python3 -c "from scripts.lib.worktree import WorktreeManager; print('import ok')"`
+- [x] WorktreeManager.merge 合并 worker 分支 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_success -v`
+- [x] WorktreeManager.merge 冲突返回 False | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_conflict_returns_false -v`
+- [x] Merge 后 plan 文件恢复 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_restore_plan_after_merge -v`
+- [x] WorktreeManager.cleanup_all 清理所有 worktree | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_create_multiple -v`
+- [x] enforce-ralph-loop 环境变量放行 | `grep -q '_RALPH_LOOP_RUNNING' hooks/gate/enforce-ralph-loop.sh`
+- [x] build_worker_prompt 不含 plan 更新指令 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_worker_prompt_no_plan_update -v`
+- [x] 空文件集 task 不并行 | `python3 -m pytest tests/ralph-loop/test_scheduler.py::test_empty_file_sets_sequential -v`
 - [ ] time.sleep(2) 已移除 | `! grep -q 'time\.sleep(2)' scripts/ralph_loop.py`
 - [ ] precheck 缓存（上次成功跳过） | `grep -q 'prev_exit' scripts/ralph_loop.py`
 - [ ] Stall 检测提前终止 | `grep -q 'STALL_TIMEOUT' scripts/ralph_loop.py`

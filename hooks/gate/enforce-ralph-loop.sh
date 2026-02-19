@@ -22,6 +22,11 @@ if [ -f ".skip-ralph" ]; then
   exit 0
 fi
 
+# Ralph-loop worker process bypass
+if [ "$_RALPH_LOOP_RUNNING" = "1" ]; then
+  exit 0
+fi
+
 # No active plan → allow
 [ ! -f "$PLAN_POINTER" ] && exit 0
 

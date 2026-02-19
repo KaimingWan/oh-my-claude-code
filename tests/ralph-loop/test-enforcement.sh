@@ -12,6 +12,8 @@ PASS=0; FAIL=0; TOTAL=0
 
 # --- Setup / Teardown ---
 setup() {
+  # Clear env var so blocking tests work (ralph_loop.py sets this in parent)
+  unset _RALPH_LOOP_RUNNING
   ORIG_ACTIVE=""
   [ -f "$PLAN_PTR" ] && ORIG_ACTIVE=$(cat "$PLAN_PTR")
   [ -f "$LOCK_FILE" ] && mv "$LOCK_FILE" "${LOCK_FILE}.bak"
@@ -171,6 +173,11 @@ assert_exit "$RC" 0
 # T20: unknown tool passes through
 begin_test "T20: unknown tool passes through"
 RC=$(run_hook '{"tool_name":"web_search","tool_input":{"query":"test"}}')
+assert_exit "$RC" 0
+
+# T21: _RALPH_LOOP_RUNNING=1 bypass works
+begin_test "T21: _RALPH_LOOP_RUNNING=1 bypass works"
+RC=$(echo '{"tool_name":"execute_bash","tool_input":{"command":"mkdir x"}}' | _RALPH_LOOP_RUNNING=1 bash "$HOOK" >/dev/null 2>&1; echo $?)
 assert_exit "$RC" 0
 
 echo ""

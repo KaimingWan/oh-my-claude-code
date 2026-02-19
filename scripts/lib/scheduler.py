@@ -14,6 +14,13 @@ def build_batches(tasks: list[TaskInfo], max_parallel: int = 4) -> list[Batch]:
     Single-task batches are marked parallel=False."""
     remaining = list(tasks)
     batches = []
+    
+    # Handle empty file sets first - put each in its own sequential batch
+    empty_tasks = [t for t in remaining if not t.files]
+    for t in empty_tasks:
+        remaining.remove(t)
+        batches.append(Batch(tasks=[t], parallel=False))
+    
     while remaining:
         batch_tasks = [remaining.pop(0)]
         batch_files = set(batch_tasks[0].files)
