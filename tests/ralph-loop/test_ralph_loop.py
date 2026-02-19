@@ -121,22 +121,9 @@ from scripts.lib.scheduler import Batch
 
 
 def _import_build_batch_prompt():
-    """Import build_batch_prompt from ralph_loop without running module-level code."""
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("ralph_loop", "scripts/ralph_loop.py",
-                                                    submodule_search_locations=[])
-    # We can't import the module directly (it runs main-loop code at import time).
-    # Instead, read the source and extract the function.
-    source = Path("scripts/ralph_loop.py").read_text()
-    # Extract function via exec in isolated namespace
-    ns = {"Path": Path, "Batch": Batch}
-    # Find and exec just the function
-    import re
-    match = re.search(r'(def build_batch_prompt\(.*?\n(?=\ndef |\n# ))', source, re.DOTALL)
-    if match:
-        exec(match.group(1), ns)
-        return ns["build_batch_prompt"]
-    return None
+    """Return build_batch_prompt from ralph_loop (direct import)."""
+    from scripts.ralph_loop import build_batch_prompt
+    return build_batch_prompt
 
 
 def test_parallel_prompt_contains_dispatch():
@@ -670,68 +657,32 @@ def test_no_cli_found():
 
 
 def _import_build_init_prompt(plan_obj=None, plan_path_obj=None, project_root=None):
-    """Extract build_init_prompt from ralph_loop.py source without running module-level code."""
-    import re
-    source = Path("scripts/ralph_loop.py").read_text()
-    match = re.search(r'(def build_init_prompt\(.*?\n(?=\ndef |\n# ))', source, re.DOTALL)
-    if not match:
-        return None
-    from scripts.lib.plan import PlanFile
-    from scripts.lib.precheck import run_precheck
-    ns = {
-        "Path": Path,
-        "PlanFile": PlanFile,
-        "run_precheck": run_precheck,
-        "plan": plan_obj,
-        "plan_path": plan_path_obj,
-        "PROJECT_ROOT": project_root or Path("."),
-        "SKIP_PRECHECK": "1",
-    }
-    exec(match.group(1), ns)
-    return ns.get("build_init_prompt")
+    """Return a bound wrapper of build_init_prompt with test-supplied plan/path/root."""
+    from scripts.ralph_loop import build_init_prompt
+
+    def _bound():
+        return build_init_prompt(plan_obj, plan_path_obj, project_root or Path("."), skip_precheck="1")
+
+    return _bound
 
 
 def _import_build_prompt():
-    """Extract build_prompt from ralph_loop.py source without running module-level code."""
-    import re
-    source = Path("scripts/ralph_loop.py").read_text()
-    match = re.search(r'(def build_prompt\(.*?\n(?=\ndef |\n# ))', source, re.DOTALL)
-    if not match:
-        return None
-    from scripts.lib.plan import PlanFile
-    from scripts.lib.precheck import run_precheck
-    ns = {"Path": Path, "PlanFile": PlanFile, "run_precheck": run_precheck,
-          "PROJECT_ROOT": Path("."), "plan": None, "plan_path": None,
-          "SKIP_PRECHECK": "1"}
-    exec(match.group(1), ns)
-    return ns.get("build_prompt")
+    """Return build_prompt from ralph_loop (direct import)."""
+    from scripts.ralph_loop import build_prompt
+    return build_prompt
 
 
 def test_init_prompt_differs_from_regular(tmp_path):
     """build_init_prompt contains 'FIRST iteration'; build_prompt does not."""
     from scripts.lib.plan import PlanFile
-    from scripts.lib.precheck import run_precheck
-    import re
+    from scripts.ralph_loop import build_init_prompt, build_prompt
 
     plan_file = tmp_path / "plan.md"
     plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
     pf = PlanFile(plan_file)
 
-    build_init = _import_build_init_prompt(plan_obj=pf, plan_path_obj=plan_file, project_root=tmp_path)
-    assert build_init is not None, "build_init_prompt not found in ralph_loop.py"
-
-    # Extract build_prompt into isolated namespace
-    source = Path("scripts/ralph_loop.py").read_text()
-    match = re.search(r'(def build_prompt\(.*?\n(?=\ndef |\n# ))', source, re.DOTALL)
-    assert match, "build_prompt not found in ralph_loop.py"
-    ns = {"Path": Path, "PlanFile": PlanFile, "run_precheck": run_precheck,
-          "PROJECT_ROOT": tmp_path, "plan": pf, "plan_path": plan_file,
-          "SKIP_PRECHECK": "1"}
-    exec(match.group(1), ns)
-    build_regular = ns["build_prompt"]
-
-    init = build_init()
-    regular = build_regular(2)
+    init = build_init_prompt(pf, plan_file, tmp_path, skip_precheck="1")
+    regular = build_prompt(2, pf, plan_file, tmp_path, skip_precheck="1")
 
     assert "FIRST iteration" in init
     assert "FIRST iteration" not in regular
