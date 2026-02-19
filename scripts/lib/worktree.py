@@ -26,27 +26,24 @@ class WorktreeManager:
         branch_name = f"ralph-worker-{name}"
 
         try:
-            subprocess.run(["git", "merge", "--no-ff", branch_name],
+            subprocess.run(["git", "merge", "--squash", branch_name],
                            check=True, cwd=self.project_root)
 
-            # Only restore docs/plans/ if the merge actually changed it
-            try:
-                diff = subprocess.run(
-                    ["git", "diff", "--name-only", "HEAD~1", "HEAD", "--", "docs/plans/"],
-                    capture_output=True, text=True, check=True, cwd=self.project_root
-                )
-                if diff.stdout.strip():
-                    subprocess.run(["git", "checkout", "HEAD~1", "--", "docs/plans/"],
-                                   cwd=self.project_root)
-                    subprocess.run(["git", "commit", "--amend", "--no-edit"],
-                                   check=True, cwd=self.project_root)
-            except subprocess.CalledProcessError:
-                # diff check failed — skip restore, don't abort merge
-                pass
+            # Restore docs/plans/ to HEAD state (exclude plan changes from squash commit)
+            subprocess.run(["git", "restore", "--staged", "docs/plans/"],
+                           cwd=self.project_root, capture_output=True)
+            subprocess.run(["git", "restore", "docs/plans/"],
+                           cwd=self.project_root, capture_output=True)
+
+            subprocess.run(["git", "commit", "-m", f"squash: merge {branch_name}"],
+                           check=True, cwd=self.project_root)
 
             return True
         except subprocess.CalledProcessError:
-            subprocess.run(["git", "merge", "--abort"], cwd=self.project_root)
+            subprocess.run(["git", "merge", "--abort"], cwd=self.project_root,
+                           capture_output=True)
+            subprocess.run(["git", "reset", "--hard", "HEAD"], cwd=self.project_root,
+                           capture_output=True)
             return False
 
     def remove(self, name):

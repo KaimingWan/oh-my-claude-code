@@ -195,6 +195,48 @@ def test_merge_no_docs_plans(git_repo):
         wm.cleanup_all()
 
 
+def test_squash_merge_no_merge_commit(git_repo):
+    wm = WorktreeManager()
+    try:
+        worktree_path = wm.create("squash-test")
+        code_file = worktree_path / "squash_feature.py"
+        code_file.write_text("x = 42")
+
+        subprocess.run(["git", "add", "squash_feature.py"], cwd=worktree_path, check=True)
+        subprocess.run(["git", "commit", "-m", "Commit 1"], cwd=worktree_path, check=True)
+
+        code_file.write_text("x = 43")
+        subprocess.run(["git", "add", "squash_feature.py"], cwd=worktree_path, check=True)
+        subprocess.run(["git", "commit", "-m", "Commit 2"], cwd=worktree_path, check=True)
+
+        log_before = subprocess.run(
+            ["git", "log", "--oneline"], capture_output=True, text=True, cwd=git_repo
+        )
+        commit_count_before = len(log_before.stdout.strip().splitlines())
+
+        result = wm.merge("squash-test")
+        assert result is True
+
+        main_file = git_repo / "squash_feature.py"
+        assert main_file.exists()
+        assert main_file.read_text() == "x = 43"
+
+        log_after = subprocess.run(
+            ["git", "log", "--oneline"], capture_output=True, text=True, cwd=git_repo
+        )
+        commits_after = log_after.stdout.strip().splitlines()
+        # Squash merge adds exactly one new commit (not two worker commits, not a merge commit)
+        assert len(commits_after) == commit_count_before + 1
+
+        # Verify no merge commit (no commit with two parents)
+        merge_commits = subprocess.run(
+            ["git", "log", "--merges", "--oneline"], capture_output=True, text=True, cwd=git_repo
+        )
+        assert merge_commits.stdout.strip() == ""
+    finally:
+        wm.cleanup_all()
+
+
 def test_remove_already_removed(git_repo):
     wm = WorktreeManager()
     try:
