@@ -18,3 +18,22 @@
 - `grep "5 rounds"` → no matches ✓
 
 **Note:** Plan verify command for checklist item 4 had awk bug (`/^##/` matched `### Resource Constraints` itself, collapsing range to 1 line). Fixed verify command in plan to use `grep -A5` instead. Implementation is correct.
+
+## Iteration 2 — Tasks 2+3: Add Fill-in Templates to Completeness and Testability Angles
+
+**Status:** Complete
+
+**Changes made to `skills/planning/SKILL.md`:**
+1. Replaced Completeness Mission cell with fill-in template: "You MUST copy each table below and fill EVERY cell..." with two structured tables (functions/branches + error paths) and SCOPE constraint.
+2. Replaced Testability Mission cell with fill-in template: "You MUST copy this table and fill EVERY cell..." with false-negative analysis table.
+
+**Files changed:** `skills/planning/SKILL.md`
+
+**Verification output:**
+- `awk '/\| Completeness/,/\|/' | grep -q 'You MUST copy each table below...'` → PASS ✓
+- `awk '/\| Testability/,/\|/' | grep -q 'You MUST copy this table...'` → PASS ✓
+- Random pool angle count: 7 angles confirmed (8 rows matched `^| [A-Z]` but 1 is the header `| Angle |`) → PASS ✓
+
+**Learnings:**
+- Verify command `grep -c '^| [A-Z]'` counted 8 not 7 because the table header row `| Angle |` starts with `| A` and matches the pattern. Fixed verify to pipe through `grep -cv '^| Angle '` to exclude the header. Rule: when counting table body rows, always exclude the header row explicitly.
+- The awk range `/\| Completeness/,/\|/` works correctly here because Completeness is a long single-line table cell — awk stops at the next line starting with `|` which is the Testability row.

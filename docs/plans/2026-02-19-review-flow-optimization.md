@@ -84,13 +84,14 @@ Keep the Analysis Method as "False negative analysis per test" and Output as "We
 - [x] "After 3 rounds" message updated | `grep -q 'After 3 rounds' skills/planning/SKILL.md && ! grep -q 'After 5 rounds' skills/planning/SKILL.md`
 - [x] Round 2+ reviewer reduction rule added | `grep -q 'Round 2+ reviewer count' skills/planning/SKILL.md`
 - [x] Resource Constraints updated for Round 2+ | `grep -A5 'Resource Constraints' skills/planning/SKILL.md | grep -q 'Round 2+: 2 reviewers'`
-- [ ] Completeness angle has fill-in template | `awk '/\| Completeness/,/\|/' skills/planning/SKILL.md | grep -q 'You MUST copy each table below and fill EVERY cell'`
-- [ ] Testability angle has fill-in template | `awk '/\| Testability/,/\|/' skills/planning/SKILL.md | grep -q 'You MUST copy this table and fill EVERY cell'`
+- [x] Completeness angle has fill-in template | `awk '/\| Completeness/,/\|/' skills/planning/SKILL.md | grep -q 'You MUST copy each table below and fill EVERY cell'`
+- [x] Testability angle has fill-in template | `awk '/\| Testability/,/\|/' skills/planning/SKILL.md | grep -q 'You MUST copy this table and fill EVERY cell'`
 - [x] Old "5 rounds" references fully removed | `! grep -q '5 rounds' skills/planning/SKILL.md`
-- [ ] Random pool still has 7 angles | `test "$(awk '/Random pool/,/^### Angle Selection/' skills/planning/SKILL.md | grep -c '^| [A-Z]')" -eq 7`
+- [x] Random pool still has 7 angles | `test "$(awk '/Random pool/,/^### Angle Selection/' skills/planning/SKILL.md | grep '^| [A-Z]' | grep -cv '^| Angle ')" -eq 7`
 
 ## Errors
 
 | Error | Task | Attempt | Resolution |
 |-------|------|---------|------------|
 | `awk '/Resource Constraints/,/^##/'` range collapses to 1 line because `### Resource Constraints` matches `^##` pattern | 1 | 1 | Fixed verify command to use `grep -A5 'Resource Constraints'` instead; content is correct |
+| `grep -c '^| [A-Z]'` returns 8 not 7 because header row `| Angle |` also matches | 3 | 1 | Fixed verify to add `grep -cv '^| Angle '` to exclude header; 7 angles confirmed |
