@@ -14,7 +14,7 @@ class WorktreeManager:
         
         self.base_dir.mkdir(exist_ok=True)
         
-        subprocess.run(["git", "worktree", "add", str(worktree_path), "-b", branch_name], 
+        subprocess.run(["git", "worktree", "add", str(worktree_path), "-B", branch_name], 
                       check=True, cwd=self.project_root)
         return worktree_path
     
