@@ -16,8 +16,9 @@ from datetime import datetime
 from pathlib import Path
 
 # --- Resolve project root & imports ---
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 from scripts.lib.plan import PlanFile
 from scripts.lib.lock import LockFile
@@ -25,8 +26,6 @@ from scripts.lib.scheduler import build_batches, Batch
 from scripts.lib.cli_detect import detect_cli
 from scripts.lib.precheck import run_precheck
 from scripts.lib.worktree import WorktreeManager
-
-MAX_STALE = 3
 
 
 def die(msg: str) -> None:
@@ -374,6 +373,8 @@ def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: 
 
 
 def main():
+    PROJECT_ROOT = Path(__file__).resolve().parent.parent
+    MAX_STALE = 3
     os.chdir(PROJECT_ROOT)
 
     # --- Configuration from env ---
