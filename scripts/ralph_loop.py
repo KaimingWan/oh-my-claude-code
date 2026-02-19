@@ -165,7 +165,7 @@ Verify: {verify_cmd}
 Plan: {plan_path}
 
 Do NOT modify docs/plans/
-Do NOT run git commit"""
+Commit your changes with: git commit -am 'feat: {task_name}'"""
 
 
 # --- Build prompt ---
