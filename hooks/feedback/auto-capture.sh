@@ -49,7 +49,7 @@ if [ "$MATCH_COUNT" -gt 0 ]; then
 fi
 
 # ── Gate 4: 容量检查 ──
-EPISODE_COUNT=$(grep -c "$DATE_PATTERN" "$EPISODES" 2>/dev/null || echo 0)
+EPISODE_COUNT=$(grep -cE '\| (active|resolved|promoted) \|' "$EPISODES" 2>/dev/null || echo 0)
 if [ "$EPISODE_COUNT" -ge 30 ]; then
   echo "⚠️ episodes.md at capacity (30/30). New episode NOT captured. Review .health-report.md."
   exit 0
@@ -57,6 +57,15 @@ fi
 
 # ── 写入 ──
 SUMMARY=$(echo "$USER_MSG" | head -c 80 | tr '|' '/' | tr '\n' ' ')
+
+# Check for correction flag (PID-scoped, glob match any session)
+WS_HASH=$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default')
+CORRECTION_FLAGS=(/tmp/kb-correction-${WS_HASH}-*.flag)
+if [ -e "${CORRECTION_FLAGS[0]}" ]; then
+  KEYWORDS="${KEYWORDS} [correction]"
+  rm -f /tmp/kb-correction-${WS_HASH}-*.flag
+fi
+
 echo "$DATE | active | $KEYWORDS | $SUMMARY" >> "$EPISODES"
 echo "📝 Auto-captured → episodes.md: '$SUMMARY'"
 

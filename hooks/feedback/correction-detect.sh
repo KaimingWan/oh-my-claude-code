@@ -19,11 +19,14 @@ elif echo "$USER_MSG" | grep -qiE '(not what I (want|need|expect|asked)|try (a )
 fi
 
 if [ "$DETECTED" -eq 1 ]; then
+  WS_HASH=$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default')
+  # Touch PID-scoped correction flag BEFORE auto-capture so it can detect correction origin
+  touch "/tmp/kb-correction-${WS_HASH}-$$.flag"
   bash "$(dirname "$0")/auto-capture.sh" "$USER_MSG"
   if [ $? -eq 1 ]; then
     echo "🚨 CORRECTION DETECTED (complex). Use self-reflect skill or @reflect to capture."
   fi
-  touch "/tmp/agent-correction-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default').flag"
+  touch "/tmp/agent-correction-${WS_HASH}.flag"
 fi
 
 exit 0
