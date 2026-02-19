@@ -34,8 +34,14 @@ def die(msg: str) -> None:
 
 
 # --- Signal handling + cleanup ---
-def make_cleanup_handler(child_proc_ref: list, child_procs: list, wt_manager: WorktreeManager, lock: LockFile):
-    """Factory returning a cleanup handler that closes over mutable state."""
+def make_cleanup_handler(child_proc_ref: list, child_procs: list, worker_pgids: dict,
+                         wt_manager: WorktreeManager, lock: LockFile):
+    """Factory returning a cleanup handler that closes over mutable state.
+
+    worker_pgids: dict mapping pid -> pgid for all spawned parallel workers.
+    This set is NOT cleared when child_procs is cleaned up, so the handler
+    can kill process groups even after workers have been removed from child_procs.
+    """
     def _cleanup_handler(signum=None, frame=None):
         # Kill singular child proc (sequential mode)
         cp = child_proc_ref[0]
@@ -44,10 +50,20 @@ def make_cleanup_handler(child_proc_ref: list, child_procs: list, wt_manager: Wo
                 os.killpg(os.getpgid(cp.pid), signal.SIGTERM)
             except (ProcessLookupError, OSError):
                 pass
-        # Kill all parallel worker procs
+        # Kill all parallel worker procs still in child_procs
         for p in child_procs:
             try:
                 os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+            except (ProcessLookupError, OSError):
+                pass
+        # Kill any remaining worker process groups tracked by pid->pgid.
+        # This handles the case where child_procs was already cleared (workers
+        # completed normally) but ralph is SIGTERMed before worktree cleanup.
+        for pid, pgid in list(worker_pgids.items()):
+            try:
+                # Validate the PID still refers to the same process group
+                if os.getpgid(pid) == pgid:
+                    os.killpg(pgid, signal.SIGTERM)
             except (ProcessLookupError, OSError):
                 pass
         # Cleanup any orphaned worktrees
@@ -274,7 +290,7 @@ Rules:
 # --- Parallel batch executor ---
 def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: Path,
                        project_root: Path, wt_manager: WorktreeManager,
-                       child_procs: list, worker_log_dir: Path,
+                       child_procs: list, worker_pgids: dict, worker_log_dir: Path,
                        task_timeout: int) -> list[str]:
     """Spawn N worker CLI processes in isolated worktrees, wait, merge successful ones.
 
@@ -312,6 +328,14 @@ def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: 
             env={**os.environ, "_RALPH_LOOP_RUNNING": "1"},
         )
         child_procs.append(proc)
+        # Record pid->pgid immediately after spawn; workers use start_new_session=True
+        # so each has its own process group. This allows cleanup even after child_procs
+        # is cleared (e.g. if ralph receives SIGTERM during the merge phase).
+        try:
+            pgid = os.getpgid(proc.pid)
+            worker_pgids[proc.pid] = pgid
+        except (ProcessLookupError, OSError):
+            pass
         workers.append((name, wt_path, proc, log_fd))
         print(f"  🚀 Worker {name}: task '{task.name}' → {wt_path.name}", flush=True)
 
@@ -362,12 +386,13 @@ def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: 
             else:
                 print(f"  ⚠️  Checklist item {idx} verify failed: {vcmd}", flush=True)
 
-    # Cleanup all worktrees
-    for name, _, _, _ in workers:
+    # Cleanup all worktrees and clear their pgid tracking entries
+    for name, _, proc, _ in workers:
         try:
             wt_manager.remove(name)
         except Exception:
             pass
+        worker_pgids.pop(proc.pid, None)
 
     return succeeded
 
@@ -393,6 +418,7 @@ def main():
 
     child_proc_ref = [None]   # mutable single-element list for signal handler closure
     child_procs: list[subprocess.Popen] = []
+    worker_pgids: dict[int, int] = {}  # pid -> pgid for all spawned parallel workers
     wt_manager = WorktreeManager()
 
     # --- Recursion guard ---
@@ -420,7 +446,7 @@ def main():
         die("Plan has no checklist items. Add a ## Checklist section first.")
 
     # --- Signal handling + cleanup ---
-    _cleanup_handler = make_cleanup_handler(child_proc_ref, child_procs, wt_manager, lock)
+    _cleanup_handler = make_cleanup_handler(child_proc_ref, child_procs, worker_pgids, wt_manager, lock)
     signal.signal(signal.SIGTERM, _cleanup_handler)
     signal.signal(signal.SIGINT, _cleanup_handler)
     atexit.register(lock.release)
@@ -497,7 +523,7 @@ def main():
             print(f"  ⚡ Launching parallel worktree workers: [{names}]", flush=True)
             succeeded = run_parallel_batch(
                 current_batch, i, plan, plan_path, PROJECT_ROOT,
-                wt_manager, child_procs, worker_log_dir, task_timeout,
+                wt_manager, child_procs, worker_pgids, worker_log_dir, task_timeout,
             )
             prev_exit = 0 if succeeded else 1
         else:
