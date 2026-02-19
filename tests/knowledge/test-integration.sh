@@ -87,20 +87,26 @@ fi
 teardown_integration
 record_result "I2" "rule in output"
 
-# ── I3: Source episodes marked promoted after distillation ──
+# ── I3: Source episodes removed from active after distillation ──
 begin_test "I3-episodes-promoted"
 setup_integration; cd "$SANDBOX"
 
 WS_HASH=$(pwd | shasum 2>/dev/null | cut -c1-8 || echo "default")
 touch "/tmp/kb-changed-${WS_HASH}.flag"
 
+# Count active testkw episodes before
+BEFORE=$(grep '| active |' "$SANDBOX/knowledge/episodes.md" 2>/dev/null | grep -c 'testkw' || true)
+
 printf '{"prompt":"testkw"}' | bash "$PROJECT_DIR/hooks/feedback/context-enrichment.sh" > /dev/null 2>&1
 
-PROMOTED=$(grep -c '| promoted |' "$SANDBOX/knowledge/episodes.md" 2>/dev/null || echo 0)
-if [ "$PROMOTED" -gt 0 ]; then
+# After distill+archive, testkw episodes should be gone from active
+AFTER=$(grep '| active |' "$SANDBOX/knowledge/episodes.md" 2>/dev/null | grep -c 'testkw' || true)
+AFTER=$(echo "$AFTER" | tr -d '[:space:]')
+BEFORE=$(echo "$BEFORE" | tr -d '[:space:]')
+if [ "${AFTER:-0}" -eq 0 ] && [ "${BEFORE:-0}" -gt 0 ]; then
   pass
 else
-  fail "no episodes marked promoted (found $PROMOTED)"
+  fail "testkw episodes still active (before=$BEFORE, after=$AFTER)"
 fi
 teardown_integration
 record_result "I3" "episodes promoted"

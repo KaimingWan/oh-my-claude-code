@@ -102,7 +102,7 @@ section_cap_enforce() {
       if (section) flush()
       header = $0; section = 1; count = 0; delete rules; next
     }
-    section && /^[0-9]/ { count++; rules[count] = $0; next }
+    section && /^[0-9🔴🟡]/ { count++; rules[count] = $0; next }
     !section { print; next }
     END { if (section) flush() }
     function flush() {
