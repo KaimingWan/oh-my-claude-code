@@ -1,7 +1,7 @@
 You MUST follow this exact sequence. Do NOT skip or reorder any step.
 
-## Step 1: Brainstorming (skill: brainstorming)
-Read skills/brainstorming/SKILL.md, then explore the user's intent, requirements, and constraints. Ask clarifying questions one at a time. Do NOT proceed until the user confirms the direction. After user confirms: `touch .brainstorm-confirmed`
+## Step 1: Deep Understanding (skill: planning Phase 0)
+Follow skills/planning/SKILL.md Phase 0 to build deep understanding of the goal. Ask clarifying questions, research if needed, and present design for creative/architectural work. Do NOT proceed until the user confirms the direction. After user confirms: `touch .brainstorm-confirmed`
 
 ## Step 2: Writing Plan (skill: planning)
 Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, an empty ## Review section, and a ## Checklist section with all acceptance criteria as `- [ ]` items. The checklist is the contract — @execute will not proceed without it.
