@@ -1,5 +1,6 @@
 """Plan file parser — reads markdown checklist state."""
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -8,6 +9,7 @@ _UNCHECKED = re.compile(r"^- \[ \] ", re.MULTILINE)
 _SKIPPED = re.compile(r"^- \[SKIP\] ", re.MULTILINE)
 _UNCHECKED_LINE = re.compile(r"^- \[ \] .*$", re.MULTILINE)
 _CHECKLIST_ITEM = re.compile(r"^- \[(?:x|SKIP| )\] ", re.MULTILINE)
+_VERIFY_IN_ITEM = re.compile(r"\|\s*`([^`]+)`\s*$")
 
 
 @dataclass
@@ -84,17 +86,18 @@ class PlanFile:
         return tasks
 
     def unchecked_tasks(self) -> list[TaskInfo]:
-        """Return tasks whose corresponding checklist item is unchecked (positional mapping)."""
+        """Return tasks that still have work to do based on unchecked checklist items."""
         tasks = self.parse_tasks()
         if not tasks:
             return []
-        # Find all checklist items (checked/unchecked/skipped) in order
+        if self.unchecked == 0:
+            return []
+        # When tasks and checklist items are 1:1, use positional mapping.
+        # Otherwise return all tasks (can't reliably map items to tasks).
         items = _CHECKLIST_ITEM.findall(self._text)
-        unchecked = []
-        for i, task in enumerate(tasks):
-            if i >= len(items) or items[i] == "- [ ] ":
-                unchecked.append(task)
-        return unchecked
+        if len(items) == len(tasks):
+            return [t for i, t in enumerate(tasks) if items[i] == "- [ ] "]
+        return tasks
 
     def check_off(self, task_number: int) -> bool:
         """Check off the checklist item corresponding to task_number (1-based positional)."""
@@ -116,3 +119,37 @@ class PlanFile:
                     return False  # already checked
                 count += 1
         return False
+
+    def verify_and_check_all(self, cwd: str = ".", timeout: int = 30) -> list[tuple[int, str, bool]]:
+        """Run verify commands for all unchecked items; check off those that pass.
+
+        Returns list of (1-based checklist index, verify_cmd, passed).
+        """
+        results: list[tuple[int, str, bool]] = []
+        lines = self._text.split('\n')
+        item_idx = 0
+        dirty = False
+        for li, line in enumerate(lines):
+            if not _CHECKLIST_ITEM.match(line):
+                continue
+            item_idx += 1
+            if not line.startswith('- [ ] '):
+                continue
+            m = _VERIFY_IN_ITEM.search(line)
+            if not m:
+                continue
+            vcmd = m.group(1)
+            try:
+                r = subprocess.run(vcmd, shell=True, capture_output=True, text=True,
+                                   timeout=timeout, cwd=cwd)
+                passed = r.returncode == 0
+            except Exception:
+                passed = False
+            if passed:
+                lines[li] = line.replace('- [ ] ', '- [x] ', 1)
+                dirty = True
+            results.append((item_idx, vcmd, passed))
+        if dirty:
+            self.path.write_text('\n'.join(lines))
+            self.reload()
+        return results

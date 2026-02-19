@@ -61,3 +61,11 @@ class WorktreeManager:
             for item in self.base_dir.iterdir():
                 if item.is_dir() and item.name.startswith("ralph-"):
                     shutil.rmtree(item)
+
+        # Delete any leftover ralph-worker-* branches
+        result = subprocess.run(["git", "branch", "--list", "ralph-worker-*"],
+                                capture_output=True, text=True, cwd=self.project_root)
+        for line in result.stdout.splitlines():
+            branch = line.strip()
+            if branch:
+                subprocess.run(["git", "branch", "-D", branch], cwd=self.project_root)

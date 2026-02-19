@@ -16,6 +16,25 @@ esac
 PLAN_POINTER="docs/plans/.active"
 LOCK_FILE=".ralph-loop.lock"
 
+# Guard: block git commit if .active is staged with a plan path that differs from HEAD.
+# Catches accidental re-activation (e.g. stale staged change sneaking into an unrelated commit).
+# Runs before all other checks so it works even when no active plan exists in the working tree.
+if [ "$MODE" = "bash" ]; then
+  _CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
+  _CMD=$(echo "$_CMD" | sed 's|^cd[[:space:]]\+[^;&|]*&&[[:space:]]*||')
+  if echo "$_CMD" | grep -qE '^git[[:space:]]+commit'; then
+    _STAGED=$(git show :docs/plans/.active 2>/dev/null | tr -d '[:space:]')
+    if [ -n "$_STAGED" ]; then
+      _HEAD=$(git show HEAD:docs/plans/.active 2>/dev/null | tr -d '[:space:]')
+      if [ "$_STAGED" != "$_HEAD" ]; then
+        echo "🚫 BLOCKED: docs/plans/.active is staged with plan path '$_STAGED'." >&2
+        echo "   This looks accidental. Run: git restore --staged docs/plans/.active" >&2
+        exit 2
+      fi
+    fi
+  fi
+fi
+
 # Emergency bypass
 if [ -f ".skip-ralph" ]; then
   echo "⚠️ Ralph-loop check skipped (.skip-ralph exists)." >&2
@@ -82,15 +101,15 @@ if [ "$MODE" = "bash" ]; then
 
   # Read-only allowlist — checked BEFORE chaining so pipes between read-only cmds are allowed
   if echo "$FIRST_CMD" | grep -qE '^(git[[:space:]]+(status|log|diff|show|branch|stash[[:space:]]+list)|ls|cat|head|tail|grep|rg|wc|file|stat|test|md5|shasum|date|pwd|which|type|jq|printf|echo|awk|sed[[:space:]]+-n|find[[:space:]])'; then
-    # Allow piping between read-only commands, but block destructive writes
+    # Allow piping/chaining between read-only commands, but block destructive writes
     # Note: >[^&] avoids matching 2>&1 stderr redirects
     if ! echo "$CMD" | grep -qE '(>[^&]|>>|rm |mv |cp |python|bash |sh |curl |wget )'; then
       exit 0
     fi
   fi
 
-  # Safe git operations (save work, not execute tasks)
-  if echo "$FIRST_CMD" | grep -qE '^git[[:space:]]+(add|commit|push|stash[[:space:]]+(save|push|pop|apply))([[:space:]]|$)'; then
+  # Safe git operations (save work / restore state, not execute tasks)
+  if echo "$FIRST_CMD" | grep -qE '^git[[:space:]]+(add|commit|push|checkout|restore|reset|stash[[:space:]]+(save|push|pop|apply))([[:space:]]|$)'; then
     exit 0
   fi
 

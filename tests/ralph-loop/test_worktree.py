@@ -8,6 +8,7 @@ from scripts.lib.worktree import WorktreeManager
 
 @pytest.fixture
 def git_repo(tmp_path):
+    original_dir = os.getcwd()
     os.chdir(tmp_path)
     subprocess.run(["git", "init"], check=True)
     subprocess.run(["git", "config", "user.name", "Test"], check=True)
@@ -25,7 +26,8 @@ def git_repo(tmp_path):
     subprocess.run(["git", "add", "docs/"], check=True)
     subprocess.run(["git", "commit", "-m", "Add plans"], check=True)
     
-    return tmp_path
+    yield tmp_path
+    os.chdir(original_dir)
 
 
 def test_create_and_cleanup(git_repo):

@@ -203,14 +203,13 @@ def test_task_count_mismatch_more_checklist(tmp_path):
 
 
 def test_task_count_mismatch_fewer_checklist(tmp_path):
+    # All checklist items checked → no unchecked tasks, even if tasks > items
     plan = "# Test\n### Task 1: A\n**Files:**\n- Create: `a.py`\n### Task 2: B\n**Files:**\n- Create: `b.py`\n### Task 3: C\n**Files:**\n- Create: `c.py`\n### Task 4: D\n**Files:**\n- Create: `d.py`\n## Checklist\n- [x] one\n- [x] two\n"
     p = tmp_path / "plan.md"
     p.write_text(plan)
     pf = PlanFile(p)
     result = pf.unchecked_tasks()
-    assert len(result) == 2
-    assert result[0].number == 3
-    assert result[1].number == 4
+    assert len(result) == 0
 
 
 def test_checklist_with_skip_positional(tmp_path):
