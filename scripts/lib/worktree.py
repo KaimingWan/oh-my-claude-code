@@ -84,14 +84,12 @@ class WorktreeManager:
             for item in self.base_dir.iterdir():
                 if item.is_dir() and item.name.startswith("ralph-"):
                     # Remove from git worktree registry before deleting directory
-                    try:
-                        subprocess.run(
-                            ["git", "worktree", "remove", "--force", str(item)],
-                            cwd=self.project_root
-                        )
-                    except subprocess.CalledProcessError:
-                        pass
-                    shutil.rmtree(item)
+                    subprocess.run(
+                        ["git", "worktree", "remove", "--force", str(item)],
+                        cwd=self.project_root
+                    )
+                    if item.exists():
+                        shutil.rmtree(item)
 
         # Delete any leftover ralph-worker-* branches
         result = subprocess.run(["git", "branch", "--list", "ralph-worker-*"],
