@@ -53,10 +53,16 @@ class WorktreeManager:
         worktree_path = self.base_dir / f"ralph-{name}"
         branch_name = f"ralph-worker-{name}"
 
-        subprocess.run(["git", "worktree", "remove", "--force", str(worktree_path)],
-                       cwd=self.project_root, capture_output=True)
-        subprocess.run(["git", "branch", "-D", branch_name], cwd=self.project_root,
-                       capture_output=True)
+        try:
+            subprocess.run(["git", "worktree", "remove", "--force", str(worktree_path)],
+                           cwd=self.project_root, capture_output=True)
+        except Exception:
+            pass
+        try:
+            subprocess.run(["git", "branch", "-D", branch_name], cwd=self.project_root,
+                           capture_output=True)
+        except Exception:
+            pass
 
     def cleanup_all(self):
         if self.base_dir.exists():
@@ -81,10 +87,13 @@ class WorktreeManager:
                         shutil.rmtree(item)
 
         # Delete any leftover ralph-worker-* branches
-        result = subprocess.run(["git", "branch", "--list", "ralph-worker-*"],
-                                capture_output=True, text=True, cwd=self.project_root)
-        for line in result.stdout.splitlines():
-            branch = line.strip()
-            if branch:
-                subprocess.run(["git", "branch", "-D", branch],
-                               cwd=self.project_root, capture_output=True)
+        try:
+            result = subprocess.run(["git", "branch", "--list", "ralph-worker-*"],
+                                    capture_output=True, text=True, cwd=self.project_root)
+            for line in result.stdout.splitlines():
+                branch = line.strip()
+                if branch:
+                    subprocess.run(["git", "branch", "-D", branch],
+                                   cwd=self.project_root, capture_output=True)
+        except Exception:
+            pass
