@@ -170,7 +170,7 @@ def test_batch_mode_startup_banner(tmp_path):
     plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
     write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
     (tmp_path / "plan.md").write_text(plan_text)
-    r = run_ralph(tmp_path)
+    r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"})
     assert "batch" in r.stdout.lower()
 
 
@@ -185,7 +185,7 @@ def test_dependent_tasks_sequential_banner(tmp_path):
     plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
     write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
     (tmp_path / "plan.md").write_text(plan_text)
-    r = run_ralph(tmp_path)
+    r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"})
     assert "sequential" in r.stdout.lower()
 
 
