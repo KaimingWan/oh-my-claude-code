@@ -89,13 +89,18 @@ def test_lock_cleanup_on_signal(tmp_path):
     # Clean up any stale lock first
     lock_path.unlink(missing_ok=True)
 
+    # Write a script that ignores args and sleeps (avoids macOS sleep rejecting extra args)
+    sleep_script = tmp_path / "long_sleep.sh"
+    sleep_script.write_text("#!/bin/bash\nsleep 60\n")
+    sleep_script.chmod(0o755)
+
     proc = subprocess.Popen(
         ["python3", SCRIPT, "1"],
         env={
             "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
             "HOME": os.environ.get("HOME", "/tmp"),
             "PLAN_POINTER_OVERRIDE": str(tmp_path / ".active"),
-            "RALPH_KIRO_CMD": "sleep 60",
+            "RALPH_KIRO_CMD": str(sleep_script),
             "RALPH_TASK_TIMEOUT": "60",
             "RALPH_HEARTBEAT_INTERVAL": "999",
             "RALPH_SKIP_DIRTY_CHECK": "1",
@@ -324,13 +329,18 @@ def test_sigint_cleanup(tmp_path):
     lock_path = Path(".ralph-loop.lock")
     lock_path.unlink(missing_ok=True)
 
+    # Write a script that ignores args and sleeps (avoids macOS sleep rejecting extra args)
+    sleep_script = tmp_path / "long_sleep.sh"
+    sleep_script.write_text("#!/bin/bash\nsleep 60\n")
+    sleep_script.chmod(0o755)
+
     proc = subprocess.Popen(
         ["python3", SCRIPT, "1"],
         env={
             "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
             "HOME": os.environ.get("HOME", "/tmp"),
             "PLAN_POINTER_OVERRIDE": str(tmp_path / ".active"),
-            "RALPH_KIRO_CMD": "sleep 60",
+            "RALPH_KIRO_CMD": str(sleep_script),
             "RALPH_TASK_TIMEOUT": "60",
             "RALPH_HEARTBEAT_INTERVAL": "999",
             "RALPH_SKIP_DIRTY_CHECK": "1",
