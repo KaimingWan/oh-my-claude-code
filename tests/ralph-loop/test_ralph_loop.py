@@ -805,3 +805,52 @@ def test_stall_detection_kills_process(tmp_path):
     finally:
         lock_path.unlink(missing_ok=True)
         summary_file.unlink(missing_ok=True)
+
+
+def test_parallel_workers_killed_on_exit(tmp_path):
+    """Ralph runs 2 parallel tasks (sleep workers) with RALPH_TASK_TIMEOUT=3.
+    After ralph exits (via timeout), verify no orphan worker processes remain.
+
+    Fix tested: _worker_pids set ensures cleanup handler can kill process groups
+    even after child_procs has been cleared.
+    """
+    unique_name = f"ralph_parallel_orphan_{os.getpid()}"
+
+    # Script that exec's a detectable process with the unique name
+    sleep_script = tmp_path / f"{unique_name}.sh"
+    sleep_script.write_text(f"#!/bin/bash\nexec -a {unique_name} sleep 30\n")
+    sleep_script.chmod(0o755)
+
+    # Use high task numbers to avoid branch conflicts with existing worktrees
+    # in dev environments (e.g. ralph-worker-w1-i1, ralph-worker-w2-i1)
+    task_section = (
+        "## Tasks\n\n"
+        "### Task 10: Alpha\n\n**Files:**\n- Create: `a_orphan.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
+        "### Task 11: Beta\n\n**Files:**\n- Create: `b_orphan.py`\n\n**Verify:** `echo ok`\n\n"
+    )
+    plan_text = PLAN_TEMPLATE.format(items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
+    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
+    write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
+    (tmp_path / "plan.md").write_text(plan_text)
+
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    try:
+        r = run_ralph(tmp_path, extra_env={
+            "RALPH_KIRO_CMD": str(sleep_script),
+            "RALPH_TASK_TIMEOUT": "3",
+        }, max_iter="1")
+        # Ralph exits after timing out workers
+        assert r.returncode in (0, 1)
+        # After ralph exits, no orphan worker processes should remain
+        time.sleep(0.5)
+        check = subprocess.run(["pgrep", "-f", unique_name], capture_output=True, text=True)
+        assert check.returncode != 0, (
+            f"Orphan parallel worker found after ralph exit: {check.stdout.strip()}"
+        )
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+        import subprocess as sp
+        sp.run(["git", "worktree", "prune"], capture_output=True)
