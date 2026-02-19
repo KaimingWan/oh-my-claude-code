@@ -14,3 +14,6 @@
 🟡 1. 优化方案分析时因"副作用多""改动大"而退缩到小幅优化(3-9%提升), 回避架构级改革(多进程并行+worktree隔离). 用户纠正: 顶层纲领"Bold reform over timid patches"要求效果为王, 不怕麻烦. 副作用不是回避的理由而是要解决的工程问题. DO: 先定义最优效果目标, 再解决实现中的副作用. DON'T: 因为副作用多就降低目标选凑合方案
 ## [refactor,capability]
 🟡 1. 重构过度聚焦新功能, 差点丢失旧框架核心能力
+
+## [fs_write,kiro,tool,revert,modify]
+🔴 1. Kiro的fs_write工具会在两次tool call之间恢复被修改的文件到原始状态. 所有源码修改必须在单个execute_bash调用中完成(Python脚本批量修改), 并在同一调用中git commit持久化. 不要用fs_write修改源码后期望下一个tool call能看到变更
