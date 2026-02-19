@@ -92,12 +92,50 @@ class PlanFile:
             return []
         if self.unchecked == 0:
             return []
-        # When tasks and checklist items are 1:1, use positional mapping.
-        # Otherwise return all tasks (can't reliably map items to tasks).
-        items = _CHECKLIST_ITEM.findall(self._text)
-        if len(items) == len(tasks):
-            return [t for i, t in enumerate(tasks) if items[i] == "- [ ] "]
-        return tasks
+
+        # Collect all checklist item lines with their state prefix
+        item_lines = re.findall(r"^(- \[(?:x|SKIP| )\] .*)$", self._text, re.MULTILINE)
+
+        # 1:1 case: use fast positional mapping
+        if len(item_lines) == len(tasks):
+            return [t for i, t in enumerate(tasks) if item_lines[i].startswith("- [ ] ")]
+
+        # N:M case: keyword matching — longest task name match wins
+        # Build sorted task list by name length descending (longest-match-first)
+        sorted_tasks = sorted(tasks, key=lambda t: len(t.name), reverse=True)
+
+        # Map each checklist item to the best-matching task
+        # task_has_unchecked[task_number] = True if any matched item is unchecked
+        task_has_unchecked: dict[int, bool] = {}
+        unmatched_unchecked = False
+
+        for line in item_lines:
+            line_lower = line.lower()
+            matched_task = None
+            for task in sorted_tasks:
+                # Match if ALL significant words in task name appear in the item text
+                keywords = [w for w in task.name.lower().split() if len(w) > 2]
+                if keywords and all(kw in line_lower for kw in keywords):
+                    matched_task = task
+                    break
+
+            is_unchecked = line.startswith("- [ ] ")
+            if matched_task is not None:
+                if matched_task.number not in task_has_unchecked:
+                    task_has_unchecked[matched_task.number] = False
+                if is_unchecked:
+                    task_has_unchecked[matched_task.number] = True
+            else:
+                if is_unchecked:
+                    unmatched_unchecked = True
+
+        # If there are unchecked items we couldn't match to any task, fall back to all tasks
+        if unmatched_unchecked:
+            return tasks
+
+        # Return tasks that have at least one unchecked matched item
+        # Tasks with no matched items at all are excluded (no evidence of remaining work)
+        return [t for t in tasks if task_has_unchecked.get(t.number, False)]
 
     def check_off(self, task_number: int) -> bool:
         """Check off the checklist item corresponding to task_number (1-based positional)."""
