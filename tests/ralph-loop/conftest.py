@@ -57,7 +57,8 @@ def ralph_env(tmp_path):
         "PLAN_POINTER_OVERRIDE": str(tmp_path / ".active"),
         "RALPH_TASK_TIMEOUT": "5",
         "RALPH_HEARTBEAT_INTERVAL": "999",
-        "RALPH_SKIP_DIRTY_CHECK": "1"
+        "RALPH_SKIP_DIRTY_CHECK": "1",
+        "RALPH_SKIP_PRECHECK": "1",
     }
 
 

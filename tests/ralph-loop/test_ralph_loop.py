@@ -31,6 +31,7 @@ def run_ralph(tmp_path, extra_env=None, max_iter="1"):
         "RALPH_TASK_TIMEOUT": "5",
         "RALPH_HEARTBEAT_INTERVAL": "999",
         "RALPH_SKIP_DIRTY_CHECK": "1",
+        "RALPH_SKIP_PRECHECK": "1",
     }
     if extra_env:
         env.update(extra_env)
@@ -656,3 +657,71 @@ def test_no_cli_found():
     with patch('shutil.which', return_value=None), \
          pytest.raises(SystemExit):
         detect_cli()
+
+
+def _import_build_init_prompt(plan_obj=None, plan_path_obj=None, project_root=None):
+    """Extract build_init_prompt from ralph_loop.py source without running module-level code."""
+    import re
+    source = Path("scripts/ralph_loop.py").read_text()
+    match = re.search(r'(def build_init_prompt\(.*?\n(?=\ndef |\n# ))', source, re.DOTALL)
+    if not match:
+        return None
+    from scripts.lib.plan import PlanFile
+    from scripts.lib.precheck import run_precheck
+    ns = {
+        "Path": Path,
+        "PlanFile": PlanFile,
+        "run_precheck": run_precheck,
+        "plan": plan_obj,
+        "plan_path": plan_path_obj,
+        "PROJECT_ROOT": project_root or Path("."),
+        "SKIP_PRECHECK": "1",
+    }
+    exec(match.group(1), ns)
+    return ns.get("build_init_prompt")
+
+
+def _import_build_prompt():
+    """Extract build_prompt from ralph_loop.py source without running module-level code."""
+    import re
+    source = Path("scripts/ralph_loop.py").read_text()
+    match = re.search(r'(def build_prompt\(.*?\n(?=\ndef |\n# ))', source, re.DOTALL)
+    if not match:
+        return None
+    from scripts.lib.plan import PlanFile
+    from scripts.lib.precheck import run_precheck
+    ns = {"Path": Path, "PlanFile": PlanFile, "run_precheck": run_precheck,
+          "PROJECT_ROOT": Path("."), "plan": None, "plan_path": None,
+          "SKIP_PRECHECK": "1"}
+    exec(match.group(1), ns)
+    return ns.get("build_prompt")
+
+
+def test_init_prompt_differs_from_regular(tmp_path):
+    """build_init_prompt contains 'FIRST iteration'; build_prompt does not."""
+    from scripts.lib.plan import PlanFile
+    from scripts.lib.precheck import run_precheck
+    import re
+
+    plan_file = tmp_path / "plan.md"
+    plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
+    pf = PlanFile(plan_file)
+
+    build_init = _import_build_init_prompt(plan_obj=pf, plan_path_obj=plan_file, project_root=tmp_path)
+    assert build_init is not None, "build_init_prompt not found in ralph_loop.py"
+
+    # Extract build_prompt into isolated namespace
+    source = Path("scripts/ralph_loop.py").read_text()
+    match = re.search(r'(def build_prompt\(.*?\n(?=\ndef |\n# ))', source, re.DOTALL)
+    assert match, "build_prompt not found in ralph_loop.py"
+    ns = {"Path": Path, "PlanFile": PlanFile, "run_precheck": run_precheck,
+          "PROJECT_ROOT": tmp_path, "plan": pf, "plan_path": plan_file,
+          "SKIP_PRECHECK": "1"}
+    exec(match.group(1), ns)
+    build_regular = ns["build_prompt"]
+
+    init = build_init()
+    regular = build_regular(2)
+
+    assert "FIRST iteration" in init
+    assert "FIRST iteration" not in regular

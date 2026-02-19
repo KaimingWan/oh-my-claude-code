@@ -1,0 +1,13 @@
+........................................................................ [ 88%]
+.........                                                                [100%]
+=============================== warnings summary ===============================
+tests/ralph-loop/test_ralph_loop.py:455
+  /Users/wanshao/project/oh-my-claude-code/tests/ralph-loop/test_ralph_loop.py:455: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+tests/ralph-loop/test_ralph_loop.py:472
+  /Users/wanshao/project/oh-my-claude-code/tests/ralph-loop/test_ralph_loop.py:472: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+81 passed, 2 warnings in 104.67s (0:01:44)

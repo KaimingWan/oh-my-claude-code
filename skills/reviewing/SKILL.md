@@ -9,7 +9,22 @@ description: "Code review — covers requesting, executing, and receiving code r
 
 **When (mandatory):** after completing major feature, before merge, after each task batch.
 
-Dispatch reviewer subagent with **`agent_name: "reviewer"`** (required — omitting defaults to nonexistent agent):
+### Plan Review — 4 angles, 4 parallel subagents
+
+Dispatch exactly **4 reviewer subagents in parallel** (`agent_name: "reviewer"`), one per angle:
+
+| # | Angle | Mission |
+|---|-------|---------|
+| 1 | Goal Alignment | Every task maps to goal? Execution order valid? Non-goals respected? |
+| 2 | Verify Correctness | Each verify command sound? False positives/negatives? |
+| 3 | Completeness | All modified files covered? Edge cases? Conflicts with other plans? |
+| 4 | Technical Feasibility | Blockers? Contradictions? Race conditions? Signal safety? |
+
+Each subagent query must include: plan file path + relevant source file paths to read.
+
+### Code Review — single subagent
+
+Dispatch **1 reviewer subagent** (`agent_name: "reviewer"`) with:
 - What was implemented
 - Plan/requirements reference
 - Git diff range (BASE_SHA..HEAD_SHA)

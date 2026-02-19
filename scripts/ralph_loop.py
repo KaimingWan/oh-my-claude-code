@@ -23,6 +23,7 @@ from scripts.lib.plan import PlanFile
 from scripts.lib.lock import LockFile
 from scripts.lib.scheduler import build_batches, Batch
 from scripts.lib.cli_detect import detect_cli
+from scripts.lib.precheck import run_precheck
 
 # --- Configuration from env ---
 MAX_ITERATIONS = int(sys.argv[1]) if len(sys.argv) > 1 else 10
@@ -31,6 +32,7 @@ TASK_TIMEOUT = int(os.environ.get("RALPH_TASK_TIMEOUT", "1800"))
 HEARTBEAT_INTERVAL = int(os.environ.get("RALPH_HEARTBEAT_INTERVAL", "60"))
 KIRO_CMD = os.environ.get("RALPH_KIRO_CMD", "")
 SKIP_DIRTY_CHECK = os.environ.get("RALPH_SKIP_DIRTY_CHECK", "")
+SKIP_PRECHECK = os.environ.get("RALPH_SKIP_PRECHECK", "")
 MAX_STALE = 3
 
 LOG_FILE = Path(".ralph-loop.log")
@@ -116,10 +118,18 @@ def build_prompt(iteration: int) -> str:
     findings_file = plan.findings_path
     next_items = "\n".join(plan.next_unchecked(5))
 
+    if SKIP_PRECHECK:
+        env_status = "⏭️ Precheck skipped"
+    else:
+        precheck_ok, precheck_out = run_precheck(PROJECT_ROOT)
+        env_status = f"✅ Environment OK" if precheck_ok else f"❌ Environment FAILING:\n{precheck_out}"
+
     return f"""You are executing a plan. Read these files first:
 1. Plan: {plan_path}
 2. Progress log: {progress_file} (if exists — contains learnings from previous iterations)
 3. Findings: {findings_file} (if exists — contains research discoveries and decisions)
+
+Environment: {env_status}
 
 Next unchecked items:
 {next_items}
@@ -129,6 +139,56 @@ Rules:
 2. Update the plan: change that item from '- [ ]' to '- [x]'.
 3. Append to {progress_file} with format:
    ## Iteration {iteration} — $(date)
+   - **Task:** <what you did>
+   - **Files changed:** <list>
+   - **Learnings:** <gotchas, patterns discovered>
+   - **Status:** done / skipped
+4. If you discover reusable patterns or make technical decisions, write to {findings_file}.
+5. Commit: feat: <item description>.
+6. Continue with next unchecked item. Do NOT stop while unchecked items remain.
+7. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next.
+8. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command. If blocked 3+ times on the same item, mark it as '- [SKIP] blocked by security hook' and continue.
+9. PARALLEL EXECUTION: If 2+ unchecked items have non-overlapping file sets (check the plan's Task Files: fields),
+   dispatch executor subagents in parallel (max 4, agent_name: "executor").
+   Subagents only implement + run verify. YOU handle: plan file updates, git commit, progress.md.
+   If any subagent fails, fall back to sequential for that item. See Strategy D in planning SKILL.md."""
+
+
+def build_init_prompt() -> str:
+    """Generate the FIRST iteration prompt — verifies environment before implementing."""
+    plan.reload()
+    progress_file = plan.progress_path
+    findings_file = plan.findings_path
+    next_items = "\n".join(plan.next_unchecked(5))
+
+    if SKIP_PRECHECK:
+        env_status = "⏭️ Precheck skipped"
+    else:
+        precheck_ok, precheck_out = run_precheck(PROJECT_ROOT)
+        env_status = f"✅ Environment OK" if precheck_ok else f"❌ Environment FAILING:\n{precheck_out}"
+
+    return f"""You are executing a plan (FIRST iteration — environment setup and verification).
+
+Read these files first:
+1. Plan: {plan_path}
+2. Progress log: {progress_file} (if exists — contains learnings from previous iterations)
+3. Findings: {findings_file} (if exists — contains research discoveries and decisions)
+
+Environment: {env_status}
+
+This is the FIRST iteration. Before implementing anything:
+1. Verify the environment is set up correctly (dependencies installed, tests runnable).
+2. If environment is failing, fix it first before proceeding.
+3. Then implement the FIRST unchecked item below.
+
+Next unchecked items:
+{next_items}
+
+Rules:
+1. Implement the FIRST unchecked item. Verify it works (run tests/typecheck).
+2. Update the plan: change that item from '- [ ]' to '- [x]'.
+3. Append to {progress_file} with format:
+   ## Iteration 1 — $(date)
    - **Task:** <what you did>
    - **Files changed:** <list>
    - **Learnings:** <gotchas, patterns discovered>
@@ -243,6 +303,8 @@ for i in range(1, MAX_ITERATIONS + 1):
     # Use batch-aware prompt if batches available, otherwise fallback
     if batches:
         prompt = build_batch_prompt(batches[0], plan_path, i)
+    elif i == 1 and plan.checked == 0:
+        prompt = build_init_prompt()
     else:
         prompt = build_prompt(i)
 
