@@ -374,10 +374,29 @@ def run_parallel_batch(batch: Batch, iteration: int) -> list[str]:
     _child_procs = [p for _, _, p, _ in workers if p.poll() is None]
 
     # Merge successful workers into main branch
+    task_map = {f"w{t.number}-i{iteration}": t for t in batch.tasks}
     for name in succeeded:
         ok = wt_manager.merge(name)
         if ok:
             print(f"  🔀 Merged worker {name}", flush=True)
+            # Auto-verify and check off checklist item
+            task = task_map.get(name)
+            if task:
+                verify_match = re.search(r'\*\*Verify:\*\*\s*`(.+?)`', task.section_text)
+                if verify_match:
+                    vcmd = verify_match.group(1)
+                    try:
+                        r = subprocess.run(vcmd, shell=True, capture_output=True, text=True, timeout=30,
+                                           cwd=str(PROJECT_ROOT))
+                        if r.returncode == 0:
+                            if plan.check_off(task.number):
+                                print(f"  ✅ Verified & checked off Task {task.number}", flush=True)
+                            else:
+                                print(f"  ⚠️  Verify passed but check_off failed for Task {task.number}", flush=True)
+                        else:
+                            print(f"  ⚠️  Verify failed for Task {task.number}: {r.stderr[:100]}", flush=True)
+                    except Exception as e:
+                        print(f"  ⚠️  Verify error for Task {task.number}: {e}", flush=True)
         else:
             print(f"  ⚠️  Merge conflict for worker {name} — skipping", flush=True)
             succeeded.remove(name)

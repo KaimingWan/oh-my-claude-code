@@ -95,3 +95,24 @@ class PlanFile:
             if i >= len(items) or items[i] == "- [ ] ":
                 unchecked.append(task)
         return unchecked
+
+    def check_off(self, task_number: int) -> bool:
+        """Check off the checklist item corresponding to task_number (1-based positional)."""
+        tasks = self.parse_tasks()
+        idx = next((i for i, t in enumerate(tasks) if t.number == task_number), None)
+        if idx is None:
+            return False
+        # Find the (idx+1)-th unchecked/checked/skipped item and if unchecked, check it
+        count = 0
+        lines = self._text.split('\n')
+        for li, line in enumerate(lines):
+            if _CHECKLIST_ITEM.match(line):
+                if count == idx:
+                    if line.startswith('- [ ] '):
+                        lines[li] = line.replace('- [ ] ', '- [x] ', 1)
+                        self.path.write_text('\n'.join(lines))
+                        self.reload()
+                        return True
+                    return False  # already checked
+                count += 1
+        return False
