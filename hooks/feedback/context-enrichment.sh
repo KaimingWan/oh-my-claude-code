@@ -27,6 +27,10 @@ KB_FLAG="/tmp/kb-changed-${WS_HASH}.flag"
 if [ -f "$KB_FLAG" ]; then
   DISTILL_LIB="$SCRIPT_DIR/../_lib/distill.sh"
   if [ -f "$DISTILL_LIB" ]; then
+    EPISODES_FILE="knowledge/episodes.md"
+    RULES_FILE="knowledge/rules.md"
+    RULES_DIR=".claude/rules"
+    ARCHIVE_DIR="knowledge/archive"
     source "$DISTILL_LIB"
     distill_check
     archive_promoted
