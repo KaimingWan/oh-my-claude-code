@@ -197,7 +197,7 @@ Round 2 (2 fixed angles, verifying fix):
 - [ ] context-enrichment v2 通过测试 | `bash tests/knowledge/test-enrichment-v2.sh`
 - [ ] 端到端集成测试通过 | `bash tests/knowledge/test-integration.sh`
 - [ ] 现有知识库测试不回归 | `bash tests/knowledge/l1-rules-injection.sh && bash tests/knowledge/l1-corruption-recall.sh`
-- [ ] hook 兼容性测试通过 | `bash tests/hooks/test-kiro-compat.sh`
+- [x] hook 兼容性测试通过 | `bash tests/hooks/test-kiro-compat.sh`
 - [ ] review 质量改进写入 skill 文件 | `grep -q 'Specific Questions' skills/planning/SKILL.md && grep -q 'Source Reading Canary' skills/planning/SKILL.md && grep -q 'pre-review' skills/reviewing/SKILL.md`
 
 ## Errors
