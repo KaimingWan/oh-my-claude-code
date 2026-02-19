@@ -32,7 +32,7 @@
 
 | 场景 | Skill | 触发方式 | 加载方式 |
 |------|-------|---------|---------|
-| 规划/设计 | planning (含 brainstorming) | `@plan` 命令 | 预加载 |
+| 规划/设计 | planning | `@plan` 命令 | 预加载 |
 | 执行计划 | planning + ralph loop | `@execute` 命令 | 预加载 |
 | Code Review | reviewing | `@review` 命令 | 预加载 |
 | 调试 | debugging | rules.md 自动注入 | 按需读取 |
