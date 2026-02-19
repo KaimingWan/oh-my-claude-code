@@ -140,11 +140,13 @@ def _extract_verify_cmd(section_text: str) -> str:
     return "echo 'no verify command found'"
 
 
-def build_worker_prompt(task_name: str, task_files: list, verify_cmd: str, plan_path: str) -> str:
+def build_worker_prompt(task_name: str, task_files: list, verify_cmd: str, plan_path: str,
+                        checklist_context: str = "") -> str:
+    ctx = f"\n\nChecklist state:\n{checklist_context}" if checklist_context else ""
     return f"""Task: {task_name}
 Files: {', '.join(task_files)}
 Verify: {verify_cmd}
-Plan: {plan_path}
+Plan: {plan_path}{ctx}
 
 Do NOT modify docs/plans/
 Commit your changes with: git commit -am 'feat: {task_name}'"""
@@ -291,7 +293,7 @@ Rules:
 def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: Path,
                        project_root: Path, wt_manager: WorktreeManager,
                        child_procs: list, worker_pgids: dict, worker_log_dir: Path,
-                       task_timeout: int) -> list[str]:
+                       task_timeout: int, max_parallel_workers: int = 4) -> list[str]:
     """Spawn N worker CLI processes in isolated worktrees, wait, merge successful ones.
 
     Returns list of worker names that succeeded (exit 0).
@@ -301,7 +303,11 @@ def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: 
 
     base_cmd = detect_cli()
 
-    for task in batch.tasks:
+    checklist_ctx = f"Completed: {plan.checked}/{plan.total}.\nRemaining items:\n" + "\n".join(
+        plan.next_unchecked(20)
+    )
+
+    for task in batch.tasks[:max_parallel_workers]:
         name = f"w{task.number}-i{iteration}"
         try:
             wt_path = wt_manager.create(name)
@@ -311,7 +317,8 @@ def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: 
 
         # Extract verify command from section_text (inline backtick or fenced code block)
         verify_cmd = _extract_verify_cmd(task.section_text)
-        prompt = build_worker_prompt(task.name, sorted(task.files), verify_cmd, str(plan_path))
+        prompt = build_worker_prompt(task.name, sorted(task.files), verify_cmd, str(plan_path),
+                                     checklist_context=checklist_ctx)
         if base_cmd[0] == "claude":
             cmd = [base_cmd[0], "-p", prompt] + base_cmd[2:]
         else:
@@ -385,6 +392,12 @@ def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: 
                 print(f"  ✅ Checklist item {idx} verified & checked off", flush=True)
             else:
                 print(f"  ⚠️  Checklist item {idx} verify failed: {vcmd}", flush=True)
+        # Commit the checked-off plan so subsequent merges don't overwrite it
+        checked_count = sum(1 for _, _, p in results if p)
+        if checked_count > 0:
+            subprocess.run(["git", "add", str(plan.path)], cwd=str(project_root), capture_output=True)
+            subprocess.run(["git", "commit", "-m", f"chore: update checklist (iteration {iteration})"],
+                           cwd=str(project_root), capture_output=True)
 
     # Cleanup all worktrees and clear their pgid tracking entries
     for name, _, proc, _ in workers:
@@ -410,6 +423,7 @@ def main():
     stall_timeout = int(os.environ.get("RALPH_STALL_TIMEOUT", "300"))
     skip_dirty_check = os.environ.get("RALPH_SKIP_DIRTY_CHECK", "")
     skip_precheck = os.environ.get("RALPH_SKIP_PRECHECK", "")
+    max_parallel_workers = int(os.environ.get("RALPH_MAX_PARALLEL_WORKERS", "4"))
 
     log_file = Path(".ralph-loop.log")
     lock = LockFile(Path(".ralph-loop.lock"))
@@ -524,6 +538,7 @@ def main():
             succeeded = run_parallel_batch(
                 current_batch, i, plan, plan_path, PROJECT_ROOT,
                 wt_manager, child_procs, worker_pgids, worker_log_dir, task_timeout,
+                max_parallel_workers=max_parallel_workers,
             )
             prev_exit = 0 if succeeded else 1
         else:
