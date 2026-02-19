@@ -8,7 +8,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from scripts.lib.plan import PlanFile, TaskInfo
 from scripts.lib.scheduler import Batch
-import scripts.ralph_loop as ralph_loop
 
 
 @pytest.fixture
@@ -60,8 +59,3 @@ def ralph_env(tmp_path):
         "RALPH_SKIP_DIRTY_CHECK": "1",
         "RALPH_SKIP_PRECHECK": "1",
     }
-
-
-def import_ralph_fn(fn_name):
-    """Return a function from scripts.ralph_loop by name (direct import, no exec hack)."""
-    return getattr(ralph_loop, fn_name, None)
