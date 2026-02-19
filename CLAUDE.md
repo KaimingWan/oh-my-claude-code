@@ -16,6 +16,8 @@
 - Recommend before asking（需要向用户提问时，必须先完成自己的推理，带上推荐答案和理由。禁止空手提问、把思考负担转嫁用户。注意：这不改变 End-to-end autonomy 原则——能自主解决的仍然不问，但当确实需要用户输入时，必须带方案问）
 - Socratic self-check（关键决策前自问三层：①本质——这类问题的核心是什么？②框架——有什么已知原则/模式适用？③应用——结合当前场景的结论是什么？适用于设计、诊断、方案选择等需要深度思考的场景，简单事实查询无需使用）
 - No hacky workarounds（实现层面不允许采用 hack/绕过/临时凑合的方式。发现需要 hack 说明设计有缺陷，应修复根因而非绕过）
+- Bold reform over timid patches（方案不怕改动大、不怕推翻旧流程。效果为王，质量优先。过去不行的就早点改革，不要因为"改动大"而选择凑合方案）
+- Compound interest engineering（一件事重复做了 3 次，就考虑将其工具化或做成可复用基础设施。通过复利工程持续提升框架效率和能力）
 
 ## Workflow
 - Explore → Plan → Code（先调研，再计划，再编码）
@@ -28,17 +30,17 @@
 
 ## Skill Routing
 
-| 场景 | Skill | 触发方式 |
-|------|-------|---------|
-| 规划/设计 | brainstorming → planning | `@plan` 命令 |
-| 执行计划 | planning + ralph loop | `@execute` 命令 |
-| Code Review | reviewing | `@review` 命令 |
-| 调试 | debugging | rules.md 自动注入 |
-| 调研 | research | `@research` 命令 |
-| 完成前验证 | verification | Stop hook 自动 |
-| 分支收尾 | finishing | planning 完成后 |
-| 纠正/学习 | self-reflect | context-enrichment 检测 |
-| 发现 skill | find-skills | 用户询问时 |
+| 场景 | Skill | 触发方式 | 加载方式 |
+|------|-------|---------|---------|
+| 规划/设计 | planning (含 brainstorming) | `@plan` 命令 | 预加载 |
+| 执行计划 | planning + ralph loop | `@execute` 命令 | 预加载 |
+| Code Review | reviewing | `@review` 命令 | 预加载 |
+| 调试 | debugging | rules.md 自动注入 | 按需读取 |
+| 调研 | research | `@research` 命令 | 按需读取 |
+| 完成前验证 | verification | Stop hook 自动 | 按需读取 |
+| 分支收尾 | finishing | planning 完成后 | 按需读取 |
+| 纠正/学习 | self-reflect | context-enrichment 检测 | 按需读取 |
+| 发现 skill | find-skills | 用户询问时 | 按需读取 |
 
 ## Knowledge Retrieval
 - Question → knowledge/INDEX.md → topic indexes → source docs
