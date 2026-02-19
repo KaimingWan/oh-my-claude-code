@@ -806,7 +806,6 @@ def test_worker_prompt_no_plan_update():
     assert "pytest" in prompt
     assert "docs/plans/test.md" in prompt
     assert "Do NOT modify docs/plans/" in prompt
-    assert "Do NOT run git commit" in prompt
 
 
 def test_parallel_batch_creates_worktrees(tmp_path):

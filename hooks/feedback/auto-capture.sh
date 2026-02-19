@@ -21,10 +21,14 @@ HAS_ACTION=$(echo "$USER_MSG" | grep -cE '(别用|不要用|换成|改成|禁止
 [ "$HAS_ACTION" -eq 0 ] && exit 1
 # 有明确动作的不受长度限制（Gate 1 只过滤无动作和问句）
 
-# ── Gate 2: 提取关键词（仅英文技术术语，≥4字符）──
+# ── Gate 2: 提取关键词（英文技术术语 + 中文动作词 fallback）──
 # head -3 取消息中最先出现的3个术语（出现越早越可能是核心词）
 KEYWORDS=$(echo "$USER_MSG" | grep -oE '[a-zA-Z_][a-zA-Z0-9_-]{3,}' | grep -viE '^(this|that|with|from|have|been|your|what|when|should|always|never|dont|must|stop|using|every|about|just|like|make|more|than|them|they|these|those|very|will|would|could|also|into|only|some|such|each|other|after|before|because|between|during|without)$' | awk '!seen[$0]++' | head -3 | tr '\n' ',' | sed 's/,$//')
-# 无有效关键词 → 丢弃
+# 无英文关键词 → 尝试提取中文动作词作为 fallback
+if [ -z "$KEYWORDS" ]; then
+  KEYWORDS=$(echo "$USER_MSG" | grep -oE '(别用|不要用|换成|改成|禁止|必须)[^，。,.\s]{1,10}' | head -2 | tr '\n' ',' | sed 's/,$//')
+fi
+# 仍无关键词 → 丢弃
 [ -z "$KEYWORDS" ] && exit 1
 
 # ── Gate 3: 去重 ──

@@ -15,7 +15,7 @@ fi
 
 echo "🚀 Initializing: $TARGET ($PROJECT_NAME)"
 
-mkdir -p "$TARGET"/{.claude,.kiro/rules,.kiro/hooks,.kiro/agents,knowledge/product,docs/{designs,plans,research,decisions},tools,templates}
+mkdir -p "$TARGET"/{.claude,.kiro/rules,.kiro/agents,knowledge/product,docs/{designs,plans,research,decisions},tools,templates}
 
 # Copy core files
 for f in CLAUDE.md AGENTS.md; do
@@ -27,7 +27,10 @@ done
 # Copy framework files
 cp "$TEMPLATE_DIR/.claude/settings.json" "$TARGET/.claude/"
 cp "$TEMPLATE_DIR/.kiro/rules/"*.md "$TARGET/.kiro/rules/"
-cp "$TEMPLATE_DIR/.kiro/hooks/"*.sh "$TARGET/.kiro/hooks/"
+# Copy hooks (preserving subdirectory structure)
+cp -r "$TEMPLATE_DIR/hooks" "$TARGET/hooks"
+ln -sf ../hooks "$TARGET/.kiro/hooks"
+ln -sf ../hooks "$TARGET/.claude/hooks"
 cp "$TEMPLATE_DIR/.kiro/agents/"*.json "$TARGET/.kiro/agents/"
 cp "$TEMPLATE_DIR/knowledge/"*.md "$TARGET/knowledge/"
 cp -r "$TEMPLATE_DIR/knowledge/product" "$TARGET/knowledge/"
@@ -37,13 +40,12 @@ for d in designs plans research decisions; do
 done
 cp "$TEMPLATE_DIR/.gitignore" "$TARGET/" 2>/dev/null || true
 
-chmod +x "$TARGET/.kiro/hooks/"*.sh
-
-# Copy skills
-if [ -d "$TEMPLATE_DIR/.kiro/skills" ]; then
-  mkdir -p "$TARGET/.kiro/skills"
-  cp -r "$TEMPLATE_DIR/.kiro/skills/"* "$TARGET/.kiro/skills/"
-  SKILL_COUNT=$(ls -d "$TARGET/.kiro/skills/"*/ 2>/dev/null | wc -l | tr -d ' ')
+# Copy skills (preserving structure, symlinked like hooks)
+if [ -d "$TEMPLATE_DIR/skills" ]; then
+  cp -r "$TEMPLATE_DIR/skills" "$TARGET/skills"
+  ln -sf ../skills "$TARGET/.kiro/skills"
+  ln -sf ../skills "$TARGET/.claude/skills"
+  SKILL_COUNT=$(ls -d "$TARGET/skills/"*/ 2>/dev/null | wc -l | tr -d ' ')
   echo "📦 Copied $SKILL_COUNT skills"
 fi
 

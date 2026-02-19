@@ -30,7 +30,7 @@ if [ -n "$ACTIVE_PLAN" ] && [ -f "$ACTIVE_PLAN" ]; then
       VERIFY_CMD=$(echo "$line" | sed -n 's/.*| `\(.*\)`$/\1/p')
       [ -z "$VERIFY_CMD" ] && continue
       TOTAL=$((TOTAL + 1))
-      if ! timeout 30 bash -c "$VERIFY_CMD" > /dev/null 2>&1; then
+      if ! perl -e 'alarm(30); exec @ARGV' bash -c "$VERIFY_CMD" > /dev/null 2>&1; then
         FAILED=$((FAILED + 1))
         echo "❌ VERIFY FAILED: $VERIFY_CMD"
         echo "   Item: $line"
