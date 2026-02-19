@@ -252,8 +252,9 @@ Missing verdict = review REJECTED and will be re-dispatched.
 5. Collect all verdicts. If ANY reviewer REJECTs → fix issues → next round (re-sample 2 random angles)
    **Verdict enforcement:** If a reviewer's output does not end with `Verdict: APPROVE` or `Verdict: REQUEST CHANGES`, treat it as malformed → re-dispatch that single angle.
 6. **Round 2+ rule:** When re-dispatching after fixes, include in each query a "Rejected Findings" section with one-line summaries of findings rejected in previous rounds and why. Reviewers must not re-raise these.
-7. Repeat until all APPROVE in a single round, or 5 rounds reached
-8. After 5 rounds: stop and tell user "Plan too complex for automated review. Consider breaking into smaller plans."
+   **Round 2+ reviewer count:** Dispatch only 2 reviewers (the 2 fixed angles: Goal Alignment + Verify Correctness). Do NOT sample random angles in Round 2+. Purpose of Round 2+ is to verify fixes, not discover new issues.
+7. Repeat until all APPROVE in a single round, or 3 rounds reached
+8. After 3 rounds: stop and tell user "Plan too complex for automated review. Consider breaking into smaller plans."
 
 ### Reviewer Calibration
 
@@ -274,7 +275,7 @@ When reviewers give contradictory feedback:
 
 ### Resource Constraints
 
-- **Max parallel subagents per batch**: 4 (tool hard limit). Fixed at 4 per round, no overflow batches needed.
+- **Max parallel subagents per batch**: 4 (tool hard limit). Round 1: 4 reviewers. Round 2+: 2 reviewers (fixed angles only).
 - **Reviewer context isolation**: Reviewers in the same round do NOT see each other's feedback. Each gets the full plan.
 - **Context size**: Review packet = full plan file content (verbatim). Reviewers need complete task details, code blocks, and file paths to avoid false rejections from incomplete information.
 - **Error handling**: If a reviewer crashes or returns malformed output, continue with remaining reviewers. If fewer than half of the round's reviewers complete, restart the round. Malformed = missing Mission/Findings/Verdict structure.
