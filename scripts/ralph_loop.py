@@ -45,6 +45,12 @@ def die(msg: str) -> None:
     sys.exit(1)
 
 
+# --- Recursion guard ---
+if os.environ.get("_RALPH_LOOP_RUNNING"):
+    die("Nested ralph loop detected — aborting to prevent recursion")
+os.environ["_RALPH_LOOP_RUNNING"] = "1"
+
+
 # --- Resolve active plan ---
 if not PLAN_POINTER.exists():
     die("No active plan. Run @plan first to set docs/plans/.active")

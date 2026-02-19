@@ -27,3 +27,12 @@ def test_run_precheck_no_tests(tmp_path):
     ok, out = run_precheck(tmp_path)
     assert ok is True
     assert "No test command" in out
+
+
+def test_precheck_excludes_ralph_tests(tmp_path):
+    """Precheck pytest command must exclude tests/ralph-loop/ to prevent recursion."""
+    (tmp_path / "pyproject.toml").write_text("[tool.pytest]\n")
+    from scripts.lib.precheck import detect_test_command
+    cmd = detect_test_command(tmp_path)
+    assert "pytest" in cmd
+    assert "--ignore=tests/ralph-loop" in cmd

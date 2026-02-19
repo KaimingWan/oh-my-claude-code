@@ -13,7 +13,7 @@ def detect_test_command(project_root: Path) -> str:
         or (project_root / "conftest.py").exists()
         or (project_root / "tests").is_dir()
     ):
-        return "python3 -m pytest -x -q -m 'not slow'"
+        return "python3 -m pytest -x -q -m 'not slow' --ignore=tests/ralph-loop"
     if (project_root / "package.json").exists():
         return "npm test --silent"
     if (project_root / "Cargo.toml").exists():

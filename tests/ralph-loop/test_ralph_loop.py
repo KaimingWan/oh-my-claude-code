@@ -725,3 +725,14 @@ def test_init_prompt_differs_from_regular(tmp_path):
 
     assert "FIRST iteration" in init
     assert "FIRST iteration" not in regular
+
+
+def test_recursion_guard(tmp_path):
+    """ralph_loop.py exits immediately if _RALPH_LOOP_RUNNING is set."""
+    write_plan(tmp_path)
+    r = run_ralph(tmp_path, extra_env={
+        "RALPH_KIRO_CMD": "true",
+        "_RALPH_LOOP_RUNNING": "1",
+    })
+    assert r.returncode == 1
+    assert "nested" in r.stdout.lower() or "recursion" in r.stdout.lower()
