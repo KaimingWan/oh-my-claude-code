@@ -49,6 +49,17 @@ After research, absorb what you learned. Only ask the user about findings you **
 
 If no supplementary questions needed, proceed directly to Phase 1.
 
+### Step 5: Design presentation (optional)
+
+When the task involves creative/architectural work (new features, new components, significant behavior changes), present the design before writing the plan:
+
+- Break the design into sections of 200-300 words
+- Ask after each section whether it looks right so far
+- Cover: architecture, components, data flow, error handling, testing
+- Write the validated design to `docs/designs/YYYY-MM-DD-<topic>-design.md`
+
+Skip this step for simple refactors, bug fixes, or tasks with a fully specified design doc.
+
 ### Transition to Phase 1
 
 After Phase 0 completes, before writing the plan, validate each major design decision with Socratic self-check:
