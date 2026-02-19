@@ -192,13 +192,13 @@ Round 2 (2 fixed angles, verifying fix):
 
 ## Checklist
 
-- [ ] distill.sh 蒸馏引擎通过单元测试 | `bash tests/knowledge/test-distill.sh`
-- [ ] severity 追踪通过测试 | `bash tests/knowledge/test-severity-tracking.sh`
-- [ ] context-enrichment v2 通过测试 | `bash tests/knowledge/test-enrichment-v2.sh`
-- [ ] 端到端集成测试通过 | `bash tests/knowledge/test-integration.sh`
-- [ ] 现有知识库测试不回归 | `bash tests/knowledge/l1-rules-injection.sh && bash tests/knowledge/l1-corruption-recall.sh`
+- [x] distill.sh 蒸馏引擎通过单元测试 | `bash tests/knowledge/test-distill.sh`
+- [x] severity 追踪通过测试 | `bash tests/knowledge/test-severity-tracking.sh`
+- [x] context-enrichment v2 通过测试 | `bash tests/knowledge/test-enrichment-v2.sh`
+- [x] 端到端集成测试通过 | `bash tests/knowledge/test-integration.sh`
+- [x] 现有知识库测试不回归 | `bash tests/knowledge/l1-rules-injection.sh && bash tests/knowledge/l1-corruption-recall.sh`
 - [x] hook 兼容性测试通过 | `bash tests/hooks/test-kiro-compat.sh`
-- [ ] review 质量改进写入 skill 文件 | `grep -q 'Specific Questions' skills/planning/SKILL.md && grep -q 'Source Reading Canary' skills/planning/SKILL.md && grep -q 'pre-review' skills/reviewing/SKILL.md`
+- [x] review 质量改进写入 skill 文件 | `grep -q 'Specific Questions' skills/planning/SKILL.md && grep -q 'Source Reading Canary' skills/planning/SKILL.md && grep -q 'pre-review' skills/reviewing/SKILL.md`
 
 ## Errors
 

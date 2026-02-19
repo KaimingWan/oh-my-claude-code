@@ -86,7 +86,7 @@ if [ "$BEFORE" -gt 0 ] && [ "$AFTER" -eq 0 ]; then
 else
   fail "promoted entries not cleaned (before=$BEFORE, after=$AFTER)"
 fi
-assert_contains "$OUT" "🧹 Cleaned"
+assert_contains "$OUT" "📦 Archived"
 teardown_sandbox
 record_result "R7" "promoted cleaned"
 

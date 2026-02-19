@@ -230,6 +230,15 @@ Source files referenced in plan: [list — reviewer must read before claiming co
 - Do not flag missing implementation details that an executor agent can infer
 - [plan-specific anti-patterns if any]
 
+## Specific Questions for This Plan
+Answer each question with evidence (file:line or shell output). Unanswered = review REJECTED.
+1. [risk question identified by main agent]
+2. [risk question identified by main agent]
+
+## Source Reading Canary
+Answer this BEFORE your analysis. Wrong answer = review REJECTED.
+Q: [question only answerable by reading specific source file, e.g. "What is the first line of function X in file Y?"]
+
 ## Mandatory Source Reading
 Before making ANY claim about code behavior, you MUST:
 1. Read the actual source file (use Bash: cat <file>)

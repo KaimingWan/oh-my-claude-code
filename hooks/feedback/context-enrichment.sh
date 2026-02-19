@@ -22,18 +22,23 @@ if [ -f ".completion-criteria.md" ]; then
   [ "$UNCHECKED" -gt 0 ] && echo "⚠️ Unfinished task: .completion-criteria.md has $UNCHECKED unchecked items. Read it to resume."
 fi
 
+# ── Layer 0: Promoted/resolved episode cleanup (always, cheap) ──
+DISTILL_LIB="$SCRIPT_DIR/../_lib/distill.sh"
+EPISODES_FILE="knowledge/episodes.md"
+RULES_FILE="knowledge/rules.md"
+RULES_DIR=".claude/rules"
+ARCHIVE_DIR="knowledge/archive"
+if [ -f "$DISTILL_LIB" ] && [ -f "$EPISODES_FILE" ]; then
+  source "$DISTILL_LIB"
+  archive_promoted
+fi
+
 # ── Layer 1: Distillation trigger (kb-changed flag) ──
 KB_FLAG="/tmp/kb-changed-${WS_HASH}.flag"
 if [ -f "$KB_FLAG" ]; then
-  DISTILL_LIB="$SCRIPT_DIR/../_lib/distill.sh"
   if [ -f "$DISTILL_LIB" ]; then
-    EPISODES_FILE="knowledge/episodes.md"
-    RULES_FILE="knowledge/rules.md"
-    RULES_DIR=".claude/rules"
-    ARCHIVE_DIR="knowledge/archive"
-    source "$DISTILL_LIB"
+    source "$DISTILL_LIB" 2>/dev/null  # may already be sourced
     distill_check
-    archive_promoted
     section_cap_enforce
   fi
   rm -f "$KB_FLAG"

@@ -12,7 +12,6 @@
 2026-02-13 | active | kiro,shell,semantic | Kiro hook只支持command, 可curl调LLM API做语义判断
 2026-02-13 | active | refactor,capability | 重构过度聚焦新功能, 差点丢失旧框架核心能力
 2026-02-13 | active | nonfunctional,context,recovery | 设计缺失长时间运行挑战: context溢出/中断恢复/过早停止
-2026-02-13 | resolved | skill-chain,skip | 跳过skill-chain直接写代码 [hook: enforce-skill-chain]
 2026-02-13 | active | source-file,shell | is_source_file遗漏.sh/.yaml/.toml/.tf等
 2026-02-14 | active | context-enrichment,soft-prompt | 软提醒被无视x2, 需升级为MANDATORY
 2026-02-14 | active | reviewer,skip,plan | 写完plan跳过reviewer, 无hook=跳过
@@ -29,7 +28,6 @@
 2026-02-15 | active | tdd-checklist,verify,hook,plan | TDD checklist enforcement实现: 4层防护(plan结构检查→reviewer覆盖率审查→执行阶段hook拦截无证据勾选→stop hook重跑verify). 每个checklist项格式`- [ ] desc | \`cmd\``, 勾选前必须有cmd的成功执行记录(10分钟窗口). pipe while loop的exit在subshell中丢失, 必须用process substitution `< <(...)`
 2026-02-16 | active | plan,review,verification | Plan review跳过Round 3: 修复reviewer反馈后自行判定"改好了"跳过验证轮次. 违反"证据→声明"原则. 规则: fix后必须re-dispatch reviewer, all APPROVE in one round才能停, 不能自行判定通过
 2026-02-16 | active | plan,review,subagent,context | Plan review packet太精简(只传header+checklist+3句摘要)导致reviewer误判率高: 看不到Task完整代码/执行顺序/Create标注. 修复: 改为传完整plan文件给reviewer, 避免摘要过程丢失细节
-2026-02-16 | resolved | subagent,reviewer,dispatch,bug | ~~错误归因: 以为省略agent_name找kiro_default不存在~~ 真因: availableAgents白名单只有["researcher","reviewer"], 内置default subagent被白名单拦截. Kiro官方文档确认省略agent_name用内置default subagent(kiro.dev/docs/cli/chat/subagents). reviewer dispatch仍需agent_name:"reviewer"
 2026-02-18 | active | hooks,ws_hash,verify_log | WS_HASH不在common.sh里: 每个hook各自inline定义`WS_HASH=$(pwd | shasum 2>/dev/null | cut -c1-8 || echo "default")`(SHA-1, 非SHA-256). 文件: post-bash.sh:17, pre-write.sh:216. 任何需要读verify-log的外部脚本必须用相同计算, 否则路径不匹配导致永远找不到log
 2026-02-18 | active | hooks,block-outside-workspace,tmp | block-outside-workspace.sh OUTSIDE_WRITE_PATTERNS第60行有`'>+\s*/tmp/'`, 即`echo x > /tmp/foo`会被拦截. 4个reviewer中1个反复错读(漏掉第60行)导致P1争议. 教训: review声称代码行为与直觉矛盾时必须主agent亲自读源文件验证
 2026-02-18 | active | bash,sed,macos,portability | macOS BSD sed -i不带extension suffix会报错(非修改文件), 导致测试假阳性. 跨平台JSON内容修改应用`perl -i -pe 's/a/b/'`代替`sed -i`. block-sed-json pattern`(sed|awk|perl).*\.json`同样命中perl, 行为一致
