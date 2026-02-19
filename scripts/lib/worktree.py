@@ -53,27 +53,17 @@ class WorktreeManager:
         worktree_path = self.base_dir / f"ralph-{name}"
         branch_name = f"ralph-worker-{name}"
 
-        try:
-            subprocess.run(["git", "worktree", "remove", "--force", str(worktree_path)],
-                           cwd=self.project_root)
-        except subprocess.CalledProcessError:
-            pass
-
-        try:
-            subprocess.run(["git", "branch", "-D", branch_name], cwd=self.project_root,
-                           check=True)
-        except subprocess.CalledProcessError:
-            pass
+        subprocess.run(["git", "worktree", "remove", "--force", str(worktree_path)],
+                       cwd=self.project_root, capture_output=True)
+        subprocess.run(["git", "branch", "-D", branch_name], cwd=self.project_root,
+                       capture_output=True)
 
     def cleanup_all(self):
         if self.base_dir.exists():
             for item in self.base_dir.iterdir():
                 if item.is_dir() and item.name.startswith("ralph-"):
                     name = item.name[6:]  # Remove "ralph-" prefix
-                    try:
-                        self.remove(name)
-                    except subprocess.CalledProcessError:
-                        pass
+                    self.remove(name)
         subprocess.run(["git", "worktree", "prune"], cwd=self.project_root)
 
     def cleanup_stale(self):
@@ -83,10 +73,9 @@ class WorktreeManager:
         if self.base_dir.exists():
             for item in self.base_dir.iterdir():
                 if item.is_dir() and item.name.startswith("ralph-"):
-                    # Remove from git worktree registry before deleting directory
                     subprocess.run(
                         ["git", "worktree", "remove", "--force", str(item)],
-                        cwd=self.project_root
+                        cwd=self.project_root, capture_output=True
                     )
                     if item.exists():
                         shutil.rmtree(item)
@@ -97,4 +86,5 @@ class WorktreeManager:
         for line in result.stdout.splitlines():
             branch = line.strip()
             if branch:
-                subprocess.run(["git", "branch", "-D", branch], cwd=self.project_root)
+                subprocess.run(["git", "branch", "-D", branch],
+                               cwd=self.project_root, capture_output=True)
