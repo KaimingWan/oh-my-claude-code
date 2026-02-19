@@ -158,6 +158,19 @@ def write_summary(exit_code: int):
 
 
 # --- Build worker prompt ---
+def _extract_verify_cmd(section_text: str) -> str:
+    """Extract verify command from task section. Supports inline backtick and fenced code block."""
+    # Try inline: **Verify:** `cmd`
+    m = re.search(r'\*\*Verify:\*\*\s*`([^`]+)`', section_text)
+    if m:
+        return m.group(1)
+    # Try fenced: **Verify:**\n```bash\ncmd\n```
+    m = re.search(r'\*\*Verify:\*\*\s*\n```(?:bash)?\n(.+?)\n```', section_text, re.DOTALL)
+    if m:
+        return m.group(1).strip()
+    return "echo 'no verify command found'"
+
+
 def build_worker_prompt(task_name: str, task_files: list, verify_cmd: str, plan_path: str) -> str:
     return f"""Task: {task_name}
 Files: {', '.join(task_files)}
@@ -323,9 +336,8 @@ def run_parallel_batch(batch: Batch, iteration: int) -> list[str]:
             print(f"⚠️  Failed to create worktree for task {task.number}: {e}", flush=True)
             continue
 
-        # Extract verify command from section_text (line starting with **Verify:**)
-        verify_match = re.search(r'\*\*Verify:\*\*\s*`(.+?)`', task.section_text)
-        verify_cmd = verify_match.group(1) if verify_match else "echo 'no verify command found'"
+        # Extract verify command from section_text (inline backtick or fenced code block)
+        verify_cmd = _extract_verify_cmd(task.section_text)
         prompt = build_worker_prompt(task.name, sorted(task.files), verify_cmd, str(plan_path))
         if base_cmd[0] == "claude":
             cmd = [base_cmd[0], "-p", prompt] + base_cmd[2:]
@@ -382,9 +394,8 @@ def run_parallel_batch(batch: Batch, iteration: int) -> list[str]:
             # Auto-verify and check off checklist item
             task = task_map.get(name)
             if task:
-                verify_match = re.search(r'\*\*Verify:\*\*\s*`(.+?)`', task.section_text)
-                if verify_match:
-                    vcmd = verify_match.group(1)
+                vcmd = _extract_verify_cmd(task.section_text)
+                if vcmd != "echo 'no verify command found'":
                     try:
                         r = subprocess.run(vcmd, shell=True, capture_output=True, text=True, timeout=30,
                                            cwd=str(PROJECT_ROOT))
