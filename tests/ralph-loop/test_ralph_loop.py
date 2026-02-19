@@ -116,18 +116,13 @@ def test_lock_cleanup_on_signal(tmp_path):
 
 
 # --- Task 4 + 5 tests: batch prompt + banner ---
-from scripts.lib.plan import TaskInfo
+from scripts.lib.plan import TaskInfo, PlanFile
 from scripts.lib.scheduler import Batch
-
-
-def _import_build_batch_prompt():
-    """Return build_batch_prompt from ralph_loop (direct import)."""
-    from scripts.ralph_loop import build_batch_prompt
-    return build_batch_prompt
+from scripts.ralph_loop import build_batch_prompt, build_worker_prompt, build_init_prompt, build_prompt
 
 
 def test_parallel_prompt_contains_dispatch():
-    fn = _import_build_batch_prompt()
+    fn = build_batch_prompt
     assert fn is not None, "build_batch_prompt not found in ralph_loop.py"
     batch = Batch(tasks=[
         TaskInfo(1, "Parser", {"a.py"}, ""),
@@ -141,7 +136,7 @@ def test_parallel_prompt_contains_dispatch():
 
 
 def test_sequential_prompt_no_dispatch():
-    fn = _import_build_batch_prompt()
+    fn = build_batch_prompt
     assert fn is not None, "build_batch_prompt not found in ralph_loop.py"
     batch = Batch(tasks=[
         TaskInfo(1, "Parser", {"a.py"}, ""),
@@ -193,7 +188,7 @@ def test_fallback_no_task_structure(tmp_path):
 
 
 def test_parallel_prompt_structure():
-    fn = _import_build_batch_prompt()
+    fn = build_batch_prompt
     assert fn is not None
     batch = Batch(tasks=[
         TaskInfo(1, 'Alpha', {'a.py', 'b.py'}, ''),
@@ -215,7 +210,7 @@ def test_parallel_prompt_structure():
 
 
 def test_sequential_prompt_structure():
-    fn = _import_build_batch_prompt()
+    fn = build_batch_prompt
     assert fn is not None
     batch = Batch(tasks=[
         TaskInfo(1, 'Alpha', {'a.py', 'b.py'}, '')
@@ -229,7 +224,7 @@ def test_sequential_prompt_structure():
 
 
 def test_prompt_iteration_number():
-    fn = _import_build_batch_prompt()
+    fn = build_batch_prompt
     assert fn is not None
     batch = Batch(tasks=[TaskInfo(1, 'Test', {'test.py'}, '')], parallel=False)
     prompt = fn(batch, Path('docs/plans/test.md'), 7)
@@ -237,7 +232,7 @@ def test_prompt_iteration_number():
 
 
 def test_prompt_file_paths():
-    fn = _import_build_batch_prompt()
+    fn = build_batch_prompt
     assert fn is not None
     batch = Batch(tasks=[TaskInfo(1, 'Test', {'src/main.py', 'tests/test_main.py'}, '')], parallel=False)
     prompt = fn(batch, Path('docs/plans/test.md'), 1)
@@ -656,27 +651,8 @@ def test_no_cli_found():
         detect_cli()
 
 
-def _import_build_init_prompt(plan_obj=None, plan_path_obj=None, project_root=None):
-    """Return a bound wrapper of build_init_prompt with test-supplied plan/path/root."""
-    from scripts.ralph_loop import build_init_prompt
-
-    def _bound():
-        return build_init_prompt(plan_obj, plan_path_obj, project_root or Path("."), skip_precheck="1")
-
-    return _bound
-
-
-def _import_build_prompt():
-    """Return build_prompt from ralph_loop (direct import)."""
-    from scripts.ralph_loop import build_prompt
-    return build_prompt
-
-
 def test_init_prompt_differs_from_regular(tmp_path):
     """build_init_prompt contains 'FIRST iteration'; build_prompt does not."""
-    from scripts.lib.plan import PlanFile
-    from scripts.ralph_loop import build_init_prompt, build_prompt
-
     plan_file = tmp_path / "plan.md"
     plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
     pf = PlanFile(plan_file)
@@ -738,11 +714,6 @@ def test_no_orphan_after_ralph_killed(tmp_path):
 
 def test_worker_prompt_no_plan_update():
     """Test that build_worker_prompt excludes plan update instructions."""
-    from conftest import import_ralph_fn
-    
-    build_worker_prompt = import_ralph_fn("build_worker_prompt")
-    assert build_worker_prompt is not None, "build_worker_prompt not found"
-    
     prompt = build_worker_prompt("Test Task", ["file1.py", "file2.py"], "pytest", "docs/plans/test.md")
     
     # Should NOT contain plan-update or progress keywords
