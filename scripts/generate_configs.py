@@ -5,6 +5,7 @@ Replaces generate-platform-configs.sh. Outputs:
   .claude/settings.json
   .kiro/agents/{pilot,reviewer,researcher,executor}.json
 """
+import argparse
 import json
 import re
 import sys
@@ -58,6 +59,43 @@ def validate() -> int:
         return 1
     print("✅ Hook registry is consistent with files on disk.")
     return 0
+
+
+# ── Overlay support ───────────────────────────────────────────────────────
+
+def load_overlay(overlay_path: Path, project_root: Path) -> tuple[list, dict]:
+    """Load and validate .omcc-overlay.json, return (extra_skills, extra_hooks).
+
+    extra_skills: list of skill paths (relative to project_root) whose SKILL.md exists
+    extra_hooks: dict mapping event name to list of hook command dicts
+    """
+    if not overlay_path.exists():
+        raise FileNotFoundError(f"Overlay file not found: {overlay_path}")
+
+    try:
+        data = json.loads(overlay_path.read_text())
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in overlay file {overlay_path}: {e}") from e
+
+    extra_skills = data.get("extra_skills", [])
+    extra_hooks = data.get("extra_hooks", {})
+
+    # Validate extra_skills: each must have a SKILL.md
+    for skill_path in extra_skills:
+        skill_md = project_root / skill_path / "SKILL.md"
+        if not skill_md.exists():
+            raise ValueError(f"extra_skills path missing SKILL.md: {project_root / skill_path}")
+
+    # Validate extra_hooks: each command path must exist
+    for event, hooks in extra_hooks.items():
+        for hook in hooks:
+            cmd = hook.get("command", "")
+            # Only validate paths (not echo/inline commands)
+            cmd_path = project_root / cmd
+            if not cmd.startswith("echo") and not cmd_path.exists():
+                raise ValueError(f"extra_hooks command not found: {cmd_path}")
+
+    return extra_skills, extra_hooks
 
 
 # ── Shared hook definitions ──────────────────────────────────────────────
@@ -130,39 +168,45 @@ def claude_settings() -> dict:
     }
 
 
-def _main_agent_resources() -> list:
-    return [
+def _main_agent_resources(extra_skills: list | None = None) -> list:
+    resources = [
         "file://AGENTS.md",
         "file://knowledge/INDEX.md",
         "skill://skills/planning/SKILL.md",
         "skill://skills/reviewing/SKILL.md",
     ]
+    for skill_path in (extra_skills or []):
+        resources.append(f"skill://{skill_path}/SKILL.md")
+    return resources
 
 
-def default_agent() -> dict:
+def default_agent(extra_skills: list | None = None, extra_hooks: dict | None = None) -> dict:
+    hooks = {
+        "userPromptSubmit": [
+            {"command": "hooks/feedback/correction-detect.sh"},
+            {"command": "hooks/feedback/session-init.sh"},
+            {"command": "hooks/feedback/context-enrichment.sh"},
+        ],
+        "preToolUse": SECURITY_HOOKS_BASH + [
+            {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
+            {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
+            {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
+        ],
+        "postToolUse": [
+            {"matcher": "fs_write", "command": "hooks/feedback/post-write.sh"},
+            {"matcher": "execute_bash", "command": "hooks/feedback/post-bash.sh"},
+        ],
+        "stop": [{"command": "hooks/feedback/verify-completion.sh"}],
+    }
+    for event, hook_list in (extra_hooks or {}).items():
+        hooks.setdefault(event, []).extend(hook_list)
     return {
         "name": "default",
         "description": "Main orchestrator agent with deterministic workflow gates",
         "tools": ["*"],
         "allowedTools": ["*"],
-        "resources": _main_agent_resources(),
-        "hooks": {
-            "userPromptSubmit": [
-                {"command": "hooks/feedback/correction-detect.sh"},
-                {"command": "hooks/feedback/session-init.sh"},
-                {"command": "hooks/feedback/context-enrichment.sh"},
-            ],
-            "preToolUse": SECURITY_HOOKS_BASH + [
-                {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
-                {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
-                {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
-            ],
-            "postToolUse": [
-                {"matcher": "fs_write", "command": "hooks/feedback/post-write.sh"},
-                {"matcher": "execute_bash", "command": "hooks/feedback/post-bash.sh"},
-            ],
-            "stop": [{"command": "hooks/feedback/verify-completion.sh"}],
-        },
+        "resources": _main_agent_resources(extra_skills),
+        "hooks": hooks,
         "toolsSettings": {
             "subagent": {
                 "availableAgents": ["researcher", "reviewer", "executor"],
@@ -176,31 +220,34 @@ def default_agent() -> dict:
     }
 
 
-def pilot_agent() -> dict:
+def pilot_agent(extra_skills: list | None = None, extra_hooks: dict | None = None) -> dict:
+    hooks = {
+        "userPromptSubmit": [
+            {"command": "hooks/feedback/correction-detect.sh"},
+            {"command": "hooks/feedback/session-init.sh"},
+            {"command": "hooks/feedback/context-enrichment.sh"},
+        ],
+        "preToolUse": SECURITY_HOOKS_BASH + [
+            {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
+            {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
+            {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
+            {"matcher": "execute_bash", "command": "hooks/gate/require-regression.sh"},
+        ],
+        "postToolUse": [
+            {"matcher": "fs_write", "command": "hooks/feedback/post-write.sh"},
+            {"matcher": "execute_bash", "command": "hooks/feedback/post-bash.sh"},
+        ],
+        "stop": [{"command": "hooks/feedback/verify-completion.sh"}],
+    }
+    for event, hook_list in (extra_hooks or {}).items():
+        hooks.setdefault(event, []).extend(hook_list)
     return {
         "name": "pilot",
         "description": "Main orchestrator agent with deterministic workflow gates",
         "tools": ["*"],
         "allowedTools": ["*"],
-        "resources": _main_agent_resources(),
-        "hooks": {
-            "userPromptSubmit": [
-                {"command": "hooks/feedback/correction-detect.sh"},
-                {"command": "hooks/feedback/session-init.sh"},
-                {"command": "hooks/feedback/context-enrichment.sh"},
-            ],
-            "preToolUse": SECURITY_HOOKS_BASH + [
-                {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
-                {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
-                {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
-                {"matcher": "execute_bash", "command": "hooks/gate/require-regression.sh"},
-            ],
-            "postToolUse": [
-                {"matcher": "fs_write", "command": "hooks/feedback/post-write.sh"},
-                {"matcher": "execute_bash", "command": "hooks/feedback/post-bash.sh"},
-            ],
-            "stop": [{"command": "hooks/feedback/verify-completion.sh"}],
-        },
+        "resources": _main_agent_resources(extra_skills),
+        "hooks": hooks,
         "toolsSettings": {
             "subagent": {
                 "availableAgents": ["researcher", "reviewer", "executor"],
@@ -401,17 +448,51 @@ hooks:
 """
 
 
-def main() -> int:
-    if validate() != 0:
-        print("\n🚫 Fix inconsistencies before generating configs.")
-        return 1
-    
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate CC + Kiro agent configs.")
+    parser.add_argument("--project-root", type=Path, default=None,
+                        help="Project root directory (default: repo root)")
+    parser.add_argument("--overlay", type=Path, default=None,
+                        help="Path to .omcc-overlay.json with extra_skills/extra_hooks")
+    parser.add_argument("--skip-validate", action="store_true",
+                        help="Skip hook registry validation (for use with external --project-root)")
+    parser.add_argument("--validate", action="store_true",
+                        help="Only run validation, do not generate configs")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    global PROJECT_ROOT
+
+    args = parse_args(argv)
+
+    if args.project_root is not None:
+        PROJECT_ROOT = args.project_root.resolve()
+
+    if args.validate:
+        return validate()
+
+    if not args.skip_validate:
+        if validate() != 0:
+            print("\n🚫 Fix inconsistencies before generating configs.")
+            return 1
+
+    # Load overlay if provided
+    extra_skills: list = []
+    extra_hooks: dict = {}
+    if args.overlay is not None:
+        try:
+            extra_skills, extra_hooks = load_overlay(args.overlay, PROJECT_ROOT)
+        except (FileNotFoundError, ValueError) as e:
+            print(f"❌ Overlay error: {e}")
+            return 1
+
     print("🔧 Generating platform configs from unified source...")
 
     targets = [
         (PROJECT_ROOT / ".claude" / "settings.json", claude_settings()),
-        (PROJECT_ROOT / ".kiro" / "agents" / "default.json", default_agent()),
-        (PROJECT_ROOT / ".kiro" / "agents" / "pilot.json", pilot_agent()),
+        (PROJECT_ROOT / ".kiro" / "agents" / "default.json", default_agent(extra_skills, extra_hooks)),
+        (PROJECT_ROOT / ".kiro" / "agents" / "pilot.json", pilot_agent(extra_skills, extra_hooks)),
         (PROJECT_ROOT / ".kiro" / "agents" / "reviewer.json", reviewer_agent()),
         (PROJECT_ROOT / ".kiro" / "agents" / "researcher.json", researcher_agent()),
         (PROJECT_ROOT / ".kiro" / "agents" / "executor.json", executor_agent()),
@@ -447,6 +528,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    if "--validate" in sys.argv:
-        sys.exit(validate())
     sys.exit(main())
