@@ -33,6 +33,7 @@ HEARTBEAT_INTERVAL = int(os.environ.get("RALPH_HEARTBEAT_INTERVAL", "60"))
 KIRO_CMD = os.environ.get("RALPH_KIRO_CMD", "")
 SKIP_DIRTY_CHECK = os.environ.get("RALPH_SKIP_DIRTY_CHECK", "")
 SKIP_PRECHECK = os.environ.get("RALPH_SKIP_PRECHECK", "")
+STALL_TIMEOUT = int(os.environ.get("RALPH_STALL_TIMEOUT", "300"))
 MAX_STALE = 3
 
 LOG_FILE = Path(".ralph-loop.log")
@@ -93,6 +94,8 @@ LOCK.acquire()
 # --- Heartbeat thread ---
 def _heartbeat(proc: subprocess.Popen, iteration: int, stop_event: threading.Event):
     elapsed = 0
+    stall_elapsed = 0
+    last_checked = -1
     while not stop_event.wait(HEARTBEAT_INTERVAL):
         if proc.poll() is not None:
             break
@@ -101,6 +104,19 @@ def _heartbeat(proc: subprocess.Popen, iteration: int, stop_event: threading.Eve
         ts = datetime.now().strftime("%H:%M:%S")
         print(f"💓 [{ts}] Iteration {iteration} — {plan.checked}/{plan.total} done (elapsed {elapsed}s)",
               flush=True)
+        if plan.checked == last_checked:
+            stall_elapsed += HEARTBEAT_INTERVAL
+            if stall_elapsed >= STALL_TIMEOUT:
+                print(f"🛑 [{ts}] Stall detected: no progress for {stall_elapsed}s — killing process",
+                      flush=True)
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                except (ProcessLookupError, OSError):
+                    pass
+                break
+        else:
+            stall_elapsed = 0
+            last_checked = plan.checked
 
 
 # --- Summary writer ---
