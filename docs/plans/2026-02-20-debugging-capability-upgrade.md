@@ -216,17 +216,17 @@ Expected: PASS
 
 ## Checklist
 
-- [ ] debugging skill 包含 Tool Decision Matrix | `grep -q 'Tool Decision Matrix' skills/debugging/SKILL.md`
-- [ ] debugging skill Phase 1 引用 LSP 工具 | `python3 -c "t=open('skills/debugging/SKILL.md').read(); p1=t[t.index('### Phase 1'):t.index('### Phase 2')]; assert all(x in p1 for x in ['get_diagnostics','search_symbols','find_references'])"`
-- [ ] debugging skill 要求诊断证据 | `grep -q 'Diagnostic Evidence' skills/debugging/SKILL.md`
-- [ ] debugging skill 包含三铁律 | `grep -q 'goto_definition' skills/debugging/SKILL.md && grep -q 'find_references' skills/debugging/SKILL.md`
-- [ ] reference.md 包含工具 recipes | `python3 -c "t=open('skills/debugging/reference.md').read(); assert all(x in t for x in ['search_symbols','goto_definition','find_references','get_hover','get_diagnostics'])"`
-- [ ] debugging rules 包含 LSP 要求 | `grep -q 'get_diagnostics' .claude/rules/debugging.md && grep -qE '(LSP|lsp)' .claude/rules/debugging.md`
-- [ ] kiro code-analysis 覆盖调试场景 | `grep -qE '(调试|debug)' .kiro/rules/code-analysis.md && grep -q 'get_diagnostics' .kiro/rules/code-analysis.md`
-- [ ] context-enrichment 检测中文调试 | `echo '{"prompt":"测试报错了"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '🐛'`
-- [ ] context-enrichment 检测英文调试 | `echo '{"prompt":"tests are failing"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '🐛'`
-- [ ] context-enrichment 不误触发 | `! echo '{"prompt":"帮我写个新功能"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '🐛'`
-- [ ] 全部测试通过 | `python3 -m pytest tests/test_debugging_skill.py tests/test_debugging_rules.py tests/test_debug_hook_trigger.py -v`
+- [x] debugging skill 包含 Tool Decision Matrix | `grep -q 'Tool Decision Matrix' skills/debugging/SKILL.md`
+- [x] debugging skill Phase 1 引用 LSP 工具 | `python3 -c "t=open('skills/debugging/SKILL.md').read(); p1=t[t.index('### Phase 1'):t.index('### Phase 2')]; assert all(x in p1 for x in ['get_diagnostics','search_symbols','find_references'])"`
+- [x] debugging skill 要求诊断证据 | `grep -q 'Diagnostic Evidence' skills/debugging/SKILL.md`
+- [x] debugging skill 包含三铁律 | `grep -q 'goto_definition' skills/debugging/SKILL.md && grep -q 'find_references' skills/debugging/SKILL.md`
+- [x] reference.md 包含工具 recipes | `python3 -c "t=open('skills/debugging/reference.md').read(); assert all(x in t for x in ['search_symbols','goto_definition','find_references','get_hover','get_diagnostics'])"`
+- [x] debugging rules 包含 LSP 要求 | `grep -q 'get_diagnostics' .claude/rules/debugging.md && grep -qE '(LSP|lsp)' .claude/rules/debugging.md`
+- [x] kiro code-analysis 覆盖调试场景 | `grep -qE '(调试|debug)' .kiro/rules/code-analysis.md && grep -q 'get_diagnostics' .kiro/rules/code-analysis.md`
+- [x] context-enrichment 检测中文调试 | `echo '{"prompt":"测试报错了"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '🐛'`
+- [x] context-enrichment 检测英文调试 | `echo '{"prompt":"tests are failing"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '🐛'`
+- [x] context-enrichment 不误触发 | `! echo '{"prompt":"帮我写个新功能"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q '🐛'`
+- [x] 全部测试通过 | `python3 -m pytest tests/test_debugging_skill.py tests/test_debugging_rules.py tests/test_debug_hook_trigger.py -v`
 
 ## Review
 
