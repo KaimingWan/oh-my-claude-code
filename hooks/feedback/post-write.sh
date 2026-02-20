@@ -40,7 +40,7 @@ run_test() {
 
   TEST_CMD=$(detect_test_command)
   if [ -n "$TEST_CMD" ]; then
-    TEST_OUTPUT=$(eval "$TEST_CMD" 2>&1)
+    TEST_OUTPUT=$(bash -c "$TEST_CMD" 2>&1)
     if [ $? -ne 0 ]; then
       echo "⚠️ Tests failed after editing $FILE:" >&2
       echo "$TEST_OUTPUT" | tail -10 >&2
