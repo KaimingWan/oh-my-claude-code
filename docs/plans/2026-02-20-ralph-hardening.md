@@ -248,10 +248,10 @@ Expected: ALL PASS
 
 ## Checklist
 
-- [ ] LockFile 使用 fcntl.flock 实现真互斥 | `grep -q "fcntl.flock" scripts/lib/lock.py && python3 -c "from scripts.lib.lock import LockFile; print('ok')"`
-- [ ] try_acquire 方法存在且可调用 | `python3 -c "from scripts.lib.lock import LockFile; assert hasattr(LockFile, 'try_acquire'); print('ok')"`
-- [ ] 两个进程不能同时持有锁 | `python3 -m pytest tests/ralph-loop/test_lock.py::test_flock_mutual_exclusion -v`
-- [ ] worktree merge 失败后主分支干净 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_failure_leaves_clean_state -v`
+- [x] LockFile 使用 fcntl.flock 实现真互斥 | `grep -q "fcntl.flock" scripts/lib/lock.py && python3 -c "from scripts.lib.lock import LockFile; print('ok')"`
+- [x] try_acquire 方法存在且可调用 | `python3 -c "from scripts.lib.lock import LockFile; assert hasattr(LockFile, 'try_acquire'); print('ok')"`
+- [x] 两个进程不能同时持有锁 | `python3 -m pytest tests/ralph-loop/test_lock.py::test_flock_mutual_exclusion -v`
+- [x] worktree merge 失败后主分支干净 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_failure_leaves_clean_state -v`
 - [ ] git_retry 模块存在且可导入 | `python3 -c "from scripts.lib.git_retry import git_run; print('ok')"`
 - [ ] git_retry 在 lock 错误时重试 | `python3 -m pytest tests/ralph-loop/test_git_retry.py::test_git_run_retries_on_lock -v`
 - [ ] git_retry 超过最大重试次数后抛异常 | `python3 -m pytest tests/ralph-loop/test_git_retry.py::test_git_run_gives_up_after_max_retries -v`
@@ -259,7 +259,7 @@ Expected: ALL PASS
 - [ ] build_batch_prompt 接受 PlanFile 参数 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_build_batch_prompt_uses_real_plan -v`
 - [ ] parse_config 函数存在且返回正确默认值 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_parse_config_defaults -v`
 - [ ] validate_plan 对缺失文件抛 SystemExit | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_validate_plan_missing -v`
-- [ ] cleanup_stale 保留活跃 worktree | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_cleanup_stale_preserves_active_worktrees -v`
+- [x] cleanup_stale 保留活跃 worktree | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_cleanup_stale_preserves_active_worktrees -v`
 - [ ] cleanup handler 空列表不崩溃 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_cleanup_handler_with_empty_procs -v`
 - [ ] 第二个 ralph 实例被锁阻止 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_flock_prevents_double_ralph -v`
 - [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
