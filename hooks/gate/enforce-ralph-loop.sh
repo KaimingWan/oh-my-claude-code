@@ -85,6 +85,13 @@ if [ "$MODE" = "bash" ]; then
   # Allow ralph-loop invocations
   echo "$CMD" | grep -qE 'ralph[-_.]loop|ralph_loop' && exit 0
 
+  # Brainstorm gate: block bash commands that create plan files without brainstorm confirmation
+  if echo "$CMD" | grep -qE 'docs/plans/.*\.md' && [ ! -f ".brainstorm-confirmed" ] && [ ! -f ".skip-plan" ]; then
+    if echo "$CMD" | grep -qE '(open|write|>|create)'; then
+      block_msg "Creating plan via bash without brainstorm confirmation"
+    fi
+  fi
+
   # Block commands that delete/overwrite .active
   echo "$CMD" | grep -qE '(rm|>|>>|mv|cp).*\.active' && block_msg "Cannot manipulate .active file"
 
