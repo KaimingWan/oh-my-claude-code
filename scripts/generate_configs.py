@@ -182,21 +182,24 @@ def _main_agent_resources(extra_skills: list | None = None) -> list:
 
 def _build_main_agent(
     name: str,
-    extra_pre_hooks: list | None = None,
+    include_regression: bool = False,
     extra_skills: list | None = None,
     extra_hooks: dict | None = None,
 ) -> dict:
+    pre_tool_use = SECURITY_HOOKS_BASH + [
+        {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
+        {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
+        {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
+    ]
+    if include_regression:
+        pre_tool_use.append({"matcher": "execute_bash", "command": "hooks/gate/require-regression.sh"})
     hooks = {
         "userPromptSubmit": [
             {"command": "hooks/feedback/correction-detect.sh"},
             {"command": "hooks/feedback/session-init.sh"},
             {"command": "hooks/feedback/context-enrichment.sh"},
         ],
-        "preToolUse": SECURITY_HOOKS_BASH + [
-            {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
-            {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
-            {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
-        ] + (extra_pre_hooks or []),
+        "preToolUse": pre_tool_use,
         "postToolUse": [
             {"matcher": "fs_write", "command": "hooks/feedback/post-write.sh"},
             {"matcher": "execute_bash", "command": "hooks/feedback/post-bash.sh"},
@@ -226,16 +229,11 @@ def _build_main_agent(
 
 
 def default_agent(extra_skills: list | None = None, extra_hooks: dict | None = None) -> dict:
-    return _build_main_agent("default", extra_skills=extra_skills, extra_hooks=extra_hooks)
+    return _build_main_agent("default", include_regression=False, extra_skills=extra_skills, extra_hooks=extra_hooks)
 
 
 def pilot_agent(extra_skills: list | None = None, extra_hooks: dict | None = None) -> dict:
-    return _build_main_agent(
-        "pilot",
-        extra_pre_hooks=[{"matcher": "execute_bash", "command": "hooks/gate/require-regression.sh"}],
-        extra_skills=extra_skills,
-        extra_hooks=extra_hooks,
-    )
+    return _build_main_agent("pilot", include_regression=True, extra_skills=extra_skills, extra_hooks=extra_hooks)
 
 
 def reviewer_agent() -> dict:

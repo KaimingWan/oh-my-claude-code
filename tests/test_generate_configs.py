@@ -82,9 +82,20 @@ def test_validate_hook_registry():
 
 
 def test_build_main_agent_exists():
-    """pilot and default agents share _build_main_agent; only name and hooks differ."""
-    # _build_main_agent is callable
-    assert callable(_build_main_agent)
+    """_build_main_agent accepts include_regression flag; pilot and default share it."""
+    # Direct API: include_regression controls require-regression hook
+    result = _build_main_agent("test", include_regression=False)
+    assert result["name"] == "test"
+    assert "hooks" in result
+
+    result_with_regression = _build_main_agent("test", include_regression=True)
+    cmds = [h.get("command", "") for h in result_with_regression["hooks"]["preToolUse"]]
+    assert any("require-regression" in c for c in cmds)
+
+    result_without = _build_main_agent("test", include_regression=False)
+    cmds = [h.get("command", "") for h in result_without["hooks"]["preToolUse"]]
+    assert not any("require-regression" in c for c in cmds)
+
     # Both agents use it — verify structural equality of shared fields
     d = default_agent()
     p = pilot_agent()
