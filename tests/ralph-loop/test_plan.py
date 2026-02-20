@@ -199,7 +199,8 @@ def test_task_count_mismatch_more_checklist(tmp_path):
     p.write_text(plan)
     pf = PlanFile(p)
     result = pf.unchecked_tasks()
-    assert len(result) == 2
+    # No checklist items match task names → returns empty (fallback to sequential prompt)
+    assert len(result) == 0
 
 
 def test_task_count_mismatch_fewer_checklist(tmp_path):
@@ -489,8 +490,8 @@ def test_unchecked_tasks_no_match_fallback(tmp_path):
     p.write_text(plan)
     pf = PlanFile(p)
     result = pf.unchecked_tasks()
-    # No task name keywords match the checklist items → safe fallback returns all tasks
-    assert len(result) == 2, f"Should return all tasks as fallback, got {len(result)}"
+    # No task name keywords match the checklist items → returns empty (sequential fallback)
+    assert len(result) == 0, f"Should return 0 tasks, got {len(result)}"
 
 def test_unchecked_tasks_skips_completed_with_unmatched_items(tmp_path):
     """When unmatched checklist items exist but all tasks are done, return empty."""
