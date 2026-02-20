@@ -320,3 +320,12 @@ def test_no_broad_exception_handlers():
                     f'Broad except {node.type.id} found at line {node.lineno}. '
                     f'Use subprocess.CalledProcessError instead.'
                 )
+
+
+def test_merge_no_changes_returns_true(git_repo):
+    """merge() should return True (not False) when worker made no changes."""
+    wm = WorktreeManager()
+    wm.create("empty")
+    result = wm.merge("empty")
+    assert result is True, "Empty merge should succeed, not be treated as conflict"
+

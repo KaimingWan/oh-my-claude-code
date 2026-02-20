@@ -36,6 +36,12 @@ class WorktreeManager:
             subprocess.run(["git", "restore", "docs/plans/"],
                            cwd=self.project_root, capture_output=True)
 
+            # Check if there are staged changes to commit
+            diff = subprocess.run(["git", "diff", "--cached", "--quiet"],
+                                  cwd=self.project_root, capture_output=True)
+            if diff.returncode == 0:
+                # Nothing staged — worker made no changes
+                return True
             git_run(["git", "commit", "-m", f"squash: merge {branch_name}"],
                     cwd=self.project_root)
 
