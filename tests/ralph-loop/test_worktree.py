@@ -247,3 +247,59 @@ def test_remove_already_removed(git_repo):
         wm.remove("remove-test")
     finally:
         wm.cleanup_all()
+
+
+def test_merge_failure_leaves_clean_state(git_repo):
+    """After a failed squash merge, the main branch must be clean (no staged/unstaged changes)."""
+    wm = WorktreeManager()
+    try:
+        worktree_path = wm.create("clean-state-test")
+
+        # Modify README in worktree
+        worktree_readme = worktree_path / "README.md"
+        worktree_readme.write_text("# Modified in worktree")
+        subprocess.run(["git", "add", "README.md"], cwd=worktree_path, check=True)
+        subprocess.run(["git", "commit", "-m", "Worktree change"], cwd=worktree_path, check=True)
+
+        # Modify same file in main to create a conflict
+        main_readme = git_repo / "README.md"
+        main_readme.write_text("# Modified in main")
+        subprocess.run(["git", "add", "README.md"], check=True)
+        subprocess.run(["git", "commit", "-m", "Main change"], check=True)
+
+        # Merge should fail due to conflict
+        result = wm.merge("clean-state-test")
+        assert result is False
+
+        # Main branch must be clean after failed merge (no staged or modified tracked files)
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"],
+            capture_output=True, text=True, cwd=git_repo
+        )
+        assert status.stdout.strip() == "", (
+            f"Main branch is dirty after failed merge:\n{status.stdout}"
+        )
+    finally:
+        wm.cleanup_all()
+
+
+def test_cleanup_stale_preserves_active_worktrees(git_repo):
+    """cleanup_stale must NOT remove worktrees that are still active/registered."""
+    wm = WorktreeManager()
+    try:
+        active_path = wm.create("active-wt")
+        assert active_path.exists()
+
+        # Create a stale directory (not registered as a git worktree)
+        stale_dir = wm.base_dir / "ralph-stale-ghost"
+        stale_dir.mkdir(parents=True)
+
+        wm.cleanup_stale()
+
+        # Active worktree must still exist
+        assert active_path.exists(), "Active worktree was incorrectly removed by cleanup_stale"
+
+        # Stale directory must be gone
+        assert not stale_dir.exists(), "Stale directory was not cleaned up"
+    finally:
+        wm.cleanup_all()
