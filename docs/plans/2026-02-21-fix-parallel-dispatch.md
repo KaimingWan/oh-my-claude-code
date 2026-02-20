@@ -31,8 +31,8 @@ Files: b.py
 ## Checklist
 - [x] parser fixed | `echo ok`
 - [x] lexer fixed | `echo ok`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ -v`
-- [ ] 全量测试通过 | `python3 -m pytest tests/ -v`
+- [x] 回归测试通过 | `python3 -m pytest tests/ -v`
+- [x] 全量测试通过 | `python3 -m pytest tests/ -v`
 """)
     from scripts.lib.plan import PlanFile
     p = PlanFile(plan_file)
@@ -116,10 +116,10 @@ Expected: PASS
 
 ## Checklist
 
-- [ ] unchecked_tasks 不返回已完成 task | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks_skips_completed_with_unmatched_items -v`
-- [ ] 空 merge 返回 True 而非冲突 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_no_changes_returns_true -v`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
-- [ ] 全量测试通过 | `python3 -m pytest tests/ -v`
+- [x] unchecked_tasks 不返回已完成 task | `python3 -m pytest tests/ralph-loop/test_plan.py::test_unchecked_tasks_skips_completed_with_unmatched_items -v`
+- [x] 空 merge 返回 True 而非冲突 | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_merge_no_changes_returns_true -v`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
+- [x] 全量测试通过 | `python3 -m pytest tests/ -v`
 
 ## Review
 <!-- Reviewer writes here -->
