@@ -1,4 +1,7 @@
-# Fix Ralph Loop Parallel Execution Bugs
+# ~~Fix Ralph Loop Parallel Execution Bugs~~ (OBSOLETE)
+
+> **⚠️ OBSOLETE** — 废弃于 2026-02-21。原因：plan 创建后 ralph_loop.py/plan.py/worktree.py 累计改动 338 行，行号引用和函数签名全部过时。Bug 描述仍有效，需基于当前代码重新规划。
+
 
 **Goal:** Fix six bugs in ralph_loop.py parallel worktree execution: (1) orphan worker processes surviving after ralph exits, (2) unchecked_tasks() returning completed tasks when task:checklist ratio is not 1:1, (3) worker prompt lacking checklist state causing wasted iterations, (4) no rate-limit awareness causing all workers to fail simultaneously, (5) verify_and_check_all() writes to plan file but doesn't git commit, so subsequent merges overwrite the checked-off items, (6) --no-ff merge creates noisy merge commits polluting git history.
 **Non-Goals:** Rewrite sequential execution path; add new parallel strategies; change scheduler algorithm.
