@@ -277,7 +277,10 @@ Dispatch these tasks to executor subagents using use_subagent (agent_name: "exec
 Each subagent implements its task and runs the verify command from the plan.
 You handle: plan checklist updates, git commit, {progress_file} updates.
 If any subagent fails, fall back to sequential for that task.
-Max parallel: {len(batch.tasks)}. See Strategy D in planning SKILL.md."""
+Max parallel: {len(batch.tasks)}. See Strategy D in planning SKILL.md.
+
+If a task is stuck after 3 attempts, mark it as '- [SKIP] <reason>' and move on.
+If a command is blocked by a security hook, read the suggested alternative and retry with the safe command."""
     else:
         task = batch.tasks[0]
         return f"""You are executing a plan. Read these files first:
@@ -292,7 +295,9 @@ Rules:
 1. Implement the task. Verify it works (run the verify command from the plan).
 2. Update the plan: change the corresponding checklist item from '- [ ]' to '- [x]'.
 3. Append to {progress_file} with iteration {iteration} progress.
-4. Commit: feat: <task description>."""
+4. Commit: feat: <task description>.
+5. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next.
+6. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command."""
 
 
 # --- Parallel batch executor ---
@@ -471,14 +476,15 @@ def main():
     os.chdir(PROJECT_ROOT)
 
     # --- Configuration from env ---
-    max_iterations = int(sys.argv[1]) if len(sys.argv) > 1 else 10
-    plan_pointer = Path(os.environ.get("PLAN_POINTER_OVERRIDE", "docs/plans/.active"))
-    task_timeout = int(os.environ.get("RALPH_TASK_TIMEOUT", "1800"))
-    heartbeat_interval = int(os.environ.get("RALPH_HEARTBEAT_INTERVAL", "60"))
-    stall_timeout = int(os.environ.get("RALPH_STALL_TIMEOUT", "300"))
-    skip_dirty_check = os.environ.get("RALPH_SKIP_DIRTY_CHECK", "")
-    skip_precheck = os.environ.get("RALPH_SKIP_PRECHECK", "")
-    max_parallel_workers = int(os.environ.get("RALPH_MAX_PARALLEL_WORKERS", "4"))
+    cfg = parse_config(sys.argv[1:])
+    max_iterations = cfg.max_iterations
+    plan_pointer = cfg.plan_pointer
+    task_timeout = cfg.task_timeout
+    heartbeat_interval = cfg.heartbeat_interval
+    stall_timeout = cfg.stall_timeout
+    skip_dirty_check = cfg.skip_dirty_check
+    skip_precheck = cfg.skip_precheck
+    max_parallel_workers = cfg.max_parallel_workers
 
     log_file = Path(".ralph-loop.log")
     lock = LockFile(Path(".ralph-loop.lock"))

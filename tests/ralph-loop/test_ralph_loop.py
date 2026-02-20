@@ -1069,3 +1069,26 @@ def test_cleanup_handler_sets_flag_instead_of_exit(tmp_path):
                                    shutdown_flag=shutdown_flag)
     handler(signum=15, frame=None)
     assert shutdown_flag[0] is True
+
+
+def test_main_has_no_inline_env_reads():
+    """main() should use parse_config, not inline os.environ.get calls."""
+    source = open("scripts/ralph_loop.py").read()
+    main_body = source.split("def main")[1]
+    inline_env = [l.strip() for l in main_body.split("\n")
+                  if "os.environ.get" in l and "def " not in l and "_RALPH_LOOP_RUNNING" not in l]
+    assert inline_env == [], f"Inline env reads in main(): {inline_env}"
+
+
+def test_batch_prompt_includes_skip_and_security_guidance():
+    """build_batch_prompt should include SKIP and security hook instructions."""
+    from scripts.ralph_loop import build_batch_prompt
+    from scripts.lib.scheduler import Batch
+    from scripts.lib.plan import TaskInfo
+    from pathlib import Path
+
+    task = TaskInfo(1, "Test Task", {"a.py"}, "### Task 1: Test Task")
+    batch = Batch(tasks=[task], parallel=False)
+    prompt = build_batch_prompt(batch, Path("docs/plans/test.md"), 1)
+    assert "SKIP" in prompt
+    assert "security" in prompt.lower() or "blocked" in prompt.lower()

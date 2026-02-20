@@ -42,3 +42,22 @@ def test_git_run_no_retry_on_non_lock_error():
          pytest.raises(subprocess.CalledProcessError):
         git_run(["git", "status"], base_delay=0.01)
     assert mock_run.call_count == 1
+
+
+def test_git_run_retries_on_lock_ref_error():
+    """git_run should also retry on 'cannot lock ref' errors."""
+    import subprocess
+    from unittest.mock import patch, MagicMock
+    from scripts.lib.git_retry import git_run
+
+    call_count = 0
+    def fake_run(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            raise subprocess.CalledProcessError(1, args[0], stderr="cannot lock ref")
+        return MagicMock(returncode=0)
+
+    with patch("subprocess.run", side_effect=fake_run):
+        git_run(["git", "merge", "branch"], base_delay=0.01)
+    assert call_count == 2

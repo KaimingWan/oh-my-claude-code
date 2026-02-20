@@ -27,7 +27,8 @@ def git_run(cmd: list[str], max_retries: int = 3, base_delay: float = 0.5, **kwa
             return subprocess.run(cmd, **kwargs)
         except subprocess.CalledProcessError as e:
             stderr = (e.stderr or "") + (e.stdout or "")
-            is_lock_error = "index.lock" in stderr or "Unable to create" in stderr
+            is_lock_error = ("index.lock" in stderr or "Unable to create" in stderr
+                             or "cannot lock ref" in stderr or "Another git process" in stderr)
             if is_lock_error and attempt < max_retries:
                 time.sleep(base_delay * (2 ** attempt))
                 continue

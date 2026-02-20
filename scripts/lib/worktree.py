@@ -1,4 +1,5 @@
 import subprocess
+from scripts.lib.git_retry import git_run
 from pathlib import Path
 import shutil
 
@@ -18,16 +19,16 @@ class WorktreeManager:
         if worktree_path.exists():
             self.remove(name)
 
-        subprocess.run(["git", "worktree", "add", str(worktree_path), "-B", branch_name],
-                       check=True, cwd=self.project_root)
+        git_run(["git", "worktree", "add", str(worktree_path), "-B", branch_name],
+                cwd=self.project_root)
         return worktree_path
 
     def merge(self, name):
         branch_name = f"ralph-worker-{name}"
 
         try:
-            subprocess.run(["git", "merge", "--squash", branch_name],
-                           check=True, cwd=self.project_root)
+            git_run(["git", "merge", "--squash", branch_name],
+                    cwd=self.project_root)
 
             # Restore docs/plans/ to HEAD state (exclude plan changes from squash commit)
             subprocess.run(["git", "restore", "--staged", "docs/plans/"],
@@ -35,8 +36,8 @@ class WorktreeManager:
             subprocess.run(["git", "restore", "docs/plans/"],
                            cwd=self.project_root, capture_output=True)
 
-            subprocess.run(["git", "commit", "-m", f"squash: merge {branch_name}"],
-                           check=True, cwd=self.project_root)
+            git_run(["git", "commit", "-m", f"squash: merge {branch_name}"],
+                    cwd=self.project_root)
 
             return True
         except subprocess.CalledProcessError:
