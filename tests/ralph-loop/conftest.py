@@ -6,8 +6,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from scripts.lib.plan import PlanFile, TaskInfo
-from scripts.lib.scheduler import Batch
+from scripts.lib.plan import PlanFile
 
 
 @pytest.fixture

@@ -15,16 +15,6 @@ PLAN_TEMPLATE = textwrap.dedent("""\
 SCRIPT = "scripts/ralph_loop.py"
 
 
-def test_extract_verify_cmd_missing_returns_false():
-    """When no verify command is found, _extract_verify_cmd returns 'false' (fail-closed)."""
-    import importlib, sys
-    spec = importlib.util.spec_from_file_location('ralph_loop', 'scripts/ralph_loop.py')
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    assert mod._extract_verify_cmd('no verify here') == 'false'
-    assert mod._extract_verify_cmd('') == 'false'
-
-
 def write_plan(tmp_path, items="- [ ] task one | `echo ok`"):
     plan = tmp_path / "plan.md"
     plan.write_text(PLAN_TEMPLATE.format(items=items))
@@ -125,65 +115,8 @@ def test_lock_cleanup_on_signal(tmp_path):
     assert not lock_path.exists(), "Lock file should be cleaned up after SIGTERM"
 
 
-# --- Task 4 + 5 tests: batch prompt + banner ---
-from scripts.lib.plan import TaskInfo, PlanFile
-from scripts.lib.scheduler import Batch
-from scripts.ralph_loop import build_batch_prompt, build_worker_prompt, build_init_prompt, build_prompt
-
-
-def test_parallel_prompt_contains_dispatch():
-    fn = build_batch_prompt
-    assert fn is not None, "build_batch_prompt not found in ralph_loop.py"
-    batch = Batch(tasks=[
-        TaskInfo(1, "Parser", {"a.py"}, ""),
-        TaskInfo(2, "Scheduler", {"b.py"}, ""),
-    ], parallel=True)
-    prompt = fn(batch, Path("docs/plans/test.md"), 1)
-    assert "executor" in prompt.lower()
-    assert "parallel" in prompt.lower()
-    prompt_lower = prompt.lower()
-    assert "use_subagent" in prompt_lower or "agent_name" in prompt_lower
-
-
-def test_sequential_prompt_no_dispatch():
-    fn = build_batch_prompt
-    assert fn is not None, "build_batch_prompt not found in ralph_loop.py"
-    batch = Batch(tasks=[
-        TaskInfo(1, "Parser", {"a.py"}, ""),
-    ], parallel=False)
-    prompt = fn(batch, Path("docs/plans/test.md"), 1)
-    assert "dispatch" not in prompt.lower()
-
-
-def test_batch_mode_startup_banner(tmp_path):
-    """Plan with 2 independent tasks → stdout contains 'batch'."""
-    task_section = (
-        "## Tasks\n\n"
-        + "### " + "Task 1: Alpha\n\n**Files:**\n- Create: `a.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
-        + "### " + "Task 2: Beta\n\n**Files:**\n- Create: `b.py`\n\n**Verify:** `echo ok`\n\n"
-    )
-    plan_text = PLAN_TEMPLATE.format(items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
-    # Insert task section before checklist
-    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
-    write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
-    (tmp_path / "plan.md").write_text(plan_text)
-    r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"})
-    assert "batch" in r.stdout.lower()
-
-
-def test_dependent_tasks_sequential_banner(tmp_path):
-    """Plan with 2 tasks sharing a file → stdout contains 'sequential'."""
-    task_section = (
-        "## Tasks\n\n"
-        + "### " + "Task 1: Alpha\n\n**Files:**\n- Modify: `shared.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
-        + "### " + "Task 2: Beta\n\n**Files:**\n- Modify: `shared.py`\n\n**Verify:** `echo ok`\n\n"
-    )
-    plan_text = PLAN_TEMPLATE.format(items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
-    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
-    write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
-    (tmp_path / "plan.md").write_text(plan_text)
-    r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"})
-    assert "sequential" in r.stdout.lower()
+from scripts.lib.plan import PlanFile
+from scripts.ralph_loop import build_init_prompt, build_prompt
 
 
 def test_fallback_no_task_structure(tmp_path):
@@ -195,59 +128,6 @@ def test_fallback_no_task_structure(tmp_path):
     # Should not contain traceback
     assert "Traceback" not in r.stdout
     assert "Traceback" not in r.stderr
-
-
-def test_parallel_prompt_structure():
-    fn = build_batch_prompt
-    assert fn is not None
-    batch = Batch(tasks=[
-        TaskInfo(1, 'Alpha', {'a.py', 'b.py'}, ''),
-        TaskInfo(2, 'Beta', {'c.py'}, ''),
-        TaskInfo(3, 'Gamma', {'d.py', 'e.py'}, '')
-    ], parallel=True)
-    prompt = fn(batch, Path('docs/plans/test.md'), 1)
-    assert 'Task 1' in prompt
-    assert 'Alpha' in prompt
-    assert 'a.py' in prompt
-    assert 'b.py' in prompt
-    assert 'Task 2' in prompt
-    assert 'Beta' in prompt
-    assert 'c.py' in prompt
-    assert 'Task 3' in prompt
-    assert 'Gamma' in prompt
-    assert 'd.py' in prompt
-    assert 'e.py' in prompt
-
-
-def test_sequential_prompt_structure():
-    fn = build_batch_prompt
-    assert fn is not None
-    batch = Batch(tasks=[
-        TaskInfo(1, 'Alpha', {'a.py', 'b.py'}, '')
-    ], parallel=False)
-    prompt = fn(batch, Path('docs/plans/test.md'), 1)
-    assert 'Task 1' in prompt
-    assert 'Alpha' in prompt
-    assert 'a.py' in prompt
-    assert 'b.py' in prompt
-    assert 'dispatch' not in prompt.lower()
-
-
-def test_prompt_iteration_number():
-    fn = build_batch_prompt
-    assert fn is not None
-    batch = Batch(tasks=[TaskInfo(1, 'Test', {'test.py'}, '')], parallel=False)
-    prompt = fn(batch, Path('docs/plans/test.md'), 7)
-    assert '7' in prompt
-
-
-def test_prompt_file_paths():
-    fn = build_batch_prompt
-    assert fn is not None
-    batch = Batch(tasks=[TaskInfo(1, 'Test', {'src/main.py', 'tests/test_main.py'}, '')], parallel=False)
-    prompt = fn(batch, Path('docs/plans/test.md'), 1)
-    assert 'src/main.py' in prompt
-    assert 'tests/test_main.py' in prompt
 
 
 def test_summary_success(tmp_path):
@@ -596,33 +476,6 @@ def test_fully_unparseable_plan_fallback(tmp_path):
         summary_file.unlink(missing_ok=True)
 
 
-def test_partial_parse_still_batches(tmp_path):
-    """Plan with 4 checklist items but only 2 parseable task sections → uses batch mode."""
-    task_section = (
-        "## Tasks\n\n"
-        "### Task 1: Alpha\n\n**Files:**\n- Create: `a.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
-        "### Bad header no number\n\n**Files:**\n- Create: `bad.py`\n\n---\n\n"
-        "### Task 2: Beta\n\n**Files:**\n- Create: `b.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
-        "### Also malformed\n\n**Files:**\n- Create: `bad2.py`\n\n"
-    )
-    plan_text = PLAN_TEMPLATE.format(
-        items="- [ ] alpha | `echo ok`\n- [ ] bad1 | `echo ok`\n- [ ] beta | `echo ok`\n- [ ] bad2 | `echo ok`"
-    )
-    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
-    (tmp_path / "plan.md").write_text(plan_text)
-    (tmp_path / ".active").write_text(str(tmp_path / "plan.md"))
-
-    lock_path = Path(".ralph-loop.lock")
-    lock_path.unlink(missing_ok=True)
-    summary_file = Path("docs/plans/.ralph-result")
-    try:
-        r = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "true"}, max_iter="1")
-        assert r.returncode in (0, 1)
-        assert "batch" in r.stdout.lower()
-    finally:
-        lock_path.unlink(missing_ok=True)
-        summary_file.unlink(missing_ok=True)
-
 from unittest.mock import patch
 
 def test_detect_claude_cli():
@@ -722,58 +575,6 @@ def test_no_orphan_after_ralph_killed(tmp_path):
     assert check.returncode != 0, f"Orphan child found: {check.stdout.strip()}"
 
 
-def test_worker_prompt_no_plan_update():
-    """Test that build_worker_prompt excludes plan update instructions."""
-    prompt = build_worker_prompt("Test Task", ["file1.py", "file2.py"], "pytest", "docs/plans/test.md")
-    
-    # Should NOT contain plan-update or progress keywords
-    assert not re.search(r'change.*\[ \].*\[x\]', prompt, re.IGNORECASE)
-    assert 'progress.md' not in prompt.lower()
-    assert 'checklist' not in prompt.lower()
-    
-    # Should contain required elements
-    assert "Test Task" in prompt
-    assert "file1.py" in prompt
-    assert "file2.py" in prompt
-    assert "pytest" in prompt
-    assert "docs/plans/test.md" in prompt
-    assert "Do NOT modify docs/plans/" in prompt
-
-
-def test_parallel_batch_creates_worktrees(tmp_path):
-    """Plan with 2 independent tasks → ralph attempts parallel worktree execution.
-    Stdout must contain 'parallel' or 'worktree' (from the launch message).
-    """
-    task_section = (
-        "## Tasks\n\n"
-        "### Task 1: Alpha\n\n**Files:**\n- Create: `a_par.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
-        "### Task 2: Beta\n\n**Files:**\n- Create: `b_par.py`\n\n**Verify:** `echo ok`\n\n"
-    )
-    plan_text = PLAN_TEMPLATE.format(items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
-    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
-    write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
-    (tmp_path / "plan.md").write_text(plan_text)
-
-    lock_path = Path(".ralph-loop.lock")
-    lock_path.unlink(missing_ok=True)
-    summary_file = Path("docs/plans/.ralph-result")
-    try:
-        r = run_ralph(tmp_path, extra_env={
-            "RALPH_KIRO_CMD": "true",
-            "RALPH_TASK_TIMEOUT": "5",
-        }, max_iter="1")
-        stdout_lower = r.stdout.lower()
-        assert "parallel" in stdout_lower or "worktree" in stdout_lower, (
-            f"Expected 'parallel' or 'worktree' in stdout, got:\n{r.stdout[:800]}"
-        )
-    finally:
-        lock_path.unlink(missing_ok=True)
-        summary_file.unlink(missing_ok=True)
-        # Cleanup any leftover worktrees from test
-        import subprocess as sp
-        sp.run(["git", "worktree", "prune"], capture_output=True)
-
-
 def test_sleep_removed_from_source():
     """time.sleep(2) must not be present in ralph_loop.py (Task 5)."""
     source = Path("scripts/ralph_loop.py").read_text()
@@ -817,168 +618,13 @@ def test_stall_detection_kills_process(tmp_path):
         summary_file.unlink(missing_ok=True)
 
 
-def test_parallel_workers_killed_on_exit(tmp_path):
-    """Ralph runs 2 parallel tasks (sleep workers) with RALPH_TASK_TIMEOUT=3.
-    After ralph exits (via timeout), verify no orphan worker processes remain.
-
-    Fix tested: _worker_pids set ensures cleanup handler can kill process groups
-    even after child_procs has been cleared.
-    """
-    unique_name = f"ralph_parallel_orphan_{os.getpid()}"
-
-    # Script that exec's a detectable process with the unique name
-    sleep_script = tmp_path / f"{unique_name}.sh"
-    sleep_script.write_text(f"#!/bin/bash\nexec -a {unique_name} sleep 30\n")
-    sleep_script.chmod(0o755)
-
-    # Use high task numbers to avoid branch conflicts with existing worktrees
-    # in dev environments (e.g. ralph-worker-w1-i1, ralph-worker-w2-i1)
-    task_section = (
-        "## Tasks\n\n"
-        "### Task 10: Alpha\n\n**Files:**\n- Create: `a_orphan.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
-        "### Task 11: Beta\n\n**Files:**\n- Create: `b_orphan.py`\n\n**Verify:** `echo ok`\n\n"
-    )
-    plan_text = PLAN_TEMPLATE.format(items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
-    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
-    write_plan(tmp_path, items="- [ ] alpha | `echo ok`\n- [ ] beta | `echo ok`")
-    (tmp_path / "plan.md").write_text(plan_text)
-
-    lock_path = Path(".ralph-loop.lock")
-    lock_path.unlink(missing_ok=True)
-    summary_file = Path("docs/plans/.ralph-result")
-    try:
-        r = run_ralph(tmp_path, extra_env={
-            "RALPH_KIRO_CMD": str(sleep_script),
-            "RALPH_TASK_TIMEOUT": "3",
-        }, max_iter="1")
-        # Ralph exits after timing out workers
-        assert r.returncode in (0, 1)
-        # After ralph exits, no orphan worker processes should remain
-        time.sleep(0.5)
-        check = subprocess.run(["pgrep", "-f", unique_name], capture_output=True, text=True)
-        assert check.returncode != 0, (
-            f"Orphan parallel worker found after ralph exit: {check.stdout.strip()}"
-        )
-    finally:
-        lock_path.unlink(missing_ok=True)
-        summary_file.unlink(missing_ok=True)
-        import subprocess as sp
-        sp.run(["git", "worktree", "prune"], capture_output=True)
-
-
-def test_worker_prompt_includes_checklist_state():
-    """build_worker_prompt with checklist_context includes the unchecked item text."""
-    from scripts.ralph_loop import build_worker_prompt
-    ctx = "Completed: 4/6.\nRemaining items:\n- [ ] fix parser\n- [ ] update docs"
-    prompt = build_worker_prompt("Fix parser", ["parser.py"], "echo ok", "plan.md",
-                                checklist_context=ctx)
-    assert "fix parser" in prompt
-    assert "update docs" in prompt
-    assert "Completed: 4/6" in prompt
-
-
-def test_max_parallel_workers_env(tmp_path):
-    """RALPH_MAX_PARALLEL_WORKERS=2 limits workers per batch to 2 even with 4 tasks."""
-    task_section = (
-        "## Tasks\n\n"
-        "### Task 1: Alpha\n\n**Files:**\n- Create: `a.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
-        "### Task 2: Beta\n\n**Files:**\n- Create: `b.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
-        "### Task 3: Gamma\n\n**Files:**\n- Create: `c.py`\n\n**Verify:** `echo ok`\n\n---\n\n"
-        "### Task 4: Delta\n\n**Files:**\n- Create: `d.py`\n\n**Verify:** `echo ok`\n\n"
-    )
-    items = (
-        "- [ ] alpha | `echo ok`\n"
-        "- [ ] beta | `echo ok`\n"
-        "- [ ] gamma | `echo ok`\n"
-        "- [ ] delta | `echo ok`"
-    )
-    plan_text = PLAN_TEMPLATE.format(items=items)
-    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
-    write_plan(tmp_path, items=items)
-    (tmp_path / "plan.md").write_text(plan_text)
-
-    lock_path = Path(".ralph-loop.lock")
-    lock_path.unlink(missing_ok=True)
-    summary_file = Path("docs/plans/.ralph-result")
-    try:
-        r = run_ralph(tmp_path, extra_env={
-            "RALPH_KIRO_CMD": "echo done",
-            "RALPH_TASK_TIMEOUT": "5",
-            "RALPH_MAX_PARALLEL_WORKERS": "2",
-        }, max_iter="1")
-        launched = r.stdout.count("\U0001f680 Worker")
-        assert launched <= 2, f"Expected max 2 workers, got {launched}. Output:\n{r.stdout[:1000]}"
-    finally:
-        lock_path.unlink(missing_ok=True)
-        summary_file.unlink(missing_ok=True)
-        import subprocess as sp
-        sp.run(["git", "worktree", "prune"], capture_output=True)
-
-
-def test_parallel_checklist_persists_after_merge(tmp_path):
-    """After parallel workers complete and merge, checklist items should be git-committed."""
-    task_section = (
-        "## Tasks\n\n"
-        "### Task 1: Create alpha\n\n**Files:**\n- Create: `alpha.py`\n\n**Verify:** `test -f alpha.py`\n\n---\n\n"
-        "### Task 2: Create beta\n\n**Files:**\n- Create: `beta.py`\n\n**Verify:** `test -f beta.py`\n\n"
-    )
-    items = (
-        "- [ ] create alpha | `test -f alpha.py`\n"
-        "- [ ] create beta | `test -f beta.py`"
-    )
-    plan_text = PLAN_TEMPLATE.format(items=items)
-    plan_text = plan_text.replace("## Checklist", task_section + "## Checklist")
-    write_plan(tmp_path, items=items)
-    (tmp_path / "plan.md").write_text(plan_text)
-
-    lock_path = Path(".ralph-loop.lock")
-    lock_path.unlink(missing_ok=True)
-    summary_file = Path("docs/plans/.ralph-result")
-    try:
-        worker_script = tmp_path / "create_file.sh"
-        worker_script.write_text("#!/bin/bash\ntouch alpha.py beta.py && git add -A && git commit -m 'feat: create files'\n")
-        worker_script.chmod(0o755)
-
-        r = run_ralph(tmp_path, extra_env={
-            "RALPH_KIRO_CMD": str(worker_script),
-            "RALPH_TASK_TIMEOUT": "10",
-        }, max_iter="2")
-        plan_content = (tmp_path / "plan.md").read_text()
-        checked_count = plan_content.count("- [x]")
-        assert "update checklist" in r.stdout.lower() or checked_count > 0 or "verified" in r.stdout.lower(), \
-            f"Expected checklist persistence. Plan:\n{plan_content}\nOutput:\n{r.stdout[:1000]}"
-    finally:
-        lock_path.unlink(missing_ok=True)
-        summary_file.unlink(missing_ok=True)
-        import subprocess as sp
-        sp.run(["git", "worktree", "prune"], capture_output=True)
-
-
-def test_extract_verify_cmd_missing_returns_false():
-    """_extract_verify_cmd returns 'false' when no verify command found (fail-closed)."""
-    from scripts.ralph_loop import _extract_verify_cmd
-    result = _extract_verify_cmd("Some task text without verify")
-    assert result == "false"
-
-
-def test_build_batch_prompt_uses_real_plan(tmp_path):
-    """build_batch_prompt accepts PlanFile and uses its progress/findings paths."""
-    plan_file = tmp_path / "plan.md"
-    plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
-    pf = PlanFile(plan_file)
-    batch = Batch(tasks=[TaskInfo(1, "Test", {"test.py"}, "")], parallel=False)
-    prompt = build_batch_prompt(batch, plan_file, 1, plan=pf)
-    assert str(pf.progress_path) in prompt
-    assert str(pf.findings_path) in prompt
-
-
 def test_parse_config_defaults():
     """parse_config with no args returns correct defaults."""
     from scripts.ralph_loop import parse_config
     import os
     # Clear env vars that would override defaults
     env_keys = ["RALPH_TASK_TIMEOUT", "RALPH_HEARTBEAT_INTERVAL", "RALPH_STALL_TIMEOUT",
-                "RALPH_SKIP_DIRTY_CHECK", "RALPH_SKIP_PRECHECK", "RALPH_MAX_PARALLEL_WORKERS",
+                "RALPH_SKIP_DIRTY_CHECK", "RALPH_SKIP_PRECHECK",
                 "PLAN_POINTER_OVERRIDE"]
     saved = {k: os.environ.pop(k, None) for k in env_keys}
     try:
@@ -986,8 +632,7 @@ def test_parse_config_defaults():
         assert cfg.max_iterations == 10
         assert cfg.task_timeout == 1800
         assert cfg.heartbeat_interval == 60
-        assert cfg.stall_timeout == 300
-        assert cfg.max_parallel_workers == 4
+        assert cfg.stall_timeout == 600
     finally:
         for k, v in saved.items():
             if v is not None:
@@ -999,21 +644,6 @@ def test_validate_plan_missing(tmp_path):
     from scripts.ralph_loop import validate_plan
     with pytest.raises(SystemExit):
         validate_plan(tmp_path / "nonexistent.md")
-
-
-def test_cleanup_handler_with_empty_procs():
-    """Cleanup handler with empty child_procs list does not crash."""
-    from scripts.ralph_loop import make_cleanup_handler
-    from scripts.lib.lock import LockFile
-    from scripts.lib.worktree import WorktreeManager
-    import tempfile
-    with tempfile.TemporaryDirectory() as td:
-        lock = LockFile(Path(td) / "test.lock")
-        wt = WorktreeManager()
-        handler = make_cleanup_handler([None], [], {}, wt, lock)
-        # Should not raise — handler calls sys.exit(1) so we catch SystemExit
-        with pytest.raises(SystemExit):
-            handler()
 
 
 def test_flock_prevents_double_ralph(tmp_path):
@@ -1051,26 +681,6 @@ def test_flock_prevents_double_ralph(tmp_path):
     lock_path.unlink(missing_ok=True)
 
 
-def test_cleanup_handler_sets_flag_instead_of_exit(tmp_path):
-    """Signal handler should set a flag, not call sys.exit or subprocess."""
-    import types
-    from scripts.ralph_loop import make_cleanup_handler
-    from scripts.lib.worktree import WorktreeManager
-    from scripts.lib.lock import LockFile
-
-    lock = LockFile(tmp_path / 'test.lock')
-    wt = WorktreeManager(base_dir=str(tmp_path / 'wt'))
-    child_proc_ref = [None]
-    child_procs = []
-    worker_pgids = {}
-    shutdown_flag = [False]
-
-    handler = make_cleanup_handler(child_proc_ref, child_procs, worker_pgids, wt, lock,
-                                   shutdown_flag=shutdown_flag)
-    handler(signum=15, frame=None)
-    assert shutdown_flag[0] is True
-
-
 def test_main_has_no_inline_env_reads():
     """main() should use parse_config, not inline os.environ.get calls."""
     source = open("scripts/ralph_loop.py").read()
@@ -1078,17 +688,3 @@ def test_main_has_no_inline_env_reads():
     inline_env = [l.strip() for l in main_body.split("\n")
                   if "os.environ.get" in l and "def " not in l and "_RALPH_LOOP_RUNNING" not in l]
     assert inline_env == [], f"Inline env reads in main(): {inline_env}"
-
-
-def test_batch_prompt_includes_skip_and_security_guidance():
-    """build_batch_prompt should include SKIP and security hook instructions."""
-    from scripts.ralph_loop import build_batch_prompt
-    from scripts.lib.scheduler import Batch
-    from scripts.lib.plan import TaskInfo
-    from pathlib import Path
-
-    task = TaskInfo(1, "Test Task", {"a.py"}, "### Task 1: Test Task")
-    batch = Batch(tasks=[task], parallel=False)
-    prompt = build_batch_prompt(batch, Path("docs/plans/test.md"), 1)
-    assert "SKIP" in prompt
-    assert "security" in prompt.lower() or "blocked" in prompt.lower()

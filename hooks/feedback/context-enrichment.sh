@@ -23,6 +23,11 @@ elif echo "$USER_MSG" | grep -qiE '(\btest.*(fail|brok)|traceback|exception.*thr
   echo "🐛 Debug detected → read skills/debugging/SKILL.md. Use LSP tools (get_diagnostics, search_symbols, find_references) BEFORE attempting fixes."
 fi
 
+# @execute command — force ralph loop
+if echo "$USER_MSG" | grep -qE '^@execute|^/execute'; then
+  echo "🚀 Execute detected → Run \`python3 scripts/ralph_loop.py\` immediately. Do NOT read the plan or implement tasks yourself."
+fi
+
 # Unfinished task resume
 if [ -f ".completion-criteria.md" ]; then
   UNCHECKED=$(grep '^\- \[ \]' ".completion-criteria.md" 2>/dev/null | wc -l | tr -d ' ')

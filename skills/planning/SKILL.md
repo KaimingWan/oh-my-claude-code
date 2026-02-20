@@ -349,94 +349,16 @@ Rules:
 - Each strike must be logged in the plan's `## Errors` table with attempt number
 - Strike count is per-error-type, not global (different errors get their own 3 strikes)
 
-### Strategy Selection
+### Execution Strategy
 
-| Checklist Items | Strategy | Rationale |
-|----------------|----------|-----------|
-| ≤3 | A: Sequential in main conversation | Low overhead, not worth subagent spawn cost |
-| >3 | C: Subagent per task | Isolates context, prevents conversation bloat |
-| 2+ independent tasks | B: Parallel agents | No shared state, can run simultaneously |
-| 2+ tasks, non-overlapping files | D: Parallel Fan-out | Concurrent execution with zero race conditions |
+Sequential execution: one task at a time, commit after each.
 
-### Strategy A: Sequential (default)
+1. Load plan, identify next unchecked item
+2. Execute task (implement + test + verify)
+3. Check off item, commit
+4. Continue to next. Repeat until done.
 
-Execute tasks in order, 3-task batches with review checkpoints.
-
-1. Load plan, create TodoWrite
-2. Execute batch (3 tasks)
-3. Report: what was done + verification output
-4. Get feedback, apply changes
-5. Next batch. Repeat until done.
-
-### Strategy B: Parallel Agents
-
-**When:** 2+ independent tasks, no shared state.
-
-Dispatch one agent per independent domain:
-- Each agent gets: specific scope + clear goal
-- Don't use when: tasks are related, shared state, agents would interfere
-
-### Strategy C: Subagent per Task
-
-**When:** Tasks are independent, want fresh context per task.
-
-1. Dispatch subagent per task. **Must specify `agent_name`** if using a custom executor agent, or ensure the built-in default subagent is allowed in `availableAgents`. Subagents inherit workspace MCP if `includeMcpJson: true`.
-2. Review after each task (spec compliance → code quality)
-3. Fix issues before next task
-
-**Subagent capability limits (do NOT delegate tasks that need these):**
-- `code` tool (LSP analysis, symbol search, goto_definition)
-- `web_search` / `web_fetch` (internet access — use main agent instead, it's free)
-- `use_aws` (AWS CLI)
-- Cross-step context (subagents are stateless between invocations)
-
-### Strategy D: Parallel Fan-out
-
-**When:** 2+ independent tasks with non-overlapping file sets.
-
-> **Note:** ralph_loop.py now auto-analyzes task dependencies and generates batch-aware prompts with explicit dispatch instructions. The agent no longer needs to judge independence — it receives pre-computed batches.
-
-**Independence check:** Extract `Files:` field from each Task. Two tasks are independent iff their file sets (Create + Modify + Test) have zero intersection. Tasks needing `code` tool (LSP) cannot be parallelized (subagents lack LSP).
-
-**Execution flow:**
-
-1. Identify all unchecked tasks, extract file sets from `Files:` field
-2. Build independence graph: tasks with no file overlap form parallel groups
-3. Group into batches (max 4 per batch — `use_subagent` hard limit)
-4. For each batch, dispatch executor subagents in ONE `use_subagent` call:
-   - `agent_name: "executor"` (must specify — see subagent rules)
-   - Each subagent receives: full task description, file list, verify commands
-   - Subagent contract: implement code + run verify command + report structured result
-   - Subagent MUST NOT: edit plan file, git commit, modify files outside its task scope
-5. Main agent collects results, validates each:
-   - Re-run verify commands to confirm (trust but verify)
-   - If any subagent failed: log to `## Errors`, fall back to Strategy A for that task
-6. Main agent updates plan (check off completed items in one write)
-7. Main agent does single `git add + commit` for the batch
-8. Append to progress.md
-
-**Fallback:** If parallel execution fails (subagent crash, verify failure), revert to Strategy A for remaining tasks in that batch. Never retry a failed parallel task in parallel — go sequential.
-
-**Race condition prevention:**
-- Plan file: only main agent writes (subagents never touch it)
-- Git operations: only main agent commits (executor shell denies git commit)
-- Verify log (`/tmp/verify-log-*.jsonl`): safe for concurrent append (entries <512 bytes, within POSIX PIPE_BUF)
-- Source files: guaranteed non-overlapping by independence check
-
-### Workspace Isolation (Git Worktrees)
-
-For non-trivial plans, create isolated workspace:
-
-```bash
-# Check for existing worktree dir
-ls -d .worktrees 2>/dev/null || mkdir -p .worktrees
-
-# Verify it's gitignored
-git check-ignore -q .worktrees 2>/dev/null || echo '.worktrees' >> .gitignore
-
-# Create worktree
-git worktree add .worktrees/<feature-name> -b <feature-branch>
-```
+Each ralph loop iteration spawns a fresh CLI with clean context. The agent should complete as many tasks as possible per iteration before context fills up.
 
 ## Phase 3: Completion
 
