@@ -296,13 +296,13 @@ Expected: PASS
 
 ## Checklist
 
-- [ ] Signal handler uses flag instead of subprocess+sys.exit | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_cleanup_handler_sets_flag_instead_of_exit -v`
-- [ ] worktree.py exceptions narrowed to CalledProcessError | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_no_broad_exception_handlers -v`
+- [x] Signal handler uses flag instead of subprocess+sys.exit | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_cleanup_handler_sets_flag_instead_of_exit -v`
+- [x] worktree.py exceptions narrowed to CalledProcessError | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_no_broad_exception_handlers -v`
 - [ ] main() uses parse_config, no inline env reads | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_main_has_no_inline_env_reads -v`
 - [ ] git_retry handles 'cannot lock ref' | `python3 -m pytest tests/ralph-loop/test_git_retry.py::test_git_run_retries_on_lock_ref_error -v`
 - [ ] git_retry used in worktree.py | `python3 -c "t=open('scripts/lib/worktree.py').read(); assert 'git_run' in t, 'git_run not found'; print('OK')"`
-- [ ] No eval in post-write.sh | `bash -c '! grep -q "eval " hooks/feedback/post-write.sh && bash -n hooks/feedback/post-write.sh && echo PASS'`
-- [ ] pilot/default share _build_main_agent | `python3 -m pytest tests/test_generate_configs.py::test_build_main_agent_exists -v`
+- [x] No eval in post-write.sh | `bash -c '! grep -q "eval " hooks/feedback/post-write.sh && bash -n hooks/feedback/post-write.sh && echo PASS'`
+- [x] pilot/default share _build_main_agent | `python3 -m pytest tests/test_generate_configs.py::test_build_main_agent_exists -v`
 - [ ] build_batch_prompt has SKIP guidance | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_batch_prompt_includes_skip_and_security_guidance -v`
 - [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
 - [ ] 全量测试通过 | `python3 -m pytest tests/ -v`
