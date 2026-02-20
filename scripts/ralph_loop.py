@@ -51,7 +51,7 @@ def make_cleanup_handler(child_proc_ref: list, child_procs: list, worker_pgids: 
             except (ProcessLookupError, OSError):
                 pass
         # Kill all parallel worker procs still in child_procs
-        for p in child_procs:
+        for p in list(child_procs):
             try:
                 os.killpg(os.getpgid(p.pid), signal.SIGTERM)
             except (ProcessLookupError, OSError):
@@ -137,7 +137,7 @@ def _extract_verify_cmd(section_text: str) -> str:
     m = re.search(r'\*\*Verify:\*\*\s*\n```(?:bash)?\n(.+?)\n```', section_text, re.DOTALL)
     if m:
         return m.group(1).strip()
-    return "echo 'no verify command found'"
+    return "false"
 
 
 def build_worker_prompt(task_name: str, task_files: list, verify_cmd: str, plan_path: str,
@@ -249,14 +249,14 @@ Rules:
    If any subagent fails, fall back to sequential for that item. See Strategy D in planning SKILL.md."""
 
 
-def build_batch_prompt(batch: Batch, plan_path_: Path, iteration: int) -> str:
+def build_batch_prompt(batch: Batch, plan_path_: Path, iteration: int, plan: PlanFile = None) -> str:
     """Generate prompt for a batch of tasks."""
-    plan = type('_plan', (), {
-        'progress_path': plan_path_.parent / f"{plan_path_.stem}.progress.md",
-        'findings_path': plan_path_.parent / f"{plan_path_.stem}.findings.md",
-    })()
-    progress_file = plan.progress_path
-    findings_file = plan.findings_path
+    if plan is not None:
+        progress_file = plan.progress_path
+        findings_file = plan.findings_path
+    else:
+        progress_file = plan_path_.parent / f"{plan_path_.stem}.progress.md"
+        findings_file = plan_path_.parent / f"{plan_path_.stem}.findings.md"
 
     if batch.parallel:
         task_lines = "\n".join(
@@ -326,7 +326,8 @@ def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: 
 
         log_path = worker_log_dir / f"worker-{name}.log"
         log_fd = open(log_path, "w")
-        proc = subprocess.Popen(
+        try:
+            proc = subprocess.Popen(
             cmd,
             stdout=log_fd,
             stderr=subprocess.STDOUT,
@@ -334,6 +335,10 @@ def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: 
             cwd=str(wt_path),
             env={**os.environ, "_RALPH_LOOP_RUNNING": "1"},
         )
+        except Exception:
+            log_fd.close()
+            print(f"⚠️  Failed to start worker for task {task.number}", flush=True)
+            continue
         child_procs.append(proc)
         # Record pid->pgid immediately after spawn; workers use start_new_session=True
         # so each has its own process group. This allows cleanup even after child_procs
@@ -410,6 +415,50 @@ def run_parallel_batch(batch: Batch, iteration: int, plan: PlanFile, plan_path: 
     return succeeded
 
 
+from dataclasses import dataclass
+
+@dataclass
+class Config:
+    max_iterations: int = 10
+    task_timeout: int = 1800
+    heartbeat_interval: int = 60
+    stall_timeout: int = 300
+    skip_dirty_check: str = ""
+    skip_precheck: str = ""
+    max_parallel_workers: int = 4
+    plan_pointer: Path = None
+
+    def __post_init__(self):
+        if self.plan_pointer is None:
+            self.plan_pointer = Path("docs/plans/.active")
+
+
+def parse_config(argv: list[str] = None) -> Config:
+    """Parse configuration from argv and environment variables."""
+    argv = argv or []
+    max_iter = int(argv[0]) if argv else 10
+    return Config(
+        max_iterations=max_iter,
+        task_timeout=int(os.environ.get("RALPH_TASK_TIMEOUT", "1800")),
+        heartbeat_interval=int(os.environ.get("RALPH_HEARTBEAT_INTERVAL", "60")),
+        stall_timeout=int(os.environ.get("RALPH_STALL_TIMEOUT", "300")),
+        skip_dirty_check=os.environ.get("RALPH_SKIP_DIRTY_CHECK", ""),
+        skip_precheck=os.environ.get("RALPH_SKIP_PRECHECK", ""),
+        max_parallel_workers=int(os.environ.get("RALPH_MAX_PARALLEL_WORKERS", "4")),
+        plan_pointer=Path(os.environ.get("PLAN_POINTER_OVERRIDE", "docs/plans/.active")),
+    )
+
+
+def validate_plan(plan_path: Path) -> PlanFile:
+    """Validate plan file exists and has checklist items. Raises SystemExit on failure."""
+    if not plan_path.exists():
+        die(f"Plan file not found: {plan_path}")
+    plan = PlanFile(plan_path)
+    if plan.total == 0:
+        die("Plan has no checklist items. Add a ## Checklist section first.")
+    return plan
+
+
 def main():
     PROJECT_ROOT = Path(__file__).resolve().parent.parent
     MAX_STALE = 3
@@ -465,7 +514,8 @@ def main():
     signal.signal(signal.SIGINT, _cleanup_handler)
     atexit.register(lock.release)
 
-    lock.acquire()
+    if not lock.try_acquire():
+        die("Another ralph-loop is already running (lock held)")
 
     # --- Startup: remove stale worktrees from previous runs ---
     try:

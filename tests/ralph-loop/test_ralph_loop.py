@@ -942,3 +942,100 @@ def test_parallel_checklist_persists_after_merge(tmp_path):
         summary_file.unlink(missing_ok=True)
         import subprocess as sp
         sp.run(["git", "worktree", "prune"], capture_output=True)
+
+
+def test_extract_verify_cmd_missing_returns_false():
+    """_extract_verify_cmd returns 'false' when no verify command found (fail-closed)."""
+    from scripts.ralph_loop import _extract_verify_cmd
+    result = _extract_verify_cmd("Some task text without verify")
+    assert result == "false"
+
+
+def test_build_batch_prompt_uses_real_plan(tmp_path):
+    """build_batch_prompt accepts PlanFile and uses its progress/findings paths."""
+    plan_file = tmp_path / "plan.md"
+    plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
+    pf = PlanFile(plan_file)
+    batch = Batch(tasks=[TaskInfo(1, "Test", {"test.py"}, "")], parallel=False)
+    prompt = build_batch_prompt(batch, plan_file, 1, plan=pf)
+    assert str(pf.progress_path) in prompt
+    assert str(pf.findings_path) in prompt
+
+
+def test_parse_config_defaults():
+    """parse_config with no args returns correct defaults."""
+    from scripts.ralph_loop import parse_config
+    import os
+    # Clear env vars that would override defaults
+    env_keys = ["RALPH_TASK_TIMEOUT", "RALPH_HEARTBEAT_INTERVAL", "RALPH_STALL_TIMEOUT",
+                "RALPH_SKIP_DIRTY_CHECK", "RALPH_SKIP_PRECHECK", "RALPH_MAX_PARALLEL_WORKERS",
+                "PLAN_POINTER_OVERRIDE"]
+    saved = {k: os.environ.pop(k, None) for k in env_keys}
+    try:
+        cfg = parse_config([])
+        assert cfg.max_iterations == 10
+        assert cfg.task_timeout == 1800
+        assert cfg.heartbeat_interval == 60
+        assert cfg.stall_timeout == 300
+        assert cfg.max_parallel_workers == 4
+    finally:
+        for k, v in saved.items():
+            if v is not None:
+                os.environ[k] = v
+
+
+def test_validate_plan_missing(tmp_path):
+    """validate_plan raises SystemExit for missing plan file."""
+    from scripts.ralph_loop import validate_plan
+    with pytest.raises(SystemExit):
+        validate_plan(tmp_path / "nonexistent.md")
+
+
+def test_cleanup_handler_with_empty_procs():
+    """Cleanup handler with empty child_procs list does not crash."""
+    from scripts.ralph_loop import make_cleanup_handler
+    from scripts.lib.lock import LockFile
+    from scripts.lib.worktree import WorktreeManager
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        lock = LockFile(Path(td) / "test.lock")
+        wt = WorktreeManager()
+        handler = make_cleanup_handler([None], [], {}, wt, lock)
+        # Should not raise — handler calls sys.exit(1) so we catch SystemExit
+        with pytest.raises(SystemExit):
+            handler()
+
+
+def test_flock_prevents_double_ralph(tmp_path):
+    """Second ralph instance is blocked by flock and exits with error."""
+    write_plan(tmp_path)
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+
+    sleep_script = tmp_path / "long_sleep2.sh"
+    sleep_script.write_text("#!/bin/bash\nsleep 60\n")
+    sleep_script.chmod(0o755)
+
+    proc1 = subprocess.Popen(
+        ["python3", SCRIPT, "1"],
+        env={
+            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+            "HOME": os.environ.get("HOME", "/tmp"),
+            "PLAN_POINTER_OVERRIDE": str(tmp_path / ".active"),
+            "RALPH_KIRO_CMD": str(sleep_script),
+            "RALPH_TASK_TIMEOUT": "60",
+            "RALPH_HEARTBEAT_INTERVAL": "999",
+            "RALPH_SKIP_DIRTY_CHECK": "1",
+        },
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    time.sleep(1.5)
+
+    r2 = run_ralph(tmp_path, extra_env={"RALPH_KIRO_CMD": "sleep 1"})
+
+    proc1.terminate()
+    proc1.wait(timeout=5)
+
+    assert r2.returncode == 1
+    assert "already running" in r2.stdout.lower() or "lock" in r2.stdout.lower()
+    lock_path.unlink(missing_ok=True)
