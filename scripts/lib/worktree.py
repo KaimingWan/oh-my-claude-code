@@ -53,12 +53,12 @@ class WorktreeManager:
         try:
             subprocess.run(["git", "worktree", "remove", "--force", str(worktree_path)],
                            cwd=self.project_root, capture_output=True)
-        except Exception:
+        except subprocess.CalledProcessError:
             pass
         try:
             subprocess.run(["git", "branch", "-D", branch_name], cwd=self.project_root,
                            capture_output=True)
-        except Exception:
+        except subprocess.CalledProcessError:
             pass
 
     def cleanup_all(self):
@@ -116,5 +116,5 @@ class WorktreeManager:
                 if expected_path not in registered_resolved:
                     subprocess.run(["git", "branch", "-D", branch],
                                    cwd=self.project_root, capture_output=True)
-        except Exception:
+        except subprocess.CalledProcessError:
             pass

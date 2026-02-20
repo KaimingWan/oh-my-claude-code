@@ -303,3 +303,20 @@ def test_cleanup_stale_preserves_active_worktrees(git_repo):
         assert not stale_dir.exists(), "Stale directory was not cleaned up"
     finally:
         wm.cleanup_all()
+
+
+def test_no_broad_exception_handlers():
+    """worktree.py must not use bare 'except Exception' — only subprocess.CalledProcessError."""
+    import ast, inspect
+    import scripts.lib.worktree as mod
+
+    source = inspect.getsource(mod)
+    tree = ast.parse(source)
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ExceptHandler) and node.type is not None:
+            if isinstance(node.type, ast.Name) and node.type.id in ('Exception', 'BaseException'):
+                pytest.fail(
+                    f'Broad except {node.type.id} found at line {node.lineno}. '
+                    f'Use subprocess.CalledProcessError instead.'
+                )
