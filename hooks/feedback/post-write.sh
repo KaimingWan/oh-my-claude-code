@@ -40,7 +40,11 @@ run_test() {
 
   TEST_CMD=$(detect_test_command)
   if [ -n "$TEST_CMD" ]; then
-    TEST_OUTPUT=$(bash -c "$TEST_CMD" 2>&1)
+    # Strip trailing redirect noise; stderr captured via 2>&1 in the subshell below.
+    # Word-split is intentional: TEST_CMD is an internally-generated, safe command string.
+    _clean_cmd="${TEST_CMD% 2>&1}"
+    read -ra _cmd <<< "$_clean_cmd"
+    TEST_OUTPUT=$("${_cmd[@]}" 2>&1)
     if [ $? -ne 0 ]; then
       echo "⚠️ Tests failed after editing $FILE:" >&2
       echo "$TEST_OUTPUT" | tail -10 >&2
