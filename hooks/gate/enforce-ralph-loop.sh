@@ -21,7 +21,7 @@ LOCK_FILE=".ralph-loop.lock"
 # Runs before all other checks so it works even when no active plan exists in the working tree.
 if [ "$MODE" = "bash" ]; then
   _CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
-  _CMD=$(echo "$_CMD" | sed 's|^cd[[:space:]]\+[^;&|]*&&[[:space:]]*||')
+  _CMD=$(echo "$_CMD" | sed -E 's|^cd[[:space:]]+[^;&|]*&&[[:space:]]*||')
   if echo "$_CMD" | grep -qE '^git[[:space:]]+commit'; then
     _STAGED=$(git show :docs/plans/.active 2>/dev/null | tr -d '[:space:]')
     if [ -n "$_STAGED" ]; then
@@ -80,7 +80,7 @@ if [ "$MODE" = "bash" ]; then
   CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
   # Strip leading "cd <path> &&" prefix (kiro-cli prepends this)
-  CMD=$(echo "$CMD" | sed 's|^cd[[:space:]]\+[^;&|]*&&[[:space:]]*||')
+  CMD=$(echo "$CMD" | sed -E 's|^cd[[:space:]]+[^;&|]*&&[[:space:]]*||')
 
   # Allow ralph-loop invocations
   echo "$CMD" | grep -qE 'ralph[-_.]loop|ralph_loop' && exit 0
