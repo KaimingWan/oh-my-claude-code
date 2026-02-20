@@ -9,6 +9,7 @@
 - 理解类型/签名 → get_hover
 - 文件结构概览 → get_document_symbols
 - 架构理解 → generate_codebase_overview
+- 调试/debug → get_diagnostics 为首选工具，获取编译器错误和警告后再用 search_symbols + find_references 定位根因
 
 例外：
 - 搜索注释/字符串中的文本 → grep

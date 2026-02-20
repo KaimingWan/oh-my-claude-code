@@ -16,6 +16,13 @@ elif echo "$USER_MSG" | grep -qiE '(research|investigate|look into|compare.*opti
   echo "🔍 Research detected → read skills/research/SKILL.md for search level strategy (L0→L1→L2)."
 fi
 
+# Debugging skill reminder
+if echo "$USER_MSG" | grep -qE '(报错|\bbug\b|调试|修复.*错误|测试失败|不工作了)'; then
+  echo "🐛 Debug detected → read skills/debugging/SKILL.md. Use LSP tools (get_diagnostics, search_symbols, find_references) BEFORE attempting fixes."
+elif echo "$USER_MSG" | grep -qiE '(\btest.*(fail|brok)|traceback|exception.*thrown|crash|not working|fix.*bug|\bis broken\b|\bbug\b)'; then
+  echo "🐛 Debug detected → read skills/debugging/SKILL.md. Use LSP tools (get_diagnostics, search_symbols, find_references) BEFORE attempting fixes."
+fi
+
 # Unfinished task resume
 if [ -f ".completion-criteria.md" ]; then
   UNCHECKED=$(grep '^\- \[ \]' ".completion-criteria.md" 2>/dev/null | wc -l | tr -d ' ')
