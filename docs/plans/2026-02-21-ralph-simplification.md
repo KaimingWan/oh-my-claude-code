@@ -131,11 +131,11 @@ Run `python3 -m pytest tests/ -v`. Expect ALL PASS, ~130 tests (down from 171). 
 
 ## Checklist
 
-- [ ] worktree.py, git_retry.py, scheduler.py deleted | `test ! -f scripts/lib/worktree.py && test ! -f scripts/lib/git_retry.py && test ! -f scripts/lib/scheduler.py`
-- [ ] parallel test files deleted | `test ! -f tests/ralph-loop/test_worktree.py && test ! -f tests/ralph-loop/test_git_retry.py && test ! -f tests/ralph-loop/test_scheduler.py`
-- [ ] ralph_loop.py has no parallel imports | `python3 -c "import ast; t=ast.parse(open('scripts/ralph_loop.py').read()); ms=[n.module for n in ast.walk(t) if isinstance(n,ast.ImportFrom) and n.module]; assert 'scripts.lib.scheduler' not in ms and 'scripts.lib.worktree' not in ms; print('OK')"`
-- [ ] ralph_loop.py has no parallel functions | `! grep -q 'def run_parallel_batch\|def build_worker_prompt\|def _extract_verify_cmd\|def build_batch_prompt' scripts/ralph_loop.py`
-- [ ] stall_timeout default is 600 | `python3 -c "from scripts.ralph_loop import Config; assert Config().stall_timeout == 600; print('OK')"`
+- [x] worktree.py, git_retry.py, scheduler.py deleted | `test ! -f scripts/lib/worktree.py && test ! -f scripts/lib/git_retry.py && test ! -f scripts/lib/scheduler.py`
+- [x] parallel test files deleted | `test ! -f tests/ralph-loop/test_worktree.py && test ! -f tests/ralph-loop/test_git_retry.py && test ! -f tests/ralph-loop/test_scheduler.py`
+- [x] ralph_loop.py has no parallel imports | `python3 -c "import ast; t=ast.parse(open('scripts/ralph_loop.py').read()); ms=[n.module for n in ast.walk(t) if isinstance(n,ast.ImportFrom) and n.module]; assert 'scripts.lib.scheduler' not in ms and 'scripts.lib.worktree' not in ms; print('OK')"`
+- [x] ralph_loop.py has no parallel functions | `! grep -q 'def run_parallel_batch\|def build_worker_prompt\|def _extract_verify_cmd\|def build_batch_prompt' scripts/ralph_loop.py`
+- [x] stall_timeout default is 600 | `python3 -c "from scripts.ralph_loop import Config; assert Config().stall_timeout == 600; print('OK')"`
 - [ ] @execute triggers ralph loop injection | `echo '{"prompt":"@execute"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q 'ralph_loop'`
 - [ ] SKILL.md has no parallel strategies | `! grep -q 'Strategy B\|Strategy C\|Strategy D\|Workspace Isolation.*Worktree' skills/planning/SKILL.md`
 - [ ] .worktrees dir removed | `test ! -d .worktrees`
