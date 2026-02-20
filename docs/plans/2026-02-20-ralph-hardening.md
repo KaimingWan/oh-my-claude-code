@@ -262,7 +262,7 @@ Expected: ALL PASS
 - [x] cleanup_stale 保留活跃 worktree | `python3 -m pytest tests/ralph-loop/test_worktree.py::test_cleanup_stale_preserves_active_worktrees -v`
 - [x] cleanup handler 空列表不崩溃 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_cleanup_handler_with_empty_procs -v`
 - [x] 第二个 ralph 实例被锁阻止 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_flock_prevents_double_ralph -v`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
 
 ## Errors
 
