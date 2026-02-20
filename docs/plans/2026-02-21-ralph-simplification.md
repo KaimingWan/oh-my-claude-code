@@ -139,7 +139,7 @@ Run `python3 -m pytest tests/ -v`. Expect ALL PASS, ~130 tests (down from 171). 
 - [x] @execute triggers ralph loop injection | `echo '{"prompt":"@execute"}' | bash hooks/feedback/context-enrichment.sh 2>/dev/null | grep -q 'ralph_loop'`
 - [x] SKILL.md has no parallel strategies | `! grep -q 'Strategy B\|Strategy C\|Strategy D\|Workspace Isolation.*Worktree' skills/planning/SKILL.md`
 - [x] .worktrees dir removed | `test ! -d .worktrees`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ -v`
+- [x] 回归测试通过 | `python3 -m pytest tests/ -v`
 
 ## Errors
 

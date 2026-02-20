@@ -6,7 +6,6 @@ import pytest
 import threading
 import time
 from scripts.lib.plan import PlanFile, TaskInfo
-from scripts.lib.scheduler import build_batches
 
 SAMPLE_PLAN = """\
 # Test Plan
@@ -253,67 +252,6 @@ def test_partial_task_parse(tmp_path):
     assert tasks[1].name == "Good Two"
     assert tasks[2].name == "Good Three"
 
-
-def test_recompute_after_partial_completion(tmp_path):
-    plan = """\
-# Test Plan
-**Goal:** Test batch recomputation after partial completion
-
-## Tasks
-
-### Task 1: Alpha
-**Files:**
-- Create: `a.py`
-- Modify: `shared.py`
-
-**Verify:** `echo ok`
-
----
-
-### Task 2: Beta
-**Files:**
-- Create: `b.py`
-
-**Verify:** `echo ok`
-
----
-
-### Task 3: Gamma
-**Files:**
-- Modify: `shared.py`
-- Create: `c.py`
-
-**Verify:** `echo ok`
-
----
-
-### Task 4: Delta
-**Files:**
-- Create: `d.py`
-
-**Verify:** `echo ok`
-
-## Checklist
-
-- [x] alpha | `echo ok`
-- [ ] beta | `echo ok`
-- [ ] gamma | `echo ok`
-- [ ] delta | `echo ok`
-"""
-    p = tmp_path / "plan.md"
-    p.write_text(plan)
-    pf = PlanFile(p)
-    
-    unchecked = pf.unchecked_tasks()
-    assert len(unchecked) == 3
-    assert unchecked[0].number == 2
-    assert unchecked[1].number == 3
-    assert unchecked[2].number == 4
-    
-    batches = build_batches(unchecked)
-    assert len(batches) == 1
-    assert batches[0].parallel == True
-    assert len(batches[0].tasks) == 3
 
 
 def test_truncated_plan(tmp_path):
