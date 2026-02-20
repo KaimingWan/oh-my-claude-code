@@ -129,9 +129,8 @@ class PlanFile:
                 if is_unchecked:
                     unmatched_unchecked = True
 
-        # If there are unchecked items we couldn't match to any task, fall back to all tasks
-        if unmatched_unchecked:
-            return tasks
+        # Unmatched unchecked items (e.g. "回归测试通过") don't cause all tasks to return.
+        # Only return tasks that have their own unchecked matched items.
 
         # Return tasks that have at least one unchecked matched item
         # Tasks with no matched items at all are excluded (no evidence of remaining work)

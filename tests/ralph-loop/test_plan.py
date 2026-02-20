@@ -491,3 +491,24 @@ def test_unchecked_tasks_no_match_fallback(tmp_path):
     result = pf.unchecked_tasks()
     # No task name keywords match the checklist items → safe fallback returns all tasks
     assert len(result) == 2, f"Should return all tasks as fallback, got {len(result)}"
+
+def test_unchecked_tasks_skips_completed_with_unmatched_items(tmp_path):
+    """When unmatched checklist items exist but all tasks are done, return empty."""
+    plan_file = tmp_path / "plan.md"
+    plan_file.write_text("""# Plan
+## Tasks
+### Task 1: Fix parser
+Files: a.py
+### Task 2: Fix lexer
+Files: b.py
+## Checklist
+- [x] parser fixed | `echo ok`
+- [x] lexer fixed | `echo ok`
+- [ ] 回归测试通过 | `python3 -m pytest tests/ -v`
+- [ ] 全量测试通过 | `python3 -m pytest tests/ -v`
+""")
+    from scripts.lib.plan import PlanFile
+    p = PlanFile(plan_file)
+    result = p.unchecked_tasks()
+    assert len(result) == 0, f"Expected 0 tasks, got {[t.name for t in result]}"
+
