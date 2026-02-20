@@ -15,6 +15,16 @@ PLAN_TEMPLATE = textwrap.dedent("""\
 SCRIPT = "scripts/ralph_loop.py"
 
 
+def test_extract_verify_cmd_missing_returns_false():
+    """When no verify command is found, _extract_verify_cmd returns 'false' (fail-closed)."""
+    import importlib, sys
+    spec = importlib.util.spec_from_file_location('ralph_loop', 'scripts/ralph_loop.py')
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert mod._extract_verify_cmd('no verify here') == 'false'
+    assert mod._extract_verify_cmd('') == 'false'
+
+
 def write_plan(tmp_path, items="- [ ] task one | `echo ok`"):
     plan = tmp_path / "plan.md"
     plan.write_text(PLAN_TEMPLATE.format(items=items))
