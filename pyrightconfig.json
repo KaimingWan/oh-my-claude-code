@@ -1,0 +1,9 @@
+{
+  "include": ["scripts", "tests"],
+  "exclude": [".worktrees", "archive", "node_modules", ".git"],
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Darwin",
+  "venvPath": "",
+  "useLibraryCodeForTypes": false,
+  "typeCheckingMode": "basic"
+}
