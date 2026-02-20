@@ -180,7 +180,12 @@ def _main_agent_resources(extra_skills: list | None = None) -> list:
     return resources
 
 
-def default_agent(extra_skills: list | None = None, extra_hooks: dict | None = None) -> dict:
+def _build_main_agent(
+    name: str,
+    extra_pre_hooks: list | None = None,
+    extra_skills: list | None = None,
+    extra_hooks: dict | None = None,
+) -> dict:
     hooks = {
         "userPromptSubmit": [
             {"command": "hooks/feedback/correction-detect.sh"},
@@ -191,7 +196,7 @@ def default_agent(extra_skills: list | None = None, extra_hooks: dict | None = N
             {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
             {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
             {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
-        ],
+        ] + (extra_pre_hooks or []),
         "postToolUse": [
             {"matcher": "fs_write", "command": "hooks/feedback/post-write.sh"},
             {"matcher": "execute_bash", "command": "hooks/feedback/post-bash.sh"},
@@ -201,7 +206,7 @@ def default_agent(extra_skills: list | None = None, extra_hooks: dict | None = N
     for event, hook_list in (extra_hooks or {}).items():
         hooks.setdefault(event, []).extend(hook_list)
     return {
-        "name": "default",
+        "name": name,
         "description": "Main orchestrator agent with deterministic workflow gates",
         "tools": ["*"],
         "allowedTools": ["*"],
@@ -218,47 +223,19 @@ def default_agent(extra_skills: list | None = None, extra_hooks: dict | None = N
             },
         },
     }
+
+
+def default_agent(extra_skills: list | None = None, extra_hooks: dict | None = None) -> dict:
+    return _build_main_agent("default", extra_skills=extra_skills, extra_hooks=extra_hooks)
 
 
 def pilot_agent(extra_skills: list | None = None, extra_hooks: dict | None = None) -> dict:
-    hooks = {
-        "userPromptSubmit": [
-            {"command": "hooks/feedback/correction-detect.sh"},
-            {"command": "hooks/feedback/session-init.sh"},
-            {"command": "hooks/feedback/context-enrichment.sh"},
-        ],
-        "preToolUse": SECURITY_HOOKS_BASH + [
-            {"matcher": "fs_write", "command": "hooks/gate/pre-write.sh"},
-            {"matcher": "execute_bash", "command": "hooks/gate/enforce-ralph-loop.sh"},
-            {"matcher": "fs_write", "command": "hooks/gate/enforce-ralph-loop.sh"},
-            {"matcher": "execute_bash", "command": "hooks/gate/require-regression.sh"},
-        ],
-        "postToolUse": [
-            {"matcher": "fs_write", "command": "hooks/feedback/post-write.sh"},
-            {"matcher": "execute_bash", "command": "hooks/feedback/post-bash.sh"},
-        ],
-        "stop": [{"command": "hooks/feedback/verify-completion.sh"}],
-    }
-    for event, hook_list in (extra_hooks or {}).items():
-        hooks.setdefault(event, []).extend(hook_list)
-    return {
-        "name": "pilot",
-        "description": "Main orchestrator agent with deterministic workflow gates",
-        "tools": ["*"],
-        "allowedTools": ["*"],
-        "resources": _main_agent_resources(extra_skills),
-        "hooks": hooks,
-        "toolsSettings": {
-            "subagent": {
-                "availableAgents": ["researcher", "reviewer", "executor"],
-                "trustedAgents": ["researcher", "reviewer", "executor"],
-            },
-            "shell": {
-                "autoAllowReadonly": True,
-                "deniedCommands": DENIED_COMMANDS_STRICT,
-            },
-        },
-    }
+    return _build_main_agent(
+        "pilot",
+        extra_pre_hooks=[{"matcher": "execute_bash", "command": "hooks/gate/require-regression.sh"}],
+        extra_skills=extra_skills,
+        extra_hooks=extra_hooks,
+    )
 
 
 def reviewer_agent() -> dict:

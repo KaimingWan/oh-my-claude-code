@@ -3,7 +3,7 @@ import subprocess, json, sys, os
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from scripts.generate_configs import _main_agent_resources, load_overlay, default_agent, pilot_agent
+from scripts.generate_configs import _main_agent_resources, _build_main_agent, load_overlay, default_agent, pilot_agent
 
 
 def test_generates_valid_json():
@@ -77,6 +77,29 @@ def test_validate_hook_registry():
     """validate() returns 0 when hook registry is consistent."""
     from scripts.generate_configs import validate
     assert validate() == 0
+
+
+
+
+def test_build_main_agent_exists():
+    """pilot and default agents share _build_main_agent; only name and hooks differ."""
+    # _build_main_agent is callable
+    assert callable(_build_main_agent)
+    # Both agents use it — verify structural equality of shared fields
+    d = default_agent()
+    p = pilot_agent()
+    assert d['tools'] == p['tools']
+    assert d['allowedTools'] == p['allowedTools']
+    assert d['resources'] == p['resources']
+    assert d['toolsSettings'] == p['toolsSettings']
+    # Names differ
+    assert d['name'] == 'default'
+    assert p['name'] == 'pilot'
+    # pilot has require-regression hook that default doesn't
+    p_cmds = [h.get('command', '') for h in p['hooks']['preToolUse']]
+    d_cmds = [h.get('command', '') for h in d['hooks']['preToolUse']]
+    assert any('require-regression' in c for c in p_cmds)
+    assert not any('require-regression' in c for c in d_cmds)
 
 
 # ── Overlay tests ──────────────────────────────────────────────────────────
