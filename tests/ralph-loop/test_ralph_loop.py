@@ -1049,3 +1049,23 @@ def test_flock_prevents_double_ralph(tmp_path):
     assert r2.returncode == 1
     assert "already running" in r2.stdout.lower() or "lock" in r2.stdout.lower()
     lock_path.unlink(missing_ok=True)
+
+
+def test_cleanup_handler_sets_flag_instead_of_exit(tmp_path):
+    """Signal handler should set a flag, not call sys.exit or subprocess."""
+    import types
+    from scripts.ralph_loop import make_cleanup_handler
+    from scripts.lib.worktree import WorktreeManager
+    from scripts.lib.lock import LockFile
+
+    lock = LockFile(tmp_path / 'test.lock')
+    wt = WorktreeManager(base_dir=str(tmp_path / 'wt'))
+    child_proc_ref = [None]
+    child_procs = []
+    worker_pgids = {}
+    shutdown_flag = [False]
+
+    handler = make_cleanup_handler(child_proc_ref, child_procs, worker_pgids, wt, lock,
+                                   shutdown_flag=shutdown_flag)
+    handler(signum=15, frame=None)
+    assert shutdown_flag[0] is True

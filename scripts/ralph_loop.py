@@ -35,12 +35,16 @@ def die(msg: str) -> None:
 
 # --- Signal handling + cleanup ---
 def make_cleanup_handler(child_proc_ref: list, child_procs: list, worker_pgids: dict,
-                         wt_manager: WorktreeManager, lock: LockFile):
+                         wt_manager: WorktreeManager, lock: LockFile,
+                         shutdown_flag: list = None):
     """Factory returning a cleanup handler that closes over mutable state.
 
     worker_pgids: dict mapping pid -> pgid for all spawned parallel workers.
     This set is NOT cleared when child_procs is cleaned up, so the handler
     can kill process groups even after workers have been removed from child_procs.
+
+    If shutdown_flag (single-element list) is provided, handler sets flag[0]=True
+    instead of calling sys.exit, making it async-signal-safe.
     """
     def _cleanup_handler(signum=None, frame=None):
         # Kill singular child proc (sequential mode)
@@ -66,13 +70,15 @@ def make_cleanup_handler(child_proc_ref: list, child_procs: list, worker_pgids: 
                     os.killpg(pgid, signal.SIGTERM)
             except (ProcessLookupError, OSError):
                 pass
-        # Cleanup any orphaned worktrees
-        try:
-            wt_manager.cleanup_stale()
-        except Exception:
-            pass
-        lock.release()
-        sys.exit(1)
+        if shutdown_flag is not None:
+            shutdown_flag[0] = True
+        else:
+            try:
+                wt_manager.cleanup_stale()
+            except Exception:
+                pass
+            lock.release()
+            sys.exit(1)
     return _cleanup_handler
 
 
@@ -509,7 +515,9 @@ def main():
         die("Plan has no checklist items. Add a ## Checklist section first.")
 
     # --- Signal handling + cleanup ---
-    _cleanup_handler = make_cleanup_handler(child_proc_ref, child_procs, worker_pgids, wt_manager, lock)
+    shutdown_flag = [False]
+    _cleanup_handler = make_cleanup_handler(child_proc_ref, child_procs, worker_pgids, wt_manager, lock,
+                                            shutdown_flag=shutdown_flag)
     signal.signal(signal.SIGTERM, _cleanup_handler)
     signal.signal(signal.SIGINT, _cleanup_handler)
     atexit.register(lock.release)
@@ -547,6 +555,9 @@ def main():
 
     for i in range(1, max_iterations + 1):
         plan.reload()
+
+        if shutdown_flag[0]:
+            break
 
         if plan.is_complete:
             print(f"\n✅ All {plan.checked} checklist items complete!", flush=True)
@@ -600,6 +611,9 @@ def main():
             else:
                 prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, prev_exit=prev_exit)
 
+            if shutdown_flag[0]:
+                break
+
             # Launch kiro-cli with process group isolation
             with log_file.open("a") as log_fd:
                 base_cmd = detect_cli()
@@ -641,6 +655,9 @@ def main():
 
             prev_exit = proc.returncode if proc.returncode is not None else 1
 
+        if shutdown_flag[0]:
+            break
+
         # Early completion check — avoid wasting a full iteration
         plan.reload()
         if plan.is_complete:
@@ -654,6 +671,10 @@ def main():
             print(f"\n⚠️ Reached max iterations ({max_iterations}). {plan.unchecked} items still unchecked.",
                   flush=True)
 
+    try:
+        wt_manager.cleanup_stale()
+    except Exception:
+        pass
     write_summary(final_exit, plan, plan_path, summary_file)
     lock.release()
     sys.exit(final_exit)
