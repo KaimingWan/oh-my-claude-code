@@ -304,8 +304,8 @@ Expected: PASS
 - [x] No eval in post-write.sh | `bash -c '! grep -q "eval " hooks/feedback/post-write.sh && bash -n hooks/feedback/post-write.sh && echo PASS'`
 - [x] pilot/default share _build_main_agent | `python3 -m pytest tests/test_generate_configs.py::test_build_main_agent_exists -v`
 - [x] build_batch_prompt has SKIP guidance | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_batch_prompt_includes_skip_and_security_guidance -v`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
-- [ ] 全量测试通过 | `python3 -m pytest tests/ -v`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
+- [x] 全量测试通过 | `python3 -m pytest tests/ -v`
 
 ## Review
 
