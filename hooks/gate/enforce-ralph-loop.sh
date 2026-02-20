@@ -109,8 +109,8 @@ if [ "$MODE" = "bash" ]; then
   # Read-only allowlist — checked BEFORE chaining so pipes between read-only cmds are allowed
   if echo "$FIRST_CMD" | grep -qE '^(git[[:space:]]+(status|log|diff|show|branch|worktree|stash[[:space:]]+list)|ls|cat|head|tail|grep|rg|wc|file|stat|test|md5|shasum|date|pwd|which|type|jq|printf|echo|awk|ps|sed[[:space:]]+-n|find[[:space:]])'; then
     # Allow piping/chaining between read-only commands, but block destructive writes
-    # Note: >[^&] avoids matching 2>&1 stderr redirects
-    if ! echo "$CMD" | grep -qE '(>[^&]|>>|rm |mv |cp |python|bash |sh |curl |wget )'; then
+    # Note: [^0-9]>[^&] avoids matching fd redirects like 2>/dev/null and 2>&1
+    if ! echo "$CMD" | grep -qE '([^0-9]>[^&]|^>[^&]|>>|rm |mv |cp |python|bash |sh |curl |wget )'; then
       exit 0
     fi
   fi
