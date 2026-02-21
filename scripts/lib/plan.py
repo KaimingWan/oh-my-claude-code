@@ -136,7 +136,7 @@ class PlanFile:
         # Tasks with no matched items at all are excluded (no evidence of remaining work)
         return [t for t in tasks if task_has_unchecked.get(t.number, False)]
 
-    def check_off(self, task_number: int) -> bool:
+    def check_off(self, task_number: int) -> bool:  # Public API — used by tests and external callers
         """Check off the checklist item corresponding to task_number (1-based positional)."""
         tasks = self.parse_tasks()
         idx = next((i for i, t in enumerate(tasks) if t.number == task_number), None)
@@ -157,7 +157,7 @@ class PlanFile:
                 count += 1
         return False
 
-    def verify_and_check_all(self, cwd: str = ".", timeout: int = 30) -> list[tuple[int, str, bool]]:
+    def verify_and_check_all(self, cwd: str = ".", timeout: int = 30) -> list[tuple[int, str, bool]]:  # Public API — batch verify + check
         """Run verify commands for all unchecked items; check off those that pass.
 
         Returns list of (1-based checklist index, verify_cmd, passed).

@@ -248,9 +248,7 @@ def main():
             die("Dirty working tree. Commit or stash changes before running ralph-loop.")
 
     # --- Verify checklist exists ---
-    plan = PlanFile(plan_path)
-    if plan.total == 0:
-        die("Plan has no checklist items. Add a ## Checklist section first.")
+    plan = validate_plan(plan_path)
 
     # --- Signal handling + cleanup ---
     shutdown_flag = [False]

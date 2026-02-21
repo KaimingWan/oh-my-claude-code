@@ -51,7 +51,7 @@ class LockFile:
         except FileNotFoundError:
             pass
 
-    def is_held_by_alive_process(self) -> bool:
+    def is_held_by_alive_process(self) -> bool:  # Public API — used by external callers
         """Check if the lock file contains a PID of a live process."""
         if not self.path.exists():
             return False
