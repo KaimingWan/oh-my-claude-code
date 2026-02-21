@@ -298,6 +298,9 @@ def main():
     if not lock.try_acquire():
         die("Another ralph-loop is already running (lock held)")
 
+    # --- Detect CLI once ---
+    base_cmd = detect_cli()
+
     # --- Startup banner ---
     plan.reload()
     print(f"🔄 Ralph Loop — {plan.unchecked} tasks remaining", flush=True)
@@ -344,7 +347,6 @@ def main():
             break
 
         # Launch kiro-cli with PTY for unbuffered output + idle watchdog
-        base_cmd = detect_cli()
         if base_cmd[0] == 'claude':
             cmd = [base_cmd[0], '-p', prompt] + base_cmd[2:]
         else:

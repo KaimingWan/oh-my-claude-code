@@ -698,6 +698,14 @@ def test_active_process_not_killed_by_idle_watchdog(tmp_path):
         summary_file.unlink(missing_ok=True)
 
 
+def test_detect_cli_called_outside_loop():
+    """detect_cli() must be called before the loop, not inside it."""
+    source = open("scripts/ralph_loop.py").read()
+    loop_start = source.index("for i in range(1, max_iterations + 1):")
+    in_loop = source[loop_start:]
+    assert "detect_cli()" not in in_loop, "detect_cli() should NOT be called inside the loop"
+
+
 def test_main_has_no_inline_env_reads():
     """main() should use parse_config, not inline os.environ.get calls."""
     source = open("scripts/ralph_loop.py").read()
