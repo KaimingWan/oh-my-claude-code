@@ -29,6 +29,14 @@ def test_returncode_preserved(tmp_path):
     assert proc.returncode == 42
 
 
+def test_master_fd_single_close(tmp_path):
+    """master fd should only be closed once (by reader thread), not double-closed in stop()."""
+    import scripts.lib.pty_runner as mod
+    source = open(mod.__file__).read()
+    stop_body = source.split("def stop():")[1].split("\n        return")[0]
+    assert "os.close(master)" not in stop_body, "stop() should not close master fd — reader thread owns it"
+
+
 def test_process_group_isolation(tmp_path):
     """Child runs in its own process group (start_new_session=True)."""
     log = tmp_path / "out.log"

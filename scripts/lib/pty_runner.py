@@ -41,10 +41,6 @@ def pty_run(cmd: list[str], log_path: Path) -> tuple[subprocess.Popen, callable]
 
     def stop():
         stop_event.set()
-        try:
-            os.close(master)
-        except OSError:
-            pass
         t.join(timeout=2)
 
     return proc, stop
