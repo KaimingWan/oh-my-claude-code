@@ -49,6 +49,10 @@ class PlanFile:
         return self.unchecked == 0
 
     @property
+    def is_all_skipped(self) -> bool:
+        return self.unchecked == 0 and self.checked == 0 and self.skipped > 0
+
+    @property
     def progress_path(self) -> Path:
         return self.path.parent / f"{self.path.stem}.progress.md"
 

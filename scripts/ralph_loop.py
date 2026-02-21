@@ -280,7 +280,10 @@ def main():
             break
 
         if plan.is_complete:
-            print(f"✅ All {plan.checked} tasks complete!", flush=True)
+            if plan.is_all_skipped:
+                print(f"⚠️ All tasks skipped — nothing completed", flush=True)
+            else:
+                print(f"✅ All {plan.checked} tasks complete!", flush=True)
             final_exit = 0
             break
 
@@ -350,7 +353,10 @@ def main():
         # Early completion check — avoid wasting a full iteration
         plan.reload()
         if plan.is_complete:
-            print(f"✅ All {plan.checked} tasks complete!", flush=True)
+            if plan.is_all_skipped:
+                print(f"⚠️ All tasks skipped — nothing completed", flush=True)
+            else:
+                print(f"✅ All {plan.checked} tasks complete!", flush=True)
             final_exit = 0
             break
 
