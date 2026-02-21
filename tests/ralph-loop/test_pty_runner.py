@@ -30,11 +30,12 @@ def test_returncode_preserved(tmp_path):
 
 
 def test_master_fd_single_close(tmp_path):
-    """master fd should only be closed once (by reader thread), not double-closed in stop()."""
+    """stop() has guarded fallback close — only closes if reader didn't."""
     import scripts.lib.pty_runner as mod
     source = open(mod.__file__).read()
-    stop_body = source.split("def stop():")[1].split("\n        return")[0]
-    assert "os.close(master)" not in stop_body, "stop() should not close master fd — reader thread owns it"
+    # Must use master_closed event guard, not raw os.close
+    stop_body = source.split("def stop():")[1].split("\n    return")[0]
+    assert "master_closed" in stop_body, "stop() must check master_closed event before closing"
 
 
 def test_process_group_isolation(tmp_path):

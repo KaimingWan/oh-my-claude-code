@@ -20,6 +20,7 @@ def pty_run(cmd: list[str], log_path: Path) -> tuple[subprocess.Popen, Callable]
     os.close(slave)
 
     stop_event = threading.Event()
+    master_closed = threading.Event()
 
     def _reader():
         with open(log_path, "ab") as f:
@@ -36,6 +37,7 @@ def pty_run(cmd: list[str], log_path: Path) -> tuple[subprocess.Popen, Callable]
             os.close(master)
         except OSError:
             pass
+        master_closed.set()
 
     t = threading.Thread(target=_reader, daemon=True)
     t.start()
@@ -43,5 +45,10 @@ def pty_run(cmd: list[str], log_path: Path) -> tuple[subprocess.Popen, Callable]
     def stop():
         stop_event.set()
         t.join(timeout=2)
+        if not master_closed.is_set():
+            try:
+                os.close(master)
+            except OSError:
+                pass
 
     return proc, stop
