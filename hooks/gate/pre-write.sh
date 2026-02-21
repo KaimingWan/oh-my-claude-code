@@ -135,19 +135,8 @@ inject_plan_context() {
   UNCHECKED=$(grep -c '^\- \[ \]' "$ACTIVE" 2>/dev/null || true)
   [ "${UNCHECKED:-0}" -eq 0 ] && return 0
 
-  # Throttle: full checklist every 5 writes, 1-line summary otherwise
-  COUNTER_FILE="/tmp/plan-inject-counter-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default')"
-  COUNT=$(cat "$COUNTER_FILE" 2>/dev/null || echo 0)
-  COUNT=$((COUNT + 1))
-  echo "$COUNT" > "$COUNTER_FILE"
-
-  if [ $((COUNT % 5)) -eq 1 ]; then
-    CHECKLIST=$(sed -n '/^## Checklist/,/^## /p' "$ACTIVE" 2>/dev/null | head -20)
-    echo "📋 Active plan ($ACTIVE):"
-    echo "$CHECKLIST"
-  else
-    echo "📋 $UNCHECKED checklist items remaining in $ACTIVE"
-  fi
+  # Always 1-line summary to limit context pollution
+  echo "📋 $UNCHECKED checklist items remaining in $ACTIVE"
 }
 
 # ============================================================

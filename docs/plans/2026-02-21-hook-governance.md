@@ -111,7 +111,7 @@
 - [x] block-outside-workspace allows /tmp/ | `bash tests/hooks/test-outside-workspace.sh`
 - [x] block output <=3 lines | `bash tests/hooks/test-block-output.sh`
 - [x] context-enrichment output <=8 lines | `bash tests/hooks/test-context-budget.sh`
-- [ ] feedback output slimmed | `bash tests/hooks/test-feedback-output.sh`
+- [x] feedback output slimmed | `bash tests/hooks/test-feedback-output.sh`
 - [ ] regression tests pass | `bash tests/hooks/test-kiro-compat.sh`
 - [ ] config validation passes | `python3 scripts/generate_configs.py --validate`
 

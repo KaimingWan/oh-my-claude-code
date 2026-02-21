@@ -1,3 +1,16 @@
+## Iteration 6 — 2026-02-21
+
+- **Task:** feedback output slimmed (Task 6)
+- **Files changed:**
+  - `hooks/gate/pre-write.sh` — inject_plan_context: always 1-line summary (removed full checklist every-5-writes branch)
+  - `hooks/feedback/post-write.sh` — test failure tail: changed tail -10 to tail -3
+  - `hooks/feedback/verify-completion.sh` — unchecked summary: removed listing of individual items, 1-line count only
+  - `tests/hooks/test-feedback-output.sh` — created 5-test suite
+- **Learnings:**
+  - pre-write inject_plan_context was outputting full checklist (20 lines) every 5 writes. Removed throttle+full-checklist entirely; always 1-line.
+  - verify-completion was listing all unchecked items. Changed to 1-line summary.
+- **Status:** done
+
 ## Iteration 1 — 2026-02-21
 
 - **Task:** enforce-ralph-loop denylist refactor + create test-ralph-gate.sh

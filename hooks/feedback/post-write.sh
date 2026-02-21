@@ -46,8 +46,8 @@ run_test() {
     read -ra _cmd <<< "$_clean_cmd"
     TEST_OUTPUT=$("${_cmd[@]}" 2>&1)
     if [ $? -ne 0 ]; then
-      echo "⚠️ Tests failed after editing $FILE:" >&2
-      echo "$TEST_OUTPUT" | tail -10 >&2
+      echo "⚠️ Tests failed after editing $FILE (last 3 lines):" >&2
+      echo "$TEST_OUTPUT" | tail -3 >&2
       return 1
     fi
   fi
