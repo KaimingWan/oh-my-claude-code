@@ -107,7 +107,7 @@
 ## Checklist
 
 - [x] enforce-ralph-loop denylist mode | `bash tests/hooks/test-ralph-gate.sh`
-- [ ] block-dangerous narrowed | `bash tests/hooks/verify-block-dangerous.sh`
+- [x] block-dangerous narrowed | `bash tests/hooks/verify-block-dangerous.sh`
 - [ ] block-outside-workspace allows /tmp/ | `bash tests/hooks/test-outside-workspace.sh`
 - [ ] block output <=3 lines | `bash tests/hooks/test-block-output.sh`
 - [ ] context-enrichment output <=8 lines | `bash tests/hooks/test-context-budget.sh`

@@ -1,6 +1,7 @@
 #!/bin/bash
 # patterns.sh — Shared regex patterns for security hooks
 
+# Case-sensitive patterns (exact case matters, e.g. git flags)
 DANGEROUS_BASH_PATTERNS=(
   '\brm[[:space:]]+(-[rRf]|--recursive|--force)'
   '\brmdir\b'
@@ -12,24 +13,25 @@ DANGEROUS_BASH_PATTERNS=(
   '\bgit[[:space:]]+reset[[:space:]]+--hard'
   '\bgit[[:space:]]+clean[[:space:]]+-f'
   '\bgit[[:space:]]+stash[[:space:]]+drop'
-  '\bgit[[:space:]]+branch[[:space:]]+-[dD]'
+  '\bgit[[:space:]]+branch[[:space:]]+-D\b'
   '\bchmod[[:space:]]+(-R[[:space:]]+)?777'
   '\bchown[[:space:]]+-R'
   'curl.*\|[[:space:]]*(ba)?sh'
   'wget.*\|[[:space:]]*(ba)?sh'
-  '\bkill[[:space:]]+-9'
-  '\bkillall\b'
-  '\bpkill\b'
   '\bshutdown\b'
   '\breboot\b'
   '\bsystemctl[[:space:]]+(stop|disable|mask)'
-  '\bDROP[[:space:]]+(DATABASE|TABLE|SCHEMA)\b'
-  '\bTRUNCATE\b'
   '\bdocker[[:space:]]+system[[:space:]]+prune[[:space:]]+-a'
   '\bdocker[[:space:]]+rm[[:space:]]+-f'
   '\bdocker[[:space:]]+rmi[[:space:]]+-f'
-  '\bfind\b.*-delete'
-  '\bfind\b.*-exec[[:space:]]+rm'
+  '\bfind\b[[:space:]]+(/etc|/usr|/var|/sys|/boot)(/[^[:space:]]*)?[[:space:]].*-delete'
+  '\bfind\b[[:space:]]+(/etc|/usr|/var|/sys|/boot)(/[^[:space:]]*)?[[:space:]].*-exec[[:space:]]+rm'
+)
+
+# Case-insensitive patterns (SQL keywords may appear in any case)
+DANGEROUS_BASH_PATTERNS_NOCASE=(
+  '\bDROP[[:space:]]+(DATABASE|TABLE|SCHEMA)\b'
+  '\bTRUNCATE\b'
 )
 
 INJECTION_PATTERNS='(curl.*\|[[:space:]]*(ba)?sh|wget.*\|[[:space:]]*(ba)?sh|SECRET[[:space:]]+INSTRUCTIONS|hidden[[:space:]]+instructions|ignore[[:space:]]+(all[[:space:]]+)?previous|system[[:space:]]+prompt|<script)'
