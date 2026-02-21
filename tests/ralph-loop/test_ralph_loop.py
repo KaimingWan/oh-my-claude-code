@@ -698,6 +698,13 @@ def test_active_process_not_killed_by_idle_watchdog(tmp_path):
         summary_file.unlink(missing_ok=True)
 
 
+def test_heartbeat_no_confusing_elapsed():
+    """_heartbeat should not have the confusing elapsed calculation."""
+    source = open("scripts/ralph_loop.py").read()
+    assert "heartbeat_interval * (idle_elapsed" not in source, \
+        "Confusing elapsed calculation should be removed from _heartbeat"
+
+
 def test_single_build_prompt_function():
     """Only one prompt builder function should exist (merged)."""
     source = open("scripts/ralph_loop.py").read()

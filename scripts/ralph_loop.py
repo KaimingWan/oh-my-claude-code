@@ -81,7 +81,6 @@ def _heartbeat(proc: subprocess.Popen, iteration: int, stop_event: threading.Eve
                 except (ProcessLookupError, OSError):
                     pass
                 break
-        elapsed = heartbeat_interval * (idle_elapsed // heartbeat_interval + 1) if idle_elapsed == 0 else idle_elapsed
         ts = datetime.now().strftime("%H:%M:%S")
         print(f"💓 [{ts}] {plan.checked}/{plan.total} done",
               flush=True)
