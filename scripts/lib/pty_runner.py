@@ -4,9 +4,10 @@ import pty
 import subprocess
 import threading
 from pathlib import Path
+from typing import Callable
 
 
-def pty_run(cmd: list[str], log_path: Path) -> tuple[subprocess.Popen, callable]:
+def pty_run(cmd: list[str], log_path: Path) -> tuple[subprocess.Popen, Callable]:
     """Launch cmd with stdout/stderr on a PTY, tee output to log_path.
 
     Returns (proc, stop_fn). Call stop_fn() after proc.wait() to join reader thread.

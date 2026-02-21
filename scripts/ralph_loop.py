@@ -14,6 +14,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Callable
 
 # --- Resolve project root & imports ---
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -34,7 +35,7 @@ def die(msg: str) -> None:
 
 # --- Signal handling + cleanup ---
 def make_cleanup_handler(child_proc_ref: list, lock: LockFile,
-                         shutdown_flag: list = None):
+                         shutdown_flag: list | None = None):
     """Factory returning a cleanup handler that closes over mutable state.
 
     If shutdown_flag (single-element list) is provided, handler sets flag[0]=True
@@ -58,7 +59,7 @@ def make_cleanup_handler(child_proc_ref: list, lock: LockFile,
 # --- Heartbeat thread ---
 def _heartbeat(proc: subprocess.Popen, iteration: int, stop_event: threading.Event,
                plan: PlanFile, heartbeat_interval: int,
-               log_path: Path = None, idle_timeout: int = 0):
+               log_path: Path | None = None, idle_timeout: int = 0):
     last_size = log_path.stat().st_size if (log_path and log_path.exists()) else 0
     idle_elapsed = 0
     while not stop_event.wait(heartbeat_interval):
@@ -173,14 +174,14 @@ class Config:
     heartbeat_interval: int = 60
     skip_dirty_check: str = ""
     skip_precheck: str = ""
-    plan_pointer: Path = None
+    plan_pointer: Path | None = None
 
     def __post_init__(self):
         if self.plan_pointer is None:
             self.plan_pointer = Path("docs/plans/.active")
 
 
-def parse_config(argv: list[str] = None) -> Config:
+def parse_config(argv: list[str] | None = None) -> Config:
     """Parse configuration from argv and environment variables."""
     argv = argv or []
     max_iter = int(argv[0]) if argv else 10
@@ -214,6 +215,7 @@ def main():
     cfg = parse_config(sys.argv[1:])
     max_iterations = cfg.max_iterations
     plan_pointer = cfg.plan_pointer
+    assert plan_pointer is not None
     task_timeout = cfg.task_timeout
     idle_timeout = cfg.idle_timeout
     heartbeat_interval = cfg.heartbeat_interval
@@ -224,7 +226,7 @@ def main():
     lock = LockFile(Path(".ralph-loop.lock"))
     summary_file = Path("docs/plans/.ralph-result")
 
-    child_proc_ref = [None]   # mutable single-element list for signal handler closure
+    child_proc_ref: list[subprocess.Popen | None] = [None]
 
     # --- Recursion guard ---
     if os.environ.get("_RALPH_LOOP_RUNNING"):
