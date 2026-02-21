@@ -56,10 +56,8 @@ def make_cleanup_handler(child_proc_ref: list, lock: LockFile,
 
 # --- Heartbeat thread ---
 def _heartbeat(proc: subprocess.Popen, iteration: int, stop_event: threading.Event,
-               plan: PlanFile, heartbeat_interval: int, stall_timeout: int):
+               plan: PlanFile, heartbeat_interval: int):
     elapsed = 0
-    stall_elapsed = 0
-    last_checked = -1
     while not stop_event.wait(heartbeat_interval):
         if proc.poll() is not None:
             break
@@ -68,19 +66,6 @@ def _heartbeat(proc: subprocess.Popen, iteration: int, stop_event: threading.Eve
         ts = datetime.now().strftime("%H:%M:%S")
         print(f"💓 [{ts}] Iteration {iteration} — {plan.checked}/{plan.total} done (elapsed {elapsed}s)",
               flush=True)
-        if plan.checked == last_checked:
-            stall_elapsed += heartbeat_interval
-            if stall_elapsed >= stall_timeout:
-                print(f"🛑 [{ts}] Stall detected: no progress for {stall_elapsed}s — killing process",
-                      flush=True)
-                try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                except (ProcessLookupError, OSError):
-                    pass
-                break
-        else:
-            stall_elapsed = 0
-            last_checked = plan.checked
 
 
 # --- Summary writer ---
@@ -204,7 +189,6 @@ class Config:
     max_iterations: int = 10
     task_timeout: int = 1800
     heartbeat_interval: int = 60
-    stall_timeout: int = 600
     skip_dirty_check: str = ""
     skip_precheck: str = ""
     plan_pointer: Path = None
@@ -222,7 +206,6 @@ def parse_config(argv: list[str] = None) -> Config:
         max_iterations=max_iter,
         task_timeout=int(os.environ.get("RALPH_TASK_TIMEOUT", "1800")),
         heartbeat_interval=int(os.environ.get("RALPH_HEARTBEAT_INTERVAL", "60")),
-        stall_timeout=int(os.environ.get("RALPH_STALL_TIMEOUT", "600")),
         skip_dirty_check=os.environ.get("RALPH_SKIP_DIRTY_CHECK", ""),
         skip_precheck=os.environ.get("RALPH_SKIP_PRECHECK", ""),
         plan_pointer=Path(os.environ.get("PLAN_POINTER_OVERRIDE", "docs/plans/.active")),
@@ -250,7 +233,6 @@ def main():
     plan_pointer = cfg.plan_pointer
     task_timeout = cfg.task_timeout
     heartbeat_interval = cfg.heartbeat_interval
-    stall_timeout = cfg.stall_timeout
     skip_dirty_check = cfg.skip_dirty_check
     skip_precheck = cfg.skip_precheck
 
@@ -360,7 +342,7 @@ def main():
             stop_event = threading.Event()
             hb = threading.Thread(
                 target=_heartbeat,
-                args=(proc, i, stop_event, plan, heartbeat_interval, stall_timeout),
+                args=(proc, i, stop_event, plan, heartbeat_interval),
                 daemon=True,
             )
             hb.start()

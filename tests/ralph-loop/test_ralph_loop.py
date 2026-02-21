@@ -587,43 +587,12 @@ def test_prev_exit_in_source():
     assert "prev_exit" in source, "prev_exit not found in ralph_loop.py"
 
 
-def test_stall_timeout_in_source():
-    """STALL_TIMEOUT must be present in ralph_loop.py (Task 6)."""
-    source = Path("scripts/ralph_loop.py").read_text()
-    assert "STALL_TIMEOUT" in source, "STALL_TIMEOUT not found in ralph_loop.py"
-
-
-def test_stall_detection_kills_process(tmp_path):
-    """STALL_TIMEOUT=4, HEARTBEAT_INTERVAL=1, TASK_TIMEOUT=30: stall detected → killed in <15s."""
-    write_plan(tmp_path)
-    lock_path = Path(".ralph-loop.lock")
-    lock_path.unlink(missing_ok=True)
-    summary_file = Path("docs/plans/.ralph-result")
-    start = time.monotonic()
-    try:
-        r = run_ralph(tmp_path, extra_env={
-            "RALPH_KIRO_CMD": "sleep 60",
-            "RALPH_TASK_TIMEOUT": "30",
-            "RALPH_STALL_TIMEOUT": "4",
-            "RALPH_HEARTBEAT_INTERVAL": "1",
-        }, max_iter="1")
-        elapsed = time.monotonic() - start
-        assert r.returncode == 1
-        assert elapsed < 15, f"Expected process killed in <15s, took {elapsed:.1f}s"
-        # Stall message should appear in stdout
-        stall_msg = "stall" in r.stdout.lower() or "killing" in r.stdout.lower() or "timed out" in r.stdout.lower()
-        assert stall_msg, f"Expected stall/kill message in stdout: {r.stdout[:500]}"
-    finally:
-        lock_path.unlink(missing_ok=True)
-        summary_file.unlink(missing_ok=True)
-
-
 def test_parse_config_defaults():
     """parse_config with no args returns correct defaults."""
     from scripts.ralph_loop import parse_config
     import os
     # Clear env vars that would override defaults
-    env_keys = ["RALPH_TASK_TIMEOUT", "RALPH_HEARTBEAT_INTERVAL", "RALPH_STALL_TIMEOUT",
+    env_keys = ["RALPH_TASK_TIMEOUT", "RALPH_HEARTBEAT_INTERVAL",
                 "RALPH_SKIP_DIRTY_CHECK", "RALPH_SKIP_PRECHECK",
                 "PLAN_POINTER_OVERRIDE"]
     saved = {k: os.environ.pop(k, None) for k in env_keys}
@@ -632,7 +601,6 @@ def test_parse_config_defaults():
         assert cfg.max_iterations == 10
         assert cfg.task_timeout == 1800
         assert cfg.heartbeat_interval == 60
-        assert cfg.stall_timeout == 600
     finally:
         for k, v in saved.items():
             if v is not None:
