@@ -41,10 +41,7 @@ case "$TOOL_NAME" in
       "$WORKSPACE"/*|"$WORKSPACE") exit 0 ;;
     esac
 
-    hook_block_with_recovery "🚫 BLOCKED: Write outside workspace.
-Target: $FILE → $RESOLVED
-Workspace: $WORKSPACE
-Agent may only write files inside the workspace." "$FILE"
+    hook_block_with_recovery "🚫 BLOCKED: Write outside workspace ($RESOLVED). Use paths inside: $WORKSPACE/" "$FILE"
     ;;
 
   execute_bash|Bash)
@@ -69,11 +66,7 @@ Agent may only write files inside the workspace." "$FILE"
 
     for pattern in "${OUTSIDE_WRITE_PATTERNS[@]}"; do
       if echo "$CMD" | grep -qiE "$pattern"; then
-        hook_block_with_recovery "🚫 BLOCKED: Bash command writes outside workspace.
-Command: $CMD
-Matched: $pattern
-Workspace: $WORKSPACE
-Use paths inside the workspace instead." "$CMD"
+        hook_block_with_recovery "🚫 BLOCKED: Bash writes outside workspace (matched: $pattern). Use paths inside: $WORKSPACE/" "$CMD"
       fi
     done
     ;;

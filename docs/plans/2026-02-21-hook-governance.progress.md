@@ -10,6 +10,21 @@
   - The UNCHECKED count check early-exits if 0 unchecked items — tests must have at least one `- [ ]` item.
 - **Status:** done
 
+## Iteration 4 — 2026-02-21
+
+- **Task:** block output <=3 lines (Task 4)
+- **Files changed:**
+  - `hooks/_lib/block-recovery.sh` — compressed RETRY/SKIP messages to single inline suffix: `| ⚡ RETRY (N/3)` or `| ⛔ SKIP`
+  - `hooks/security/block-dangerous.sh` — single-line block messages
+  - `hooks/security/block-secrets.sh` — single-line block messages
+  - `hooks/security/block-sed-json.sh` — single-line block messages with jq hint
+  - `hooks/security/block-outside-workspace.sh` — single-line block messages
+  - `tests/hooks/test-block-output.sh` — created 8-test suite checking output <= 3 lines per hook
+- **Learnings:**
+  - All block output collapses to 1 line since both the block message and the retry suffix are on one line. Max is 1, well under 3.
+  - The test checks actual stderr line count from each hook invocation.
+- **Status:** done
+
 ## Iteration 3 — 2026-02-21
 
 - **Task:** block-outside-workspace allow /tmp/ (Task 3)

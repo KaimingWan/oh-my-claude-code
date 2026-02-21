@@ -19,9 +19,7 @@ CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
 # Check 1: secrets in the command itself (echo "sk-xxx" > file, curl -H "Bearer sk-xxx")
 if echo "$CMD" | grep -qiE "$SECRET_PATTERNS"; then
-  hook_block_with_recovery "🚫 BLOCKED: Secret pattern detected in command.
-Command: $CMD
-Never put secrets directly in commands. Use environment variables instead." "$CMD"
+  hook_block_with_recovery "🚫 BLOCKED: Secret pattern in command. Use env vars instead." "$CMD"
 fi
 
 # Check 2: git commit/push — scan staged files for secrets
@@ -29,9 +27,7 @@ if echo "$CMD" | grep -qiE '\bgit[[:space:]]+(commit|push)\b'; then
   STAGED=$(git diff --cached --diff-filter=ACM 2>/dev/null)
   if [ -n "$STAGED" ]; then
     if echo "$STAGED" | grep -qiE "$SECRET_PATTERNS"; then
-      hook_block_with_recovery "🚫 BLOCKED: Potential secret detected in staged files.
-Run 'git diff --cached' to review.
-Remove secrets before committing." "$CMD"
+      hook_block_with_recovery "🚫 BLOCKED: Secret in staged files. Run 'git diff --cached' to review." "$CMD"
     fi
   fi
 fi

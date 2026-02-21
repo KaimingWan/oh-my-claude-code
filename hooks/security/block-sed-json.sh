@@ -18,14 +18,7 @@ CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
 # Detect sed/awk modifying .json files (in-place or redirect)
 if echo "$CMD" | grep -qE "(sed|awk|perl).*\.json"; then
-  hook_block_with_recovery "🚫 BLOCKED: Do not use sed/awk on JSON files.
-Command: $CMD
-
-Use jq instead:
-- Read:    jq '.key' file.json
-- Modify:  jq '.key = \"value\"' file.json > tmp && mv tmp file.json
-- In-place (jq 1.7+): jq '.key = \"value\"' --in-place file.json
-- Safe string: jq --arg k \"\$val\" '.key = \$k' file.json" "$CMD"
+  hook_block_with_recovery "🚫 BLOCKED: Do not use sed/awk on JSON. Use jq instead: jq '.key = \"val\"' f.json > tmp && mv tmp f.json" "$CMD"
 fi
 
 exit 0

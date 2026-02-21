@@ -23,27 +23,13 @@ fi
 
 for pattern in "${DANGEROUS_BASH_PATTERNS[@]}"; do
   if echo "$CMD" | grep -qE "$pattern"; then
-    hook_block_with_recovery "🚫 BLOCKED: Dangerous command detected.
-Command: $CMD
-Matched: $pattern
-
-Use safer alternatives:
-- rm → mv to ~/.Trash/
-- git reset --hard → git stash first
-- git clean → list with -n first" "$CMD"
+    hook_block_with_recovery "🚫 BLOCKED: Dangerous command (matched: $pattern). Alt: mv to ~/.Trash/ | git stash" "$CMD"
   fi
 done
 
 for pattern in "${DANGEROUS_BASH_PATTERNS_NOCASE[@]}"; do
   if echo "$CMD" | grep -qiE "$pattern"; then
-    hook_block_with_recovery "🚫 BLOCKED: Dangerous command detected.
-Command: $CMD
-Matched: $pattern
-
-Use safer alternatives:
-- rm → mv to ~/.Trash/
-- git reset --hard → git stash first
-- git clean → list with -n first" "$CMD"
+    hook_block_with_recovery "🚫 BLOCKED: Dangerous command (matched: $pattern). Alt: mv to ~/.Trash/ | git stash" "$CMD"
   fi
 done
 

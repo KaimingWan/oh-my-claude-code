@@ -30,15 +30,11 @@ hook_block_with_recovery() {
   # Append new count
   echo "{\"key\":\"$KEY_HASH\",\"count\":$COUNT,\"ts\":$(date +%s)}" >> "$COUNT_FILE"
 
-  # Append guidance based on count
+  # Append guidance based on count (single line to limit context pollution)
   if [ "$COUNT" -ge 3 ]; then
-    msg="$msg
-
-⛔ SKIP: This item has been blocked $COUNT times. Mark it as '- [SKIP] blocked: security hook' in the plan and move to the next item."
+    msg="$msg | ⛔ SKIP ($COUNT/3): Mark as '[SKIP] blocked' in plan and continue."
   else
-    msg="$msg
-
-⚡ RETRY ($COUNT/3): Use the safe alternative above and try again."
+    msg="$msg | ⚡ RETRY ($COUNT/3): Use safe alternative."
   fi
 
   echo "$msg" >&2
