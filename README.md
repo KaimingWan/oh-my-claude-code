@@ -85,7 +85,7 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 | Command | Workflow |
 |---------|----------|
 | `@plan` | brainstorming → write plan (with checklist) → reviewer challenge → fix until APPROVE → user confirm |
-| `@execute` | load approved plan → Ralph Loop: bash outer loop checks checklist → fresh Kiro instance per iteration → no stops until all items checked off |
+| `@execute` | load approved plan → Ralph Loop: outer loop checks checklist → fresh CLI per iteration → idle watchdog (60s) + circuit breaker → auto-launched from `@plan` |
 | `@research` | L0 built-in knowledge → L1 web search → L2 deep research → write findings to file |
 | `@review` | dispatch reviewer subagent → categorize P0-P3 → cite file:line |
 | `@reflect` | manual knowledge capture → extract insight → dedup check → append to episodes.md |
