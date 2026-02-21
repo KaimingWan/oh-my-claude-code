@@ -1,3 +1,17 @@
+## Iteration 8 — 2026-02-21
+
+- **Task:** config validation passes (Task 8)
+- **Command:** `python3 scripts/generate_configs.py --validate`
+- **Result:** ✅ Hook registry is consistent with files on disk.
+- **Status:** done
+
+## Iteration 7 — 2026-02-21
+
+- **Task:** regression tests pass (Task 7)
+- **Command:** `bash tests/hooks/test-kiro-compat.sh`
+- **Result:** 19 passed, 0 failed
+- **Status:** done
+
 ## Iteration 6 — 2026-02-21
 
 - **Task:** feedback output slimmed (Task 6)
