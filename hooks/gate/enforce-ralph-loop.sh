@@ -76,6 +76,28 @@ block_msg() {
   exit 2
 }
 
+# Extract protected files from plan's "Files:" sections (lines starting with "- Modify:")
+# These are the files the plan intends to change — direct edits outside ralph-loop are blocked.
+extract_protected_files() {
+  grep -E '^\-[[:space:]]+(Modify|Create):[[:space:]]+' "$PLAN_FILE" 2>/dev/null \
+    | sed -E 's/^\-[[:space:]]+(Modify|Create):[[:space:]]+`?([^`]+)`?.*/\2/' \
+    | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
+# Check if a file path matches the protected list
+is_protected_file() {
+  local target="$1"
+  local pf
+  while IFS= read -r pf; do
+    [ -z "$pf" ] && continue
+    # Match exact path or basename
+    if [ "$target" = "$pf" ] || [ "$(basename "$target")" = "$(basename "$pf")" ]; then
+      return 0
+    fi
+  done < <(extract_protected_files)
+  return 1
+}
+
 if [ "$MODE" = "bash" ]; then
   CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
 
@@ -95,44 +117,18 @@ if [ "$MODE" = "bash" ]; then
   # Block commands that delete/overwrite .active
   echo "$CMD" | grep -qE '(rm|>|>>|mv|cp).*\.active' && block_msg "Cannot manipulate .active file"
 
-  # Extract first command (before any pipe/chain) for allowlist checks
-  FIRST_CMD=$(echo "$CMD" | sed 's/[|;&].*//' | sed 's/^[[:space:]]*//')
-
-  # Test commands — read-only diagnostics, always allowed
-  if echo "$FIRST_CMD" | grep -qE '^python3?[[:space:]]+-m[[:space:]]+pytest[[:space:]]'; then
-    exit 0
-  fi
-  if echo "$FIRST_CMD" | grep -qE '^bash[[:space:]]+tests/'; then
-    exit 0
-  fi
-
-  # Read-only allowlist — checked BEFORE chaining so pipes between read-only cmds are allowed
-  if echo "$FIRST_CMD" | grep -qE '^(git[[:space:]]+(status|log|diff|show|branch|worktree|stash[[:space:]]+list)|ls|cat|head|tail|grep|rg|wc|file|stat|test|md5|shasum|date|pwd|which|type|jq|printf|echo|awk|ps|sed[[:space:]]+-n|find[[:space:]])'; then
-    # Allow piping/chaining between read-only commands, but block destructive writes
-    # Note: [^0-9]>[^&] avoids matching fd redirects like 2>/dev/null and 2>&1
-    if ! echo "$CMD" | grep -qE '([^0-9]>[^&]|^>[^&]|>>|rm |mv |cp |python|bash |sh |curl |wget )'; then
-      exit 0
+  # Denylist mode: block only if command writes to a protected file
+  # Check for file redirection or write patterns targeting protected files
+  if echo "$CMD" | grep -qE '(>|>>|tee|cp|mv|sed[[:space:]]+-i)'; then
+    # Extract potential target file from the command
+    TARGET_FILE=$(echo "$CMD" | grep -oE '>[[:space:]]*[^[:space:]|;&]+' | head -1 | sed 's/^>[[:space:]]*//')
+    if [ -n "$TARGET_FILE" ] && is_protected_file "$TARGET_FILE"; then
+      block_msg "Direct write to protected plan file '$TARGET_FILE'"
     fi
   fi
 
-  # Safe git operations (save work / restore state, not execute tasks)
-  if echo "$FIRST_CMD" | grep -qE '^git[[:space:]]+(add|commit|push|checkout|restore|reset|stash[[:space:]]+(save|push|pop|apply))([[:space:]]|$)'; then
-    exit 0
-  fi
-
-  # Safe filesystem markers (touch, mkdir, unlink) — allow with stderr redirects like 2>/dev/null
-  if echo "$FIRST_CMD" | grep -qE '^(touch|mkdir(-p)?|unlink)[[:space:]]'; then
-    if ! echo "$CMD" | grep -qE '(>\s[^&/]|>>|python|bash |sh )'; then
-      exit 0
-    fi
-  fi
-
-  # Reject any command with chaining/piping/subshells (not in allowlists above)
-  if echo "$CMD" | grep -qE '(&&|\|\||;|\||>>|>\s|`|\$\()'; then
-    block_msg "Chained/piped commands not allowed outside ralph-loop"
-  fi
-
-  block_msg "Command not in allowlist"
+  # Allow all other bash commands by default (denylist mode)
+  exit 0
 fi
 
 if [ "$MODE" = "write" ]; then
@@ -152,16 +148,16 @@ if [ "$MODE" = "write" ]; then
     *.ralph-loop.lock|*ralph-loop.lock) block_msg "Cannot write to lock file" ;;
   esac
 
-  # Allowlist for fs_write
+  # Always block .active pointer manipulation
   case "$FILE" in
-    docs/plans/*.md|docs/plans/.active|docs/plans/.ralph-result) exit 0 ;;
-    .completion-criteria.md) exit 0 ;;
+    docs/plans/.active) block_msg "Cannot write to .active pointer outside ralph-loop" ;;
   esac
 
-  # knowledge/*.md only (no executables)
-  if echo "$FILE" | grep -qE '^knowledge/.*\.md$'; then
-    exit 0
+  # Denylist mode: allow by default, only block writes to protected files
+  if is_protected_file "$FILE"; then
+    block_msg "Direct write to protected plan file '$FILE'"
   fi
 
-  block_msg "Write to $FILE not allowed outside ralph-loop"
+  # Allow everything else (denylist mode — not in protected list)
+  exit 0
 fi
