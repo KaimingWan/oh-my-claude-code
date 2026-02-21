@@ -1,3 +1,5 @@
+> **ABANDONED** — 未执行，已关闭
+
 # Plan: OMCC Submodule Distribution for china-poetry-app
 
 > Goal: Apply oh-my-claude-code (OMCC) framework v3 to china-poetry-app (CPA) via git submodule + symlink, preserving all CPA project-specific knowledge/rules/skills, with one-command sync for future updates.

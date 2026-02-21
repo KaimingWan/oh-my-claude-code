@@ -1,3 +1,5 @@
+> **ABANDONED** — 未执行，已关闭
+
 # ~~Fix Ralph Loop Parallel Execution Bugs~~ (OBSOLETE)
 
 > **⚠️ OBSOLETE** — 废弃于 2026-02-21。原因：plan 创建后 ralph_loop.py/plan.py/worktree.py 累计改动 338 行，行号引用和函数签名全部过时。Bug 描述仍有效，需基于当前代码重新规划。
