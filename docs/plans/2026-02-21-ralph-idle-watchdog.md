@@ -268,11 +268,17 @@ Expected: ALL PASS
 `test: idle watchdog false-positive guard + regression`
 
 ## Review
-<!-- Reviewer writes here -->
+
+**Verdict: APPROVE**
+
+Architecture is sound: PTY provides unbuffered output, heartbeat thread monitors log file size growth, idle watchdog fires when no growth detected for `idle_timeout` seconds.
+Corner cases covered: active process (writes output) must survive past idle_timeout; silent process must be killed well before task_timeout.
+Risk: double-close of master fd is mitigated by OSError catch in stop() and _reader(). Process group kill (SIGTERM to pgid) aligns with existing cleanup handler pattern.
+No backwards-incompatible changes to existing tests.
 
 ## Checklist
 
-- [ ] PTY runner 输出无缓冲 | `python3 -m pytest tests/ralph-loop/test_pty_runner.py -v`
+- [x] PTY runner 输出无缓冲 | `python3 -m pytest tests/ralph-loop/test_pty_runner.py -v`
 - [ ] idle watchdog 杀死静默进程 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_idle_watchdog_kills_silent_process -v`
 - [ ] 活跃进程不被误杀 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_active_process_not_killed_by_idle_watchdog -v`
 - [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
