@@ -10,6 +10,18 @@
   - The UNCHECKED count check early-exits if 0 unchecked items — tests must have at least one `- [ ]` item.
 - **Status:** done
 
+## Iteration 5 — 2026-02-21
+
+- **Task:** context-enrichment output <=8 lines (Task 5)
+- **Files changed:**
+  - `hooks/feedback/context-enrichment.sh` — added 60s dedup (DEDUP_FILE), emit() helper for buffered output, MAX_RULES=3 cap in rules injection, output truncation to max 8 lines at end
+  - `tests/hooks/test-context-budget.sh` — created 5-test suite: output <=8 lines, research keyword triggers, 60s dedup suppression, rules cap with 10→3, truncation under 8 lines
+- **Learnings:**
+  - printf '- [ ] item' fails with "invalid option" — the leading dash is parsed as a flag. Use heredoc or cat for content with leading dashes.
+  - _RALPH_LOOP_RUNNING env var leak from shell session doesn't affect test isolation since each hook invocation is a fresh subprocess.
+  - The .active pointer must point to an existing plan file for Write tool access to work correctly. Stale pointers cause the time-window fallback to kick in.
+- **Status:** done
+
 ## Iteration 4 — 2026-02-21
 
 - **Task:** block output <=3 lines (Task 4)
