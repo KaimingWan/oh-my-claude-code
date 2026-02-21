@@ -1,7 +1,7 @@
 You MUST follow this exact sequence. Do NOT skip or reorder any step.
 
 ## Step 1: Deep Understanding (skill: planning Phase 0)
-Follow skills/planning/SKILL.md Phase 0 to build deep understanding of the goal. Ask clarifying questions, research if needed, and present design for creative/architectural work. Do NOT proceed until the user confirms the direction. After user confirms: `touch .phase0-confirmed`
+Follow skills/planning/SKILL.md Phase 0 to build deep understanding of the goal. Ask clarifying questions, research if needed, and present design for creative/architectural work. Do NOT proceed until the user confirms the direction. After user confirms: `touch .brainstorm-confirmed`
 
 ## Step 2: Writing Plan (skill: planning)
 Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, an empty ## Review section, and a ## Checklist section with all acceptance criteria as `- [ ]` items. The checklist is the contract — @execute will not proceed without it.
@@ -25,7 +25,7 @@ Show the final plan with reviewer verdict. User confirms by saying `@execute` (w
 ## Step 7: Hand Off to Execute
 After user confirms (including via `@execute`):
 1. Write the plan file path to `docs/plans/.active` (e.g., `echo "docs/plans/2026-02-14-feature-x.md" > docs/plans/.active`)
-2. Clean up: `unlink .phase0-confirmed 2>/dev/null || true`
+2. Clean up: `unlink .brainstorm-confirmed 2>/dev/null || true`
 3. **Auto-commit plan artifacts** — ralph_loop.py requires a clean working tree. Only commit files the agent created/modified during this plan session (plan file, .active, any skill/prompt changes). Do NOT `git add -A` — user may have unrelated edits in progress. Use explicit file paths:
    ```
    git add docs/plans/<plan-file>.md docs/plans/.active [other files agent touched]
