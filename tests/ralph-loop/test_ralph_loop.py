@@ -116,7 +116,7 @@ def test_lock_cleanup_on_signal(tmp_path):
 
 
 from scripts.lib.plan import PlanFile
-from scripts.ralph_loop import build_init_prompt, build_prompt
+from scripts.ralph_loop import build_prompt
 
 
 def test_fallback_no_task_structure(tmp_path):
@@ -515,12 +515,12 @@ def test_no_cli_found():
 
 
 def test_init_prompt_differs_from_regular(tmp_path):
-    """build_init_prompt contains 'FIRST iteration'; build_prompt does not."""
+    """build_prompt(is_first=True) contains 'FIRST iteration'; regular does not."""
     plan_file = tmp_path / "plan.md"
     plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
     pf = PlanFile(plan_file)
 
-    init = build_init_prompt(pf, plan_file, tmp_path, skip_precheck="1")
+    init = build_prompt(1, pf, plan_file, tmp_path, skip_precheck="1", is_first=True)
     regular = build_prompt(2, pf, plan_file, tmp_path, skip_precheck="1")
 
     assert "FIRST iteration" in init
@@ -698,11 +698,27 @@ def test_active_process_not_killed_by_idle_watchdog(tmp_path):
         summary_file.unlink(missing_ok=True)
 
 
-def test_precheck_runs_only_once():
-    """run_precheck should only appear in build_init_prompt, not build_prompt."""
+def test_single_build_prompt_function():
+    """Only one prompt builder function should exist (merged)."""
     source = open("scripts/ralph_loop.py").read()
-    build_prompt_body = source.split("def build_prompt(")[1].split("\ndef ")[0]
-    assert "run_precheck" not in build_prompt_body, "build_prompt should not call run_precheck"
+    assert "def build_init_prompt(" not in source, "build_init_prompt should be merged into build_prompt"
+    assert "def build_prompt(" in source, "build_prompt should still exist"
+
+
+def test_precheck_runs_only_once():
+    """run_precheck should only run when is_first=True, not on subsequent iterations."""
+    from scripts.ralph_loop import build_prompt
+    from scripts.lib.plan import PlanFile
+    from unittest.mock import patch
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("# T\n## Checklist\n- [ ] a | `true`\n")
+        f.flush()
+        pf = PlanFile(Path(f.name))
+        # is_first=False should NOT call run_precheck
+        with patch('scripts.ralph_loop.run_precheck') as mock_pre:
+            build_prompt(2, pf, Path(f.name), Path('.'))
+            mock_pre.assert_not_called()
 
 
 def test_detect_cli_called_outside_loop():

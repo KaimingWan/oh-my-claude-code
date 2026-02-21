@@ -110,22 +110,38 @@ def write_summary(exit_code: int, plan: PlanFile, plan_path: Path, summary_file:
 
 # --- Build prompt ---
 def build_prompt(iteration: int, plan: PlanFile, plan_path: Path, project_root: Path,
-                 skip_precheck: str = "", prev_exit: int = -1) -> str:
+                 skip_precheck: str = "", prev_exit: int = -1, is_first: bool = False) -> str:
     plan.reload()
     progress_file = plan.progress_path
     findings_file = plan.findings_path
     next_items = "\n".join(plan.next_unchecked(5))
 
-    env_status = "✅ Environment OK (cached)"
+    if is_first:
+        if skip_precheck:
+            env_status = "⏭️ Precheck skipped"
+        else:
+            precheck_ok, precheck_out = run_precheck(project_root)
+            env_status = "✅ Environment OK" if precheck_ok else f"❌ Environment FAILING:\n{precheck_out}"
+        header = "You are executing a plan (FIRST iteration — environment setup and verification)."
+        pre_items = """This is the FIRST iteration. Before implementing anything:
+1. Verify the environment is set up correctly (dependencies installed, tests runnable).
+2. If environment is failing, fix it first before proceeding.
+3. Then implement the FIRST unchecked item below."""
+    else:
+        env_status = "✅ Environment OK (cached)"
+        header = "You are executing a plan."
+        pre_items = ""
 
-    return f"""You are executing a plan. Read these files first:
+    return f"""{header}
+
+Read these files first:
 1. Plan: {plan_path}
 2. Progress log: {progress_file} (if exists — contains learnings from previous iterations)
 3. Findings: {findings_file} (if exists — contains research discoveries and decisions)
 
 Environment: {env_status}
 
-Next unchecked items:
+{pre_items + chr(10) if pre_items else ""}Next unchecked items:
 {next_items}
 
 Rules:
@@ -144,53 +160,6 @@ Rules:
 8. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command. If blocked 3+ times on the same item, mark it as '- [SKIP] blocked by security hook' and continue.
 """
 
-
-def build_init_prompt(plan: PlanFile, plan_path: Path, project_root: Path,
-                      skip_precheck: str = "") -> str:
-    """Generate the FIRST iteration prompt — verifies environment before implementing."""
-    plan.reload()
-    progress_file = plan.progress_path
-    findings_file = plan.findings_path
-    next_items = "\n".join(plan.next_unchecked(5))
-
-    if skip_precheck:
-        env_status = "⏭️ Precheck skipped"
-    else:
-        precheck_ok, precheck_out = run_precheck(project_root)
-        env_status = f"✅ Environment OK" if precheck_ok else f"❌ Environment FAILING:\n{precheck_out}"
-
-    return f"""You are executing a plan (FIRST iteration — environment setup and verification).
-
-Read these files first:
-1. Plan: {plan_path}
-2. Progress log: {progress_file} (if exists — contains learnings from previous iterations)
-3. Findings: {findings_file} (if exists — contains research discoveries and decisions)
-
-Environment: {env_status}
-
-This is the FIRST iteration. Before implementing anything:
-1. Verify the environment is set up correctly (dependencies installed, tests runnable).
-2. If environment is failing, fix it first before proceeding.
-3. Then implement the FIRST unchecked item below.
-
-Next unchecked items:
-{next_items}
-
-Rules:
-1. Implement the FIRST unchecked item. Verify it works (run tests/typecheck).
-2. Update the plan: change that item from '- [ ]' to '- [x]'.
-3. Append to {progress_file} with format:
-   ## Iteration 1 — $(date)
-   - **Task:** <what you did>
-   - **Files changed:** <list>
-   - **Learnings:** <gotchas, patterns discovered>
-   - **Status:** done / skipped
-4. If you discover reusable patterns or make technical decisions, write to {findings_file}.
-5. Commit: feat: <item description>.
-6. Continue with next unchecked item. Do NOT stop while unchecked items remain.
-7. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next.
-8. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command. If blocked 3+ times on the same item, mark it as '- [SKIP] blocked by security hook' and continue.
-"""
 
 
 
@@ -333,9 +302,9 @@ def main():
 
         # Build prompt
         if i == 1 and plan.checked == 0:
-            prompt = build_init_prompt(plan, plan_path, PROJECT_ROOT, skip_precheck)
+            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, is_first=True)
         else:
-            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, prev_exit=prev_exit)
+            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck)
 
         if shutdown_flag[0]:
             break
