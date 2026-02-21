@@ -279,9 +279,9 @@ No backwards-incompatible changes to existing tests.
 ## Checklist
 
 - [x] PTY runner 输出无缓冲 | `python3 -m pytest tests/ralph-loop/test_pty_runner.py -v`
-- [ ] idle watchdog 杀死静默进程 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_idle_watchdog_kills_silent_process -v`
-- [ ] 活跃进程不被误杀 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_active_process_not_killed_by_idle_watchdog -v`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
+- [x] idle watchdog 杀死静默进程 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_idle_watchdog_kills_silent_process -v`
+- [x] 活跃进程不被误杀 | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_active_process_not_killed_by_idle_watchdog -v`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
 
 ## Errors
 

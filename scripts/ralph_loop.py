@@ -24,6 +24,7 @@ from scripts.lib.plan import PlanFile
 from scripts.lib.lock import LockFile
 from scripts.lib.cli_detect import detect_cli
 from scripts.lib.precheck import run_precheck
+from scripts.lib.pty_runner import pty_run
 
 
 def die(msg: str) -> None:
@@ -56,15 +57,32 @@ def make_cleanup_handler(child_proc_ref: list, lock: LockFile,
 
 # --- Heartbeat thread ---
 def _heartbeat(proc: subprocess.Popen, iteration: int, stop_event: threading.Event,
-               plan: PlanFile, heartbeat_interval: int):
-    elapsed = 0
+               plan: PlanFile, heartbeat_interval: int,
+               log_path: Path = None, idle_timeout: int = 0):
+    last_size = log_path.stat().st_size if (log_path and log_path.exists()) else 0
+    idle_elapsed = 0
     while not stop_event.wait(heartbeat_interval):
         if proc.poll() is not None:
             break
-        elapsed += heartbeat_interval
         plan.reload()
+        if log_path:
+            cur_size = log_path.stat().st_size if log_path.exists() else 0
+            if cur_size > last_size:
+                last_size = cur_size
+                idle_elapsed = 0
+            else:
+                idle_elapsed += heartbeat_interval
+            if idle_timeout > 0 and idle_elapsed >= idle_timeout:
+                ts = datetime.now().strftime("%H:%M:%S")
+                print(f"🧊 [{ts}] Iteration {iteration} — no output for {idle_elapsed}s, killing (idle watchdog)",
+                      flush=True)
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                except (ProcessLookupError, OSError):
+                    pass
+                break
         ts = datetime.now().strftime("%H:%M:%S")
-        print(f"💓 [{ts}] Iteration {iteration} — {plan.checked}/{plan.total} done (elapsed {elapsed}s)",
+        print(f"💓 [{ts}] Iteration {iteration} — {plan.checked}/{plan.total} done (idle {idle_elapsed}s)",
               flush=True)
 
 
@@ -188,6 +206,7 @@ from dataclasses import dataclass
 class Config:
     max_iterations: int = 10
     task_timeout: int = 1800
+    idle_timeout: int = 60
     heartbeat_interval: int = 60
     skip_dirty_check: str = ""
     skip_precheck: str = ""
@@ -205,6 +224,7 @@ def parse_config(argv: list[str] = None) -> Config:
     return Config(
         max_iterations=max_iter,
         task_timeout=int(os.environ.get("RALPH_TASK_TIMEOUT", "1800")),
+        idle_timeout=int(os.environ.get("RALPH_IDLE_TIMEOUT", "60")),
         heartbeat_interval=int(os.environ.get("RALPH_HEARTBEAT_INTERVAL", "60")),
         skip_dirty_check=os.environ.get("RALPH_SKIP_DIRTY_CHECK", ""),
         skip_precheck=os.environ.get("RALPH_SKIP_PRECHECK", ""),
@@ -232,6 +252,7 @@ def main():
     max_iterations = cfg.max_iterations
     plan_pointer = cfg.plan_pointer
     task_timeout = cfg.task_timeout
+    idle_timeout = cfg.idle_timeout
     heartbeat_interval = cfg.heartbeat_interval
     skip_dirty_check = cfg.skip_dirty_check
     skip_precheck = cfg.skip_precheck
@@ -325,42 +346,40 @@ def main():
         if shutdown_flag[0]:
             break
 
-        # Launch kiro-cli with process group isolation
-        with log_file.open("a") as log_fd:
-            base_cmd = detect_cli()
-            if base_cmd[0] == 'claude':
-                cmd = [base_cmd[0], '-p', prompt] + base_cmd[2:]
-            else:
-                cmd = base_cmd + [prompt]
+        # Launch kiro-cli with PTY for unbuffered output + idle watchdog
+        base_cmd = detect_cli()
+        if base_cmd[0] == 'claude':
+            cmd = [base_cmd[0], '-p', prompt] + base_cmd[2:]
+        else:
+            cmd = base_cmd + [prompt]
 
-            proc = subprocess.Popen(
-                cmd, stdout=log_fd, stderr=subprocess.STDOUT,
-                start_new_session=True,
-            )
-            child_proc_ref[0] = proc
+        proc, pty_stop = pty_run(cmd, log_file)
+        child_proc_ref[0] = proc
 
-            stop_event = threading.Event()
-            hb = threading.Thread(
-                target=_heartbeat,
-                args=(proc, i, stop_event, plan, heartbeat_interval),
-                daemon=True,
-            )
-            hb.start()
+        stop_event = threading.Event()
+        hb = threading.Thread(
+            target=_heartbeat,
+            args=(proc, i, stop_event, plan, heartbeat_interval),
+            kwargs={"log_path": log_file, "idle_timeout": idle_timeout},
+            daemon=True,
+        )
+        hb.start()
 
+        try:
+            proc.wait(timeout=task_timeout)
+        except subprocess.TimeoutExpired:
+            ts = datetime.now().strftime("%H:%M:%S")
+            print(f"⏰ [{ts}] Iteration {i} timed out after {task_timeout}s — killing", flush=True)
+            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
             try:
-                proc.wait(timeout=task_timeout)
+                proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                ts = datetime.now().strftime("%H:%M:%S")
-                print(f"⏰ [{ts}] Iteration {i} timed out after {task_timeout}s — killing", flush=True)
-                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                try:
-                    proc.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                    proc.wait()
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                proc.wait()
 
-            stop_event.set()
-            hb.join(timeout=2)
+        stop_event.set()
+        hb.join(timeout=2)
+        pty_stop()
 
         prev_exit = proc.returncode if proc.returncode is not None else 1
 

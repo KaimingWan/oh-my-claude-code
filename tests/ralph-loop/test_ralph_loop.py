@@ -649,6 +649,55 @@ def test_flock_prevents_double_ralph(tmp_path):
     lock_path.unlink(missing_ok=True)
 
 
+def test_idle_watchdog_kills_silent_process(tmp_path):
+    """Process that produces no output is killed by idle watchdog before task_timeout."""
+    write_plan(tmp_path)
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    script = tmp_path / "silent.sh"
+    script.write_text("#!/bin/bash\nsleep 300\n")
+    script.chmod(0o755)
+    try:
+        start = time.monotonic()
+        r = run_ralph(tmp_path, extra_env={
+            "RALPH_KIRO_CMD": str(script),
+            "RALPH_TASK_TIMEOUT": "300",
+            "RALPH_IDLE_TIMEOUT": "3",
+            "RALPH_HEARTBEAT_INTERVAL": "1",
+        }, max_iter="1")
+        elapsed = time.monotonic() - start
+        assert r.returncode == 1
+        assert elapsed < 30, f"Took {elapsed:.0f}s — idle watchdog didn't fire"
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+
+
+def test_active_process_not_killed_by_idle_watchdog(tmp_path):
+    """Process that produces output every second survives past idle_timeout."""
+    write_plan(tmp_path)
+    lock_path = Path(".ralph-loop.lock")
+    lock_path.unlink(missing_ok=True)
+    summary_file = Path("docs/plans/.ralph-result")
+    script = tmp_path / "chatty.sh"
+    script.write_text("#!/bin/bash\nfor i in $(seq 1 10); do echo tick$i; sleep 1; done\n")
+    script.chmod(0o755)
+    try:
+        start = time.monotonic()
+        r = run_ralph(tmp_path, extra_env={
+            "RALPH_KIRO_CMD": str(script),
+            "RALPH_TASK_TIMEOUT": "30",
+            "RALPH_IDLE_TIMEOUT": "3",
+            "RALPH_HEARTBEAT_INTERVAL": "1",
+        }, max_iter="1")
+        elapsed = time.monotonic() - start
+        assert elapsed >= 8, f"Killed too early at {elapsed:.0f}s — false positive"
+    finally:
+        lock_path.unlink(missing_ok=True)
+        summary_file.unlink(missing_ok=True)
+
+
 def test_main_has_no_inline_env_reads():
     """main() should use parse_config, not inline os.environ.get calls."""
     source = open("scripts/ralph_loop.py").read()
