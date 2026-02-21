@@ -6,7 +6,8 @@
 INPUT=$(cat)
 USER_MSG=$(echo "$INPUT" | jq -r '.prompt // ""' 2>/dev/null)
 
-LESSONS_FLAG="/tmp/lessons-injected-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo 'default').flag"
+source "$(dirname "$0")/../_lib/common.sh" 2>/dev/null || true
+LESSONS_FLAG="/tmp/lessons-injected-$(ws_hash).flag"
 [ -f "$LESSONS_FLAG" ] && exit 0
 
 # Episode cleanup: remove promoted episodes (cold-start fallback)
@@ -21,6 +22,18 @@ fi
 if [ -f "knowledge/episodes.md" ]; then
   PROMOTE=$(grep '| active |' "knowledge/episodes.md" 2>/dev/null | cut -d'|' -f3 | tr ',' '\n' | sed 's/^ *//;s/ *$//' | sort | uniq -c | awk '$1 >= 3' | wc -l | tr -d ' ')
   [ "$PROMOTE" -gt 0 ] && echo "⬆️ $PROMOTE keyword patterns appear ≥3 times in episodes → consider promotion"
+fi
+
+# Ralph loop enforcement reminder
+PLAN_POINTER="docs/plans/.active"
+if [ -f "$PLAN_POINTER" ]; then
+  PLAN_FILE=$(cat "$PLAN_POINTER" | tr -d '[:space:]')
+  if [ -f "$PLAN_FILE" ]; then
+    UNCHECKED=$(awk '/^## Checklist/{found=1;buf="";next} found && /^## /{found=0} found{buf=buf"\n"$0} END{print buf}' "$PLAN_FILE" 2>/dev/null | grep -c '^\- \[ \]' || true)
+    if [ "${UNCHECKED:-0}" -gt 0 ]; then
+      echo "⚠️ Active plan has $UNCHECKED unchecked items. 执行命令: python3 scripts/ralph_loop.py — 不要手动执行 task。"
+    fi
+  fi
 fi
 
 touch "$LESSONS_FLAG"
