@@ -138,14 +138,14 @@ print('ok')
 
 ## Checklist
 
-- [ ] Pyright 类型错误全部修复（0 errors） | `cd /Users/wanshao/project/oh-my-claude-code && python3 -m pyright scripts/ralph_loop.py scripts/lib/pty_runner.py 2>&1 | grep '0 errors' | grep -q '0 errors'`
-- [ ] validate_plan() 被 main() 调用，消除重复逻辑 | `cd /Users/wanshao/project/oh-my-claude-code && python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_validate_plan_missing -v 2>&1 | grep -q 'PASSED'`
-- [ ] detect_test_command 两个实现对齐 | `cd /Users/wanshao/project/oh-my-claude-code && grep -q 'python3 -m pytest' hooks/_lib/common.sh && grep -q 'conftest.py' hooks/_lib/common.sh && grep -q 'pom.xml' scripts/lib/precheck.py && echo ok`
-- [ ] 危险命令列表补齐 docker/shred | `cd /Users/wanshao/project/oh-my-claude-code && python3 -c "from scripts.generate_configs import DENIED_COMMANDS_STRICT; p=' '.join(DENIED_COMMANDS_STRICT); assert 'shred' in p and 'docker' in p" && echo ok`
-- [ ] WS_HASH 抽取为 ws_hash() 函数，旧内联用法全部替换 | `cd /Users/wanshao/project/oh-my-claude-code && grep -q 'ws_hash()' hooks/_lib/common.sh && test "$(grep -rn 'pwd | shasum' hooks/feedback/ hooks/gate/ hooks/_lib/block-recovery.sh | grep -vc 'common.sh')" = "0" && echo ok`
-- [ ] plan.py is_all_skipped 属性行为正确 | `cd /Users/wanshao/project/oh-my-claude-code && python3 -m pytest tests/ralph-loop/test_plan.py -k 'skip' -v 2>&1 | grep -q 'passed'`
-- [ ] pty_runner.py fd 泄漏修复 + 测试通过 | `cd /Users/wanshao/project/oh-my-claude-code && python3 -m pytest tests/ralph-loop/test_pty_runner.py -v 2>&1 | tail -1 | grep -q 'passed'`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
+- [x] Pyright 类型错误全部修复（0 errors） | `cd /Users/wanshao/project/oh-my-claude-code && python3 -m pyright scripts/ralph_loop.py scripts/lib/pty_runner.py 2>&1 | grep '0 errors' | grep -q '0 errors'`
+- [x] validate_plan() 被 main() 调用，消除重复逻辑 | `cd /Users/wanshao/project/oh-my-claude-code && python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_validate_plan_missing -v 2>&1 | grep -q 'PASSED'`
+- [x] detect_test_command 两个实现对齐 | `cd /Users/wanshao/project/oh-my-claude-code && grep -q 'python3 -m pytest' hooks/_lib/common.sh && grep -q 'conftest.py' hooks/_lib/common.sh && grep -q 'pom.xml' scripts/lib/precheck.py && echo ok`
+- [x] 危险命令列表补齐 docker/shred | `cd /Users/wanshao/project/oh-my-claude-code && python3 -c "from scripts.generate_configs import DENIED_COMMANDS_STRICT; p=' '.join(DENIED_COMMANDS_STRICT); assert 'shred' in p and 'docker' in p" && echo ok`
+- [x] WS_HASH 抽取为 ws_hash() 函数，旧内联用法全部替换 | `cd /Users/wanshao/project/oh-my-claude-code && grep -q 'ws_hash()' hooks/_lib/common.sh && test "$(grep -rn 'pwd | shasum' hooks/feedback/ hooks/gate/ hooks/_lib/block-recovery.sh | grep -vc 'common.sh')" = "0" && echo ok`
+- [x] plan.py is_all_skipped 属性行为正确 | `cd /Users/wanshao/project/oh-my-claude-code && python3 -m pytest tests/ralph-loop/test_plan.py -k 'skip' -v 2>&1 | grep -q 'passed'`
+- [x] pty_runner.py fd 泄漏修复 + 测试通过 | `cd /Users/wanshao/project/oh-my-claude-code && python3 -m pytest tests/ralph-loop/test_pty_runner.py -v 2>&1 | tail -1 | grep -q 'passed'`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
 
 ## Review
 
