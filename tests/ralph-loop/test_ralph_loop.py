@@ -698,6 +698,13 @@ def test_active_process_not_killed_by_idle_watchdog(tmp_path):
         summary_file.unlink(missing_ok=True)
 
 
+def test_precheck_runs_only_once():
+    """run_precheck should only appear in build_init_prompt, not build_prompt."""
+    source = open("scripts/ralph_loop.py").read()
+    build_prompt_body = source.split("def build_prompt(")[1].split("\ndef ")[0]
+    assert "run_precheck" not in build_prompt_body, "build_prompt should not call run_precheck"
+
+
 def test_detect_cli_called_outside_loop():
     """detect_cli() must be called before the loop, not inside it."""
     source = open("scripts/ralph_loop.py").read()

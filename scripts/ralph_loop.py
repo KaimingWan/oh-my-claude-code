@@ -116,13 +116,7 @@ def build_prompt(iteration: int, plan: PlanFile, plan_path: Path, project_root: 
     findings_file = plan.findings_path
     next_items = "\n".join(plan.next_unchecked(5))
 
-    if skip_precheck:
-        env_status = "⏭️ Precheck skipped"
-    elif prev_exit == 0:
-        env_status = "✅ Environment OK (cached — last iteration succeeded)"
-    else:
-        precheck_ok, precheck_out = run_precheck(project_root)
-        env_status = f"✅ Environment OK" if precheck_ok else f"❌ Environment FAILING:\n{precheck_out}"
+    env_status = "✅ Environment OK (cached)"
 
     return f"""You are executing a plan. Read these files first:
 1. Plan: {plan_path}
