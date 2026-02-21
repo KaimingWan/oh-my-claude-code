@@ -698,6 +698,17 @@ def test_active_process_not_killed_by_idle_watchdog(tmp_path):
         summary_file.unlink(missing_ok=True)
 
 
+def test_claude_cmd_has_no_session_persistence():
+    """Claude command should include --no-session-persistence to avoid disk I/O."""
+    from scripts.lib.cli_detect import detect_cli
+    from unittest.mock import patch
+    with patch('shutil.which', side_effect=lambda x: '/usr/bin/claude' if x == 'claude' else None), \
+         patch('subprocess.run') as mock_run:
+        mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0, stdout='pong', stderr='')
+        cmd = detect_cli()
+        assert '--no-session-persistence' in cmd
+
+
 def test_heartbeat_no_confusing_elapsed():
     """_heartbeat should not have the confusing elapsed calculation."""
     source = open("scripts/ralph_loop.py").read()

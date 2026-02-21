@@ -222,8 +222,8 @@ Round 2: Goal Alignment ✅ APPROVE | Verify Correctness ❌ REQUEST CHANGES (�
 - [x] build_init_prompt 已合并 | `python3 -c "s=open('scripts/ralph_loop.py').read(); print('PASS' if 'def build_init_prompt(' not in s else 'FAIL')" | grep -q PASS`
 - [x] pty_runner stop() 不关 master fd | `python3 -c "s=open('scripts/lib/pty_runner.py').read(); stop=s.split('def stop():')[1].split('return')[0]; print('PASS' if 'os.close(master)' not in stop else 'FAIL')" | grep -q PASS`
 - [x] heartbeat 无混乱 elapsed 计算 | `python3 -c "s=open('scripts/ralph_loop.py').read(); print('PASS' if 'heartbeat_interval * (idle_elapsed' not in s else 'FAIL')" | grep -q PASS`
-- [ ] claude 命令含 --no-session-persistence | `python3 -c "s=open('scripts/lib/cli_detect.py').read(); print('PASS' if 'no-session-persistence' in s else 'FAIL')" | grep -q PASS`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v -m 'not slow'`
+- [x] claude 命令含 --no-session-persistence | `python3 -c "s=open('scripts/lib/cli_detect.py').read(); print('PASS' if 'no-session-persistence' in s else 'FAIL')" | grep -q PASS`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v -m 'not slow'`
 
 ## Errors
 
