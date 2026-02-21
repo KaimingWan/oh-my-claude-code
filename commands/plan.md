@@ -20,10 +20,10 @@ If reviewer verdict is REQUEST CHANGES or REJECT:
   - Repeat until APPROVE
 
 ## Step 6: User Confirmation
-Show the final plan with reviewer verdict. Ask user to confirm before any implementation.
+Show the final plan with reviewer verdict. User confirms by saying `@execute` (which also triggers execution) or just "确认"/"confirm".
 
 ## Step 7: Hand Off to Execute
-After user confirms:
+After user confirms (including via `@execute`):
 1. Write the plan file path to `docs/plans/.active` (e.g., `echo "docs/plans/2026-02-14-feature-x.md" > docs/plans/.active`)
 2. Clean up: `unlink .phase0-confirmed 2>/dev/null || true`
 3. **Auto-commit plan artifacts** — ralph_loop.py requires a clean working tree. Only commit files the agent created/modified during this plan session (plan file, .active, any skill/prompt changes). Do NOT `git add -A` — user may have unrelated edits in progress. Use explicit file paths:
@@ -32,7 +32,11 @@ After user confirms:
    git commit -m "plan: <plan-slug> (reviewed, approved)"
    ```
    If `git status --porcelain` still shows untracked/modified files after this commit, warn the user: "You have uncommitted changes outside this plan. Stash or commit them before @execute."
-4. Tell the user to run `@execute` to start implementation with Ralph Loop discipline (no unnecessary stops, one task at a time, commit after each).
+4. Launch Ralph Loop:
+   ```bash
+   python3 scripts/ralph_loop.py
+   ```
+   Report results when it finishes (see commands/execute.md Step 4).
 
 ---
 User's requirement:
