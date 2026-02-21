@@ -13,7 +13,7 @@ hook_block_with_recovery() {
   if [ -f "$COUNT_FILE" ]; then
     local CUTOFF=$(( $(date +%s) - 86400 ))
     local TMP="${COUNT_FILE}.tmp"
-    jq -c --argjson cutoff "$CUTOFF" 'select(.ts > $cutoff)' "$COUNT_FILE" > "$TMP" 2>/dev/null && mv "$TMP" "$COUNT_FILE" || rm -f "$TMP"
+    jq -c --argjson cutoff "$CUTOFF" 'select(.ts > $cutoff)' "$COUNT_FILE" > "$TMP" 2>/dev/null && mv "$TMP" "$COUNT_FILE" 2>/dev/null || rm -f "$TMP" 2>/dev/null
   fi
 
   local KEY_HASH

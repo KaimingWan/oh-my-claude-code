@@ -37,15 +37,17 @@
 | 2 | Secret leak blocker | `hooks/security/block-secrets.sh` | PreToolUse[bash] | security | common.sh, patterns.sh, block-recovery.sh |
 | 3 | sed/awk on JSON blocker | `hooks/security/block-sed-json.sh` | PreToolUse[bash] | security | common.sh, block-recovery.sh |
 | 4 | Workspace boundary guard | `hooks/security/block-outside-workspace.sh` | PreToolUse[bash,write] | security | common.sh, block-recovery.sh |
-| 5 | Pre-write dispatcher | `hooks/gate/pre-write.sh` | PreToolUse[write] | gate | common.sh, patterns.sh |
-| 6 | Ralph loop enforcer | `hooks/gate/enforce-ralph-loop.sh` | PreToolUse[bash,write] | gate | common.sh |
-| 7 | Regression test gate | `hooks/gate/require-regression.sh` | PreToolUse[bash] | gate | common.sh |
-| 8 | Post-write dispatcher | `hooks/feedback/post-write.sh` | PostToolUse[write] | feedback | common.sh |
-| 9 | Bash execution logger | `hooks/feedback/post-bash.sh` | PostToolUse[bash] | feedback | common.sh |
-| 10 | Correction detector | `hooks/feedback/correction-detect.sh` | UserPromptSubmit | feedback | — |
-| 11 | Session initializer | `hooks/feedback/session-init.sh` | UserPromptSubmit | feedback | — |
-| 12 | Context enrichment | `hooks/feedback/context-enrichment.sh` | UserPromptSubmit | feedback | — |
-| 13 | Completion verifier | `hooks/feedback/verify-completion.sh` | Stop | feedback | common.sh |
+| 5 | **Pre-bash output dispatcher** | `hooks/dispatch-pre-bash.sh` | PreToolUse[bash] | dispatcher | security/\*, gate/enforce-ralph-loop.sh, gate/require-regression.sh |
+| 6 | **Pre-write output dispatcher** | `hooks/dispatch-pre-write.sh` | PreToolUse[write] | dispatcher | security/block-outside-workspace.sh, gate/pre-write.sh, gate/enforce-ralph-loop.sh |
+| 7 | Pre-write merged gate | `hooks/gate/pre-write.sh` | PreToolUse[write] (via dispatcher) | gate | common.sh, patterns.sh |
+| 8 | Ralph loop enforcer | `hooks/gate/enforce-ralph-loop.sh` | PreToolUse[bash,write] (via dispatcher) | gate | common.sh |
+| 9 | Regression test gate | `hooks/gate/require-regression.sh` | PreToolUse[bash] (via dispatcher, pilot only) | gate | common.sh |
+| 10 | Post-write merged feedback | `hooks/feedback/post-write.sh` | PostToolUse[write] | feedback | common.sh |
+| 11 | Bash execution logger | `hooks/feedback/post-bash.sh` | PostToolUse[bash] | feedback | common.sh |
+| 12 | Correction detector | `hooks/feedback/correction-detect.sh` | UserPromptSubmit | feedback | — |
+| 13 | Session initializer | `hooks/feedback/session-init.sh` | UserPromptSubmit | feedback | — |
+| 14 | Context enrichment | `hooks/feedback/context-enrichment.sh` | UserPromptSubmit | feedback | — |
+| 15 | Completion verifier | `hooks/feedback/verify-completion.sh` | Stop | feedback | common.sh |
 
 ### Shadow Hooks (called internally, not in config)
 
@@ -64,15 +66,19 @@
 
 ### Agent Registration Matrix
 
+Kiro agents register dispatcher scripts (rows 1-2 below). CC settings.json registers individual hooks (no dispatcher layer).
+
 | Hook | default | pilot | executor | researcher | reviewer | CC settings.json |
 |------|---------|-------|----------|------------|----------|-------------------|
-| block-dangerous | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| block-secrets | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| block-sed-json | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| block-outside-workspace | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| pre-write | ✅ | ✅ | — | — | — | ✅ |
-| enforce-ralph-loop | ✅ | ✅ | — | — | — | ✅ |
-| require-regression | — | ✅ | — | — | — | — |
+| dispatch-pre-bash | ✅ | ✅(+regression) | ✅(SKIP_GATE=1) | ✅(SKIP_GATE=1) | ✅(SKIP_GATE=1) | — |
+| dispatch-pre-write | ✅ | ✅ | — | — | — | — |
+| block-dangerous | via dispatch | via dispatch | via dispatch | via dispatch | via dispatch | ✅ |
+| block-secrets | via dispatch | via dispatch | via dispatch | via dispatch | via dispatch | ✅ |
+| block-sed-json | via dispatch | via dispatch | via dispatch | via dispatch | via dispatch | ✅ |
+| block-outside-workspace | via dispatch | via dispatch | via dispatch | via dispatch | via dispatch | ✅ |
+| pre-write | via dispatch | via dispatch | — | — | — | ✅ |
+| enforce-ralph-loop | via dispatch | via dispatch | — | — | — | ✅ |
+| require-regression | — | via dispatch | — | — | — | — |
 | post-write | ✅ | ✅ | — | — | — | ✅ |
 | post-bash | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | correction-detect | ✅ | ✅ | — | — | — | ✅ |
@@ -152,6 +158,20 @@ New constraint needed
 - **`common.sh`:** Append-only functions. Document with one-line comment. Do not change existing signatures.
 - **`patterns.sh`:** Append-only arrays. Never remove patterns without security review.
 - **New `_lib/` files:** Allowed for genuinely new capabilities. Must be sourced explicitly — no auto-loading.
+
+### Dispatcher Pattern
+
+PreToolUse can accumulate stderr from multiple hooks into a single response (Kiro appends all hook outputs). To prevent context pollution from multiple block messages, a single dispatcher script is registered per matcher. The dispatcher calls sub-hooks as child processes, captures their stderr, applies a global output budget (`printf '%.200s'`), and fails fast on the first block.
+
+**dispatch-pre-bash.sh** (PreToolUse[execute_bash]):
+- Calls: security/block-dangerous.sh → security/block-secrets.sh → security/block-sed-json.sh → security/block-outside-workspace.sh → gate/enforce-ralph-loop.sh (→ gate/require-regression.sh if INCLUDE_REGRESSION=1)
+- Env: `SKIP_GATE=1` skips gate hooks (security-only mode for subagents); `INCLUDE_REGRESSION=1` adds require-regression.sh (pilot agent)
+
+**dispatch-pre-write.sh** (PreToolUse[fs_write]):
+- Calls: security/block-outside-workspace.sh → gate/pre-write.sh → gate/enforce-ralph-loop.sh
+- Note: `gate/pre-write.sh` is already a merged hook (internal functions). This dispatcher wraps it as the outer output-budget layer.
+
+**Output budget:** `printf '%.200s' "$stderr"` (bash 3.2 compatible — `${var:0:200}` is bash 4+ only).
 
 ### Merged Hook Strategy
 

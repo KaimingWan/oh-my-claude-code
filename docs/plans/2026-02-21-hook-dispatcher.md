@@ -101,12 +101,12 @@ Same dispatch logic as Task 1 (printf truncation, fail-fast).
 
 ## Checklist
 
-- [ ] dispatch-pre-bash.sh works | `bash tests/hooks/test-dispatch-pre-bash.sh`
-- [ ] dispatch-pre-write.sh works | `bash tests/hooks/test-dispatch-pre-write.sh`
-- [ ] generate_configs.py registers dispatchers | `python3 scripts/generate_configs.py --validate`
-- [ ] block-recovery.sh mv bug fixed | `bash -c ': > /tmp/br-test.jsonl && source hooks/_lib/common.sh && source hooks/_lib/block-recovery.sh && echo ok'`
-- [ ] kiro compat regression | `bash tests/hooks/test-kiro-compat.sh`
-- [ ] architecture doc updated | `grep -q 'dispatch' docs/designs/2026-02-18-hook-architecture.md`
+- [x] dispatch-pre-bash.sh works | `bash tests/hooks/test-dispatch-pre-bash.sh`
+- [x] dispatch-pre-write.sh works | `bash tests/hooks/test-dispatch-pre-write.sh`
+- [x] generate_configs.py registers dispatchers | `python3 scripts/generate_configs.py --validate`
+- [x] block-recovery.sh mv bug fixed | `bash -c ': > /tmp/br-test.jsonl && source hooks/_lib/common.sh && source hooks/_lib/block-recovery.sh && echo ok'`
+- [x] kiro compat regression | `bash tests/hooks/test-kiro-compat.sh`
+- [x] architecture doc updated | `grep -q 'dispatch' docs/designs/2026-02-18-hook-architecture.md`
 
 ## Review
 

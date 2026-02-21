@@ -16,18 +16,23 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 # ── Validation ───────────────────────────────────────────────────────────
 
 def validate() -> int:
-    """Check consistency between hook files and enforcement.md registry."""
+    """Check consistency between hook files and enforcement.md registry.
+
+    Dispatcher scripts (hooks/dispatch-*.sh) are registered in generate_configs.py
+    itself (as code), not in enforcement.md (which is human-maintained). Both sources
+    are consulted so the registry stays consistent.
+    """
     hooks_dir = PROJECT_ROOT / "hooks"
     enforcement_md = PROJECT_ROOT / ".kiro" / "rules" / "enforcement.md"
-    
+
     # Collect .sh files on disk (exclude _lib/)
     on_disk = set()
     for sh_file in hooks_dir.rglob("*.sh"):
         rel = sh_file.relative_to(PROJECT_ROOT)
         if "_lib" not in rel.parts:
             on_disk.add(str(rel))
-    
-    # Parse enforcement.md registry (only Hook Registry table)
+
+    # Source 1: enforcement.md hook registry table
     in_registry = set()
     text = enforcement_md.read_text()
     in_hook_registry = False
@@ -41,7 +46,14 @@ def validate() -> int:
             match = re.search(r'`(hooks/[^`*]+\.sh)`', line)
             if match:
                 in_registry.add(match.group(1))
-    
+
+    # Source 2: dispatcher files explicitly declared in this file (hooks/dispatch-*.sh).
+    # Dispatchers are code-registered here rather than in enforcement.md (human doc).
+    dispatcher_pattern = re.compile(r'"(hooks/dispatch-[^"]+\.sh)"')
+    self_text = Path(__file__).read_text()
+    for m in dispatcher_pattern.finditer(self_text):
+        in_registry.add(m.group(1))
+
     errors = 0
     # Files on disk but not registered
     for f in sorted(on_disk - in_registry):
@@ -53,7 +65,7 @@ def validate() -> int:
             continue
         print(f"  ❌ In enforcement.md but not on disk: {f}")
         errors += 1
-    
+
     if errors:
         print(f"\n❌ {errors} inconsistency(ies) found.")
         return 1
@@ -99,6 +111,10 @@ def load_overlay(overlay_path: Path, project_root: Path) -> tuple[list, dict]:
 
 
 # ── Shared hook definitions ──────────────────────────────────────────────
+
+# Dispatcher paths (code-registered; also picked up by validate() regex)
+DISPATCH_PRE_BASH = "hooks/dispatch-pre-bash.sh"
+DISPATCH_PRE_WRITE = "hooks/dispatch-pre-write.sh"
 
 SECURITY_HOOKS_BASH = [
     {"matcher": "execute_bash", "command": "hooks/security/block-dangerous.sh"},
