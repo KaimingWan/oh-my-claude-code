@@ -27,7 +27,7 @@ detect_test_command() {
   elif [ -f "go.mod" ]; then echo "go test ./... 2>&1"
   elif [ -f "pom.xml" ]; then echo "mvn test -q 2>&1"
   elif [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then echo "gradle test 2>&1"
-  elif [ -f "pyproject.toml" ] || [ -f "pytest.ini" ] || [ -f "setup.py" ] || [ -f "setup.cfg" ]; then echo "python -m pytest 2>&1"
+  elif [ -f "pyproject.toml" ] || [ -f "pytest.ini" ] || [ -f "setup.py" ] || [ -f "setup.cfg" ] || [ -f "conftest.py" ]; then echo "python3 -m pytest 2>&1"
   elif [ -f "Makefile" ] && grep -q '^test:' Makefile 2>/dev/null; then echo "make test 2>&1"
   else echo ""; fi
 }

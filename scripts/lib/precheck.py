@@ -20,6 +20,15 @@ def detect_test_command(project_root: Path) -> str:
         return "cargo test 2>&1"
     if (project_root / "go.mod").exists():
         return "go test ./... 2>&1"
+    if (project_root / "pom.xml").exists():
+        return "mvn test -q 2>&1"
+    if (project_root / "build.gradle").exists() or (project_root / "build.gradle.kts").exists():
+        return "gradle test 2>&1"
+    if (project_root / "Makefile").exists():
+        import subprocess as _sp
+        r = _sp.run(["grep", "-q", "^test:", str(project_root / "Makefile")], capture_output=True)
+        if r.returncode == 0:
+            return "make test 2>&1"
     return ""
 
 
