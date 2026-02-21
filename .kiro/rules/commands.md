@@ -31,3 +31,7 @@ Trigger compression workflow:
 | **Not duplicate** | Already covered? | Merge or update |
 | **Verifiable** | How to check compliance? | Define verification |
 | **Concise** | Can it be shorter? | Tighten first |
+
+## Language Matching
+
+Agent 必须使用与用户相同的语言回复。用户用中文就回中文，用英文就回英文。
