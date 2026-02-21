@@ -10,6 +10,18 @@
   - The UNCHECKED count check early-exits if 0 unchecked items — tests must have at least one `- [ ]` item.
 - **Status:** done
 
+## Iteration 3 — 2026-02-21
+
+- **Task:** block-outside-workspace allow /tmp/ (Task 3)
+- **Files changed:**
+  - `hooks/security/block-outside-workspace.sh` — removed `/tmp/` from OUTSIDE_WRITE_PATTERNS bash redirect patterns. Write/Edit workspace boundary check unchanged.
+  - `tests/hooks/test-outside-workspace.sh` — created 11-test suite
+  - `tests/hooks/test-cc-compat.sh` — updated bash /tmp/ test from BLOCK to ALLOW, added /etc/ block test
+- **Learnings:**
+  - /tmp/ removal only affects bash redirect patterns; Write/Edit path check (workspace boundary) still blocks /tmp/ writes correctly.
+  - CC compat test needed updating since the behavior intentionally changed.
+- **Status:** done
+
 ## Iteration 2 — 2026-02-21
 
 - **Task:** block-dangerous.sh narrowing (Task 2)

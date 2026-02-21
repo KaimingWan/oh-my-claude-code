@@ -77,11 +77,17 @@ run_test "CC-ALLOW outside-workspace Edit" 0 hooks/security/block-outside-worksp
 EOF
 
 # --- block-outside-workspace (Bash) ---
-run_test "CC-BLOCK outside-workspace Bash" 2 hooks/security/block-outside-workspace.sh <<'EOF'
+# /tmp/ is now allowed for bash writes (removed from OUTSIDE_WRITE_PATTERNS)
+run_test "CC-ALLOW outside-workspace Bash /tmp/" 0 hooks/security/block-outside-workspace.sh <<'EOF'
 {"hook_event_name":"PreToolUse","session_id":"s1","cwd":"/tmp","tool_name":"Bash","tool_input":{"command":"echo x > /tmp/evil.txt"}}
 EOF
 
-run_test "CC-ALLOW outside-workspace Bash" 0 hooks/security/block-outside-workspace.sh <<'EOF'
+# /etc/ is still blocked for bash writes
+run_test "CC-BLOCK outside-workspace Bash /etc/" 2 hooks/security/block-outside-workspace.sh <<'EOF'
+{"hook_event_name":"PreToolUse","session_id":"s1","cwd":"/tmp","tool_name":"Bash","tool_input":{"command":"echo x > /etc/test.conf"}}
+EOF
+
+run_test "CC-ALLOW outside-workspace Bash safe" 0 hooks/security/block-outside-workspace.sh <<'EOF'
 {"hook_event_name":"PreToolUse","session_id":"s1","cwd":"/tmp","tool_name":"Bash","tool_input":{"command":"echo hello"}}
 EOF
 

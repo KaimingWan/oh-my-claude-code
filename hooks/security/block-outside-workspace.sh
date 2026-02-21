@@ -57,7 +57,6 @@ Agent may only write files inside the workspace." "$FILE"
       '>+\s*/etc/'
       '>+\s*/usr/'
       '>+\s*/var/'
-      '>+\s*/tmp/'
       '>+\s*/opt/'
       '>+\s*~/\.'
       '>+\s*~/'
