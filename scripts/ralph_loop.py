@@ -74,15 +74,16 @@ def _heartbeat(proc: subprocess.Popen, iteration: int, stop_event: threading.Eve
                 idle_elapsed += heartbeat_interval
             if idle_timeout > 0 and idle_elapsed >= idle_timeout:
                 ts = datetime.now().strftime("%H:%M:%S")
-                print(f"🧊 [{ts}] Iteration {iteration} — no output for {idle_elapsed}s, killing (idle watchdog)",
+                print(f"🧊 [{ts}] No output for {idle_elapsed}s — restarting",
                       flush=True)
                 try:
                     os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
                 except (ProcessLookupError, OSError):
                     pass
                 break
+        elapsed = heartbeat_interval * (idle_elapsed // heartbeat_interval + 1) if idle_elapsed == 0 else idle_elapsed
         ts = datetime.now().strftime("%H:%M:%S")
-        print(f"💓 [{ts}] Iteration {iteration} — {plan.checked}/{plan.total} done (idle {idle_elapsed}s)",
+        print(f"💓 [{ts}] {plan.checked}/{plan.total} done",
               flush=True)
 
 
@@ -104,7 +105,7 @@ def write_summary(exit_code: int, plan: PlanFile, plan_path: Path, summary_file:
     summary = "\n".join(lines)
     summary_file.parent.mkdir(parents=True, exist_ok=True)
     summary_file.write_text(summary)
-    print(f"\n{'=' * 63}\n{summary}\n{'=' * 63}", flush=True)
+    print(f"\n{summary}", flush=True)
 
 
 # --- Build prompt ---
@@ -299,9 +300,7 @@ def main():
 
     # --- Startup banner ---
     plan.reload()
-    print(f"🔄 Ralph Loop — {plan.unchecked} tasks remaining ({plan.checked}/{plan.total} done) | log: {log_file}",
-          flush=True)
-    print(flush=True)
+    print(f"🔄 Ralph Loop — {plan.unchecked} tasks remaining", flush=True)
 
     # --- Main loop ---
     prev_checked = 0
@@ -316,16 +315,16 @@ def main():
             break
 
         if plan.is_complete:
-            print(f"\n✅ All {plan.checked} checklist items complete!", flush=True)
+            print(f"✅ All {plan.checked} tasks complete!", flush=True)
             final_exit = 0
             break
 
         # Circuit breaker
         if plan.checked <= prev_checked and i > 1:
             stale_rounds += 1
-            print(f"⚠️  No progress this round ({stale_rounds}/{MAX_STALE} stale)", flush=True)
+            print(f"⚠️  No progress — retrying ({stale_rounds}/{MAX_STALE})", flush=True)
             if stale_rounds >= MAX_STALE:
-                print(f"❌ Circuit breaker: {MAX_STALE} rounds with no progress. Stopping.", flush=True)
+                print(f"❌ Stuck — {MAX_STALE} retries with no progress. Stopping.", flush=True)
                 for item in plan.next_unchecked(50):
                     print(f"   {item}")
                 break
@@ -333,9 +332,7 @@ def main():
             stale_rounds = 0
         prev_checked = plan.checked
 
-        print(f"{'=' * 63}", flush=True)
-        print(f" Iteration {i}/{max_iterations} — {plan.unchecked} remaining, {plan.checked} done", flush=True)
-        print(f"{'=' * 63}", flush=True)
+
 
         # Build prompt
         if i == 1 and plan.checked == 0:
@@ -369,7 +366,7 @@ def main():
             proc.wait(timeout=task_timeout)
         except subprocess.TimeoutExpired:
             ts = datetime.now().strftime("%H:%M:%S")
-            print(f"⏰ [{ts}] Iteration {i} timed out after {task_timeout}s — killing", flush=True)
+            print(f"⏰ [{ts}] Timed out after {task_timeout}s — restarting", flush=True)
             os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
             try:
                 proc.wait(timeout=5)
@@ -389,7 +386,7 @@ def main():
         # Early completion check — avoid wasting a full iteration
         plan.reload()
         if plan.is_complete:
-            print(f"\n✅ All {plan.checked} checklist items complete!", flush=True)
+            print(f"✅ All {plan.checked} tasks complete!", flush=True)
             final_exit = 0
             break
 
