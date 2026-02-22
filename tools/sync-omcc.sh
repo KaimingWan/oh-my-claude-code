@@ -98,6 +98,58 @@ else
   info "Step 3.6: .kiro/ or commands/ not found, skipping prompts symlink"
 fi
 
+# ─── Step 3.7: Ensure scripts symlink (needed for ralph_loop.py) ──────────────
+if [ -d "$OMCC_ROOT/scripts" ] && [ ! -e "$PROJECT_ROOT/scripts" ]; then
+  ln -s .omcc/scripts "$PROJECT_ROOT/scripts"
+  ok "Step 3.7: scripts/ symlink created"
+elif [ -L "$PROJECT_ROOT/scripts" ]; then
+  info "Step 3.7: scripts/ symlink already exists"
+elif [ -d "$PROJECT_ROOT/scripts" ]; then
+  info "Step 3.7: scripts/ is a real directory, skipping"
+fi
+
+# ─── Step 3.8: Ensure docs/plans/ directory (needed for @plan/@execute) ───────
+mkdir -p "$PROJECT_ROOT/docs/plans"
+info "Step 3.8: docs/plans/ ensured"
+
+# ─── Step 3.9: Sync .kiro/settings/mcp.json ──────────────────────────────────
+OMCC_MCP="$OMCC_ROOT/.kiro/settings/mcp.json"
+PROJECT_MCP="$PROJECT_ROOT/.kiro/settings/mcp.json"
+if [ -f "$OMCC_MCP" ] && [ -d "$PROJECT_ROOT/.kiro/settings" ]; then
+  if [ ! -f "$PROJECT_MCP" ]; then
+    cp "$OMCC_MCP" "$PROJECT_MCP"
+    ok "Step 3.9: .kiro/settings/mcp.json copied from OMCC"
+  else
+    info "Step 3.9: .kiro/settings/mcp.json already exists, skipping"
+  fi
+else
+  info "Step 3.9: mcp.json source or .kiro/settings/ not found, skipping"
+fi
+
+# ─── Step 3.10: Sync .kiro/rules/ framework files ────────────────────────────
+# Copy OMCC's .kiro/rules/ files to project, skip files that already exist
+# (project-customized files take precedence)
+OMCC_KIRO_RULES="$OMCC_ROOT/.kiro/rules"
+PROJECT_KIRO_RULES="$PROJECT_ROOT/.kiro/rules"
+if [ -d "$OMCC_KIRO_RULES" ] && [ -d "$PROJECT_KIRO_RULES" ]; then
+  RULES_SYNCED=0
+  for rule_file in "$OMCC_KIRO_RULES"/*.md; do
+    [ -f "$rule_file" ] || continue
+    rule_name=$(basename "$rule_file")
+    if [ ! -f "$PROJECT_KIRO_RULES/$rule_name" ]; then
+      cp "$rule_file" "$PROJECT_KIRO_RULES/$rule_name"
+      RULES_SYNCED=$((RULES_SYNCED + 1))
+    fi
+  done
+  if [ "$RULES_SYNCED" -gt 0 ]; then
+    ok "Step 3.10: Synced $RULES_SYNCED new .kiro/rules/ file(s) from OMCC"
+  else
+    info "Step 3.10: .kiro/rules/ already up to date"
+  fi
+else
+  info "Step 3.10: .kiro/rules/ source or target not found, skipping"
+fi
+
 # ─── Step 4: Update AGENTS.md framework sections ──────────────────────────────
 info "Step 4: Updating AGENTS.md framework sections..."
 AGENTS_MD="$PROJECT_ROOT/AGENTS.md"

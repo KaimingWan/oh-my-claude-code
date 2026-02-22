@@ -55,6 +55,23 @@ def validate() -> int:
     for m in dispatcher_pattern.finditer(self_text):
         in_registry.add(m.group(1))
 
+    # Source 3: overlay extra_hooks (project-specific hooks declared in .omcc-overlay.json)
+    overlay_file = PROJECT_ROOT / ".omcc-overlay.json"
+    if overlay_file.exists():
+        import json
+        try:
+            overlay = json.loads(overlay_file.read_text())
+            for event_hooks in overlay.get("extra_hooks", {}).values():
+                for hook in event_hooks:
+                    cmd = hook.get("command", hook) if isinstance(hook, dict) else hook
+                    # Extract the hooks/... path from the command string
+                    parts = cmd.split()
+                    for part in parts:
+                        if part.startswith("hooks/") and part.endswith(".sh"):
+                            in_registry.add(part)
+        except (json.JSONDecodeError, AttributeError):
+            pass
+
     errors = 0
     # Files on disk but not registered
     for f in sorted(on_disk - in_registry):
