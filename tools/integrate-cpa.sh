@@ -146,9 +146,7 @@ else
 {
   "extra_skills": [${SKILLS_JSON}],
   "extra_hooks": {
-    "PreToolUse": [
-      {"matcher": "fs_write", "command": "hooks/project/enforce-code-quality.sh"}
-    ]
+    "PreToolUse": ["hooks/project/enforce-code-quality.sh"]
   }
 }
 OVERLAY_JSON
