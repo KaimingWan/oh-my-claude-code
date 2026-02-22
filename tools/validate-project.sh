@@ -79,7 +79,8 @@ if [ "$OVERLAY_VALID" = true ]; then
     fi
 
     # E3: validate each command exists and is executable
-    CMDS=$(jq -r --arg e "$event" '.extra_hooks[$e][]? // empty' "$OVERLAY_FILE" 2>/dev/null || true)
+    # Support both string format ["cmd"] and dict format [{"command":"cmd"}]
+    CMDS=$(jq -r --arg e "$event" '.extra_hooks[$e][]? | if type == "object" then .command else . end // empty' "$OVERLAY_FILE" 2>/dev/null || true)
     while IFS= read -r cmd; do
       [ -z "$cmd" ] && continue
       # Extract just the command (first word), resolve relative to project root
