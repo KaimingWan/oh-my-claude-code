@@ -73,6 +73,16 @@ if ! eval "$GENERATE_CMD"; then
 fi
 ok "Step 3: Agent configs generated"
 
+# ─── Step 3.5: Ensure commands symlink ────────────────────────────────────────
+if [ -d "$OMCC_ROOT/commands" ] && [ ! -e "$PROJECT_ROOT/commands" ]; then
+  ln -s .omcc/commands "$PROJECT_ROOT/commands"
+  ok "Step 3.5: commands/ symlink created"
+elif [ -L "$PROJECT_ROOT/commands" ]; then
+  info "Step 3.5: commands/ symlink already exists"
+else
+  info "Step 3.5: commands/ directory exists (not a symlink), skipping"
+fi
+
 # ─── Step 4: Update AGENTS.md framework sections ──────────────────────────────
 info "Step 4: Updating AGENTS.md framework sections..."
 AGENTS_MD="$PROJECT_ROOT/AGENTS.md"

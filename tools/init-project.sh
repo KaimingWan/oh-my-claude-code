@@ -123,6 +123,12 @@ if [ -d "$TEMPLATE_DIR/skills" ]; then
   echo "📦 Copied $SKILL_COUNT skills"
 fi
 
+# ── Symlink commands ──────────────────────────────────────────────────────────
+if [ -d "$TEMPLATE_DIR/commands" ]; then
+  cp -r "$TEMPLATE_DIR/commands" "$TARGET/commands"
+  echo "📦 Copied commands"
+fi
+
 # ── Create overlay scaffolding ────────────────────────────────────────────────
 # Empty .omcc-overlay.json for project-specific skill/hook extensions
 if [ ! -f "$TARGET/.omcc-overlay.json" ]; then
