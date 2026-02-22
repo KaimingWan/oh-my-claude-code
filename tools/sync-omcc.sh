@@ -83,6 +83,21 @@ else
   info "Step 3.5: commands/ directory exists (not a symlink), skipping"
 fi
 
+# ─── Step 3.6: Ensure .kiro/prompts → commands symlink (Kiro CLI custom commands) ─
+KIRO_PROMPTS="$PROJECT_ROOT/.kiro/prompts"
+if [ -d "$PROJECT_ROOT/.kiro" ] && [ -e "$PROJECT_ROOT/commands" ]; then
+  if [ ! -e "$KIRO_PROMPTS" ]; then
+    ln -s ../commands "$KIRO_PROMPTS"
+    ok "Step 3.6: .kiro/prompts → ../commands symlink created"
+  elif [ -L "$KIRO_PROMPTS" ]; then
+    info "Step 3.6: .kiro/prompts symlink already exists"
+  else
+    info "Step 3.6: .kiro/prompts is a real directory, skipping"
+  fi
+else
+  info "Step 3.6: .kiro/ or commands/ not found, skipping prompts symlink"
+fi
+
 # ─── Step 4: Update AGENTS.md framework sections ──────────────────────────────
 info "Step 4: Updating AGENTS.md framework sections..."
 AGENTS_MD="$PROJECT_ROOT/AGENTS.md"
