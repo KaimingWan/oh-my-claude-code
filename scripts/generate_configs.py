@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+SCRIPT_ROOT = Path(__file__).resolve().parent.parent  # Always points to OMCC repo
 
 # ── Validation ───────────────────────────────────────────────────────────
 
@@ -337,7 +338,7 @@ def write_md(path: Path, content: str) -> None:
 
 
 def cc_reviewer_agent() -> str:
-    prompt = (PROJECT_ROOT / "agents" / "reviewer-prompt.md").read_text()
+    prompt = (SCRIPT_ROOT / "agents" / "reviewer-prompt.md").read_text()
     return f"""---
 name: reviewer
 description: "Review expert. Plan review: challenge decisions, find gaps. Code review: check quality, security, SOLID."
@@ -374,7 +375,7 @@ hooks:
 
 
 def cc_researcher_agent() -> str:
-    prompt = (PROJECT_ROOT / "agents" / "researcher-prompt.md").read_text()
+    prompt = (SCRIPT_ROOT / "agents" / "researcher-prompt.md").read_text()
     return f"""---
 name: researcher
 description: "Research specialist. Web research via fetch MCP + code search via ripgrep MCP + Tavily via shell."
