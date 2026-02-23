@@ -206,17 +206,17 @@ Expected: `OK`
 
 ## Checklist
 
-- [ ] gtm is a git repo with initial commit | `cd /Users/wanshao/project/gtm && git rev-parse --is-inside-work-tree`
-- [ ] OMCC submodule exists at .omcc/ | `cd /Users/wanshao/project/gtm && test -f .omcc/AGENTS.md && echo OK`
-- [ ] .omcc-overlay.json is valid | `cd /Users/wanshao/project/gtm && python3 -c "import json; d=json.load(open('.omcc-overlay.json')); assert 'extra_skills' in d and 'extra_hooks' in d; print('OK')"`
-- [ ] Agent configs generated (5 files) | `cd /Users/wanshao/project/gtm && ls .kiro/agents/*.json 2>/dev/null | wc -l | grep -q 5 && echo OK`
-- [ ] Overlay hooks merged into default.json | `cd /Users/wanshao/project/gtm && jq -e '.hooks.userPromptSubmit[] | select(.command | contains("three-rules-check"))' .kiro/agents/default.json > /dev/null`
-- [ ] OMCC shared sections in AGENTS.md | `cd /Users/wanshao/project/gtm && test $(grep -c 'BEGIN OMCC' AGENTS.md) -ge 4 && echo OK`
-- [ ] No redundant IDE directories | `cd /Users/wanshao/project/gtm && ! ls -d .cursor .gemini .trae .opencode .claude .agent 2>/dev/null`
-- [ ] Knowledge directory untouched | `cd /Users/wanshao/project/gtm && test -f knowledge/INDEX.md && test -f knowledge/active-deals/INDEX.md && echo OK`
-- [ ] AGENTS.md business content preserved | `cd /Users/wanshao/project/gtm && grep -q 'AutoMQ GTM Engine' AGENTS.md && grep -q '客户优先级' AGENTS.md && echo OK`
-- [ ] Skills directory has OMCC + third-party + custom | `cd /Users/wanshao/project/gtm && test $(ls .kiro/skills/ | wc -l) -ge 110 && echo OK`
-- [ ] .gitignore excludes tmp/, .firecrawl/, IDE dirs | `cd /Users/wanshao/project/gtm && grep -q 'tmp/' .gitignore && grep -q '.firecrawl/' .gitignore && grep -q '.cursor/' .gitignore && echo OK`
-- [ ] Project hooks moved to hooks/project/ | `cd /Users/wanshao/project/gtm && test -f hooks/project/three-rules-check.sh && echo OK`
-- [ ] OMCC hooks copied to hooks/ | `cd /Users/wanshao/project/gtm && test -f hooks/security/block-dangerous.sh && test -f hooks/feedback/context-enrichment.sh && echo OK`
-- [ ] .kiro/hooks is symlink to ../hooks | `cd /Users/wanshao/project/gtm && test -L .kiro/hooks && echo OK`
+- [x] gtm is a git repo with initial commit | `cd /Users/wanshao/project/gtm && git rev-parse --is-inside-work-tree`
+- [x] OMCC submodule exists at .omcc/ | `cd /Users/wanshao/project/gtm && test -f .omcc/AGENTS.md && echo OK`
+- [x] .omcc-overlay.json is valid | `cd /Users/wanshao/project/gtm && python3 -c "import json; d=json.load(open('.omcc-overlay.json')); assert 'extra_skills' in d and 'extra_hooks' in d; print('OK')"`
+- [x] Agent configs generated (5 files) | `cd /Users/wanshao/project/gtm && ls .kiro/agents/*.json 2>/dev/null | wc -l | grep -q 5 && echo OK`
+- [x] Overlay hooks merged into default.json | `cd /Users/wanshao/project/gtm && jq -e '.hooks.userPromptSubmit[] | select(.command | contains("three-rules-check"))' .kiro/agents/default.json > /dev/null`
+- [x] OMCC shared sections in AGENTS.md | `cd /Users/wanshao/project/gtm && test $(grep -c 'BEGIN OMCC' AGENTS.md) -ge 4 && echo OK`
+- [x] No redundant IDE directories | `cd /Users/wanshao/project/gtm && ! ls -d .cursor .gemini .trae .opencode .claude .agent 2>/dev/null`
+- [x] Knowledge directory untouched | `cd /Users/wanshao/project/gtm && test -f knowledge/INDEX.md && test -f knowledge/active-deals/INDEX.md && echo OK`
+- [x] AGENTS.md business content preserved | `cd /Users/wanshao/project/gtm && grep -q 'AutoMQ GTM Engine' AGENTS.md && grep -q '客户优先级' AGENTS.md && echo OK`
+- [x] Skills directory has OMCC + third-party + custom | `cd /Users/wanshao/project/gtm && test $(ls .kiro/skills/ | wc -l) -ge 110 && echo OK`
+- [x] .gitignore excludes tmp/, .firecrawl/, IDE dirs | `cd /Users/wanshao/project/gtm && grep -q 'tmp/' .gitignore && grep -q '.firecrawl/' .gitignore && grep -q '.cursor/' .gitignore && echo OK`
+- [x] Project hooks moved to hooks/project/ | `cd /Users/wanshao/project/gtm && test -f hooks/project/three-rules-check.sh && echo OK`
+- [x] OMCC hooks copied to hooks/ | `cd /Users/wanshao/project/gtm && test -f hooks/security/block-dangerous.sh && test -f hooks/feedback/context-enrichment.sh && echo OK`
+- [x] .kiro/hooks is symlink to ../hooks | `cd /Users/wanshao/project/gtm && test -L .kiro/hooks && echo OK`
