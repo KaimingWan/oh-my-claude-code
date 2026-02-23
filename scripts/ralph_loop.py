@@ -188,7 +188,7 @@ def parse_config(argv: list[str] | None = None) -> Config:
     return Config(
         max_iterations=max_iter,
         task_timeout=int(os.environ.get("RALPH_TASK_TIMEOUT", "1800")),
-        idle_timeout=int(os.environ.get("RALPH_IDLE_TIMEOUT", "60")),
+        idle_timeout=int(os.environ.get("RALPH_IDLE_TIMEOUT", "120")),
         heartbeat_interval=int(os.environ.get("RALPH_HEARTBEAT_INTERVAL", "60")),
         skip_dirty_check=os.environ.get("RALPH_SKIP_DIRTY_CHECK", ""),
         skip_precheck=os.environ.get("RALPH_SKIP_PRECHECK", ""),
@@ -207,7 +207,15 @@ def validate_plan(plan_path: Path) -> PlanFile:
 
 
 def main():
-    PROJECT_ROOT = Path(__file__).resolve().parent.parent
+    # Use git to find project root (handles symlinked scripts/ correctly)
+    _git_root = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        capture_output=True, text=True,
+    )
+    if _git_root.returncode == 0 and _git_root.stdout.strip():
+        PROJECT_ROOT = Path(_git_root.stdout.strip())
+    else:
+        PROJECT_ROOT = Path(__file__).resolve().parent.parent
     MAX_STALE = 3
     os.chdir(PROJECT_ROOT)
 
