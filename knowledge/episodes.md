@@ -20,3 +20,9 @@
 
 2026-02-21 | active | phase0,alignment,user-intent,language | Phase 0分析产出偏离用户需求. 两个独立问题: ①用户中文提问却用英文回复——输入风格匹配的基本功没做到 ②用户说"执行时间/效率"却聚焦代码整洁(DRY/fd双关闭)——读完代码后被细节吸引, 没回头锚定原始需求. 根因不同不应混为一谈. 修复: Phase 0每个发现项产出前显式对齐用户原话——"这个发现回应了用户哪句话?" 对不上的降级或丢弃
 | 2026-02-21 | plan执行绕过ralph loop | agent review完plan后直接手动执行7个task而非启动ralph loop. enforce-ralph-loop hook用denylist模式检测shell写入pattern(>, sed -i等), 但python3 pathlib.write_text()绕过了检测. 根因: hook无法区分诊断命令和plan task执行, 且agent决策层面缺少强提醒. 修复: session-init注入ralph loop提醒 | workflow, ralph-loop | active |
+
+### 2026-02-23: sync-omcc.sh 缺少 agents/ symlink 步骤
+- **场景**: gtm 集成 OMCC 后，Kiro CLI 启动报错 `File URI not found: file://../../agents/reviewer-prompt.md`
+- **根因**: generate_configs.py 在 reviewer.json/researcher.json 中写了 `"prompt": "file://../../agents/reviewer-prompt.md"`，但 sync-omcc.sh 没有创建 `agents/` → `.omcc/agents/` 的 symlink
+- **修复**: 手动 `ln -sf .omcc/agents agents`
+- **待办**: sync-omcc.sh 应增加 Step 3.x 确保 `agents/` symlink，类似 commands/ 和 scripts/ 的处理
