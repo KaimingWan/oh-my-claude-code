@@ -14,7 +14,7 @@ def pty_run(cmd: list[str], log_path: Path) -> tuple[subprocess.Popen, Callable]
     """
     master, slave = pty.openpty()
     proc = subprocess.Popen(
-        cmd, stdout=slave, stderr=subprocess.STDOUT,
+        cmd, stdin=slave, stdout=slave, stderr=subprocess.STDOUT,
         start_new_session=True, close_fds=True,
     )
     os.close(slave)
