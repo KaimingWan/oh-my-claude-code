@@ -188,3 +188,12 @@ cc_run() {
   return $exit_code
 }
 ```
+
+
+## Kiro Auto-Compact Known Issues
+
+- **#5792**: Custom agents (.kiro/agents/) do not auto-compact. Context climbs to 100% and session errors out. Only default built-in agent triggers auto-compact. Workaround: manual `/compact` at ~70-80%.
+- **#5527**: Hooks bypass auto-compaction trigger. Hook-injected content (resources, MCP tool defs) each turn may bypass the compaction trigger check.
+- Auto-compact triggers at 80% context usage (per kiro.dev/docs/chat/summarization/).
+- Compact API call needs ~32K max_tokens headroom. If input exceeds 168K (200K-32K), compact request is rejected by API.
+- Framework mitigation: dispatcher `printf '%.200s'` truncates all hook stderr; context-enrichment session-once injection; inject-plan-context 1-line summary mode.
