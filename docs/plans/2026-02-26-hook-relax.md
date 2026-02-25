@@ -120,8 +120,8 @@ Run: `python3 -m pytest tests/ralph-loop/ -v`
 - [x] 无 plan 时创建 source 文件不被 block | `rm -f docs/plans/.active; WORKFLOW_PLAN_WINDOW=0 bash -c 'echo "{\"tool_name\":\"fs_write\",\"tool_input\":{\"command\":\"create\",\"file_path\":\"test_new.py\",\"content\":\"x=1\"}}" | bash hooks/gate/pre-write.sh 2>&1'; test $? -eq 0`
 - [x] 有 plan 时创建非 plan 文件不被 block | `echo "docs/plans/2026-02-26-hook-relax.md" > docs/plans/.active; echo '{"tool_name":"fs_write","tool_input":{"command":"create","file_path":"unrelated.py","content":"x=1"}}' | bash hooks/gate/pre-write.sh 2>&1; rc=$?; rm -f docs/plans/.active; test $rc -eq 0`
 - [x] ralph loop dirty check 不再 die | `grep -q 'die.*Dirty' scripts/ralph_loop.py; test $? -ne 0`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
-- [ ] hook 测试通过 | `bash tests/hooks/test-ralph-gate.sh`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v`
+- [x] hook 测试通过 | `bash tests/hooks/test-ralph-gate.sh`
 
 ## Review
 

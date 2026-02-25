@@ -27,3 +27,10 @@
 - **Files changed:** `scripts/ralph_loop.py`
 - **Learnings:** Single line change: `die("Dirty working tree...")` → `print("⚠️ Dirty working tree detected. Proceeding anyway...")`. Keeps the RALPH_SKIP_DIRTY_CHECK env var as a way to silence the warning.
 - **Status:** done
+
+## Iteration 5 — 2026-02-26T00:52
+
+- **Task:** Regression tests (pytest + hook tests)
+- **Files changed:** `tests/hooks/test-ralph-gate.sh`
+- **Learnings:** test-ralph-gate.sh had a pre-existing bug: it didn't account for running inside a ralph loop. Two fixes: (1) `unset _RALPH_LOOP_RUNNING` at test start, (2) save/restore `.ralph-loop.lock` in setup/cleanup so blocking tests work when a real ralph-loop lock exists. Also added `set +e` in cleanup to prevent cleanup errors from overriding the test exit code.
+- **Status:** done
