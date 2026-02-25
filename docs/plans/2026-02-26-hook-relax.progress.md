@@ -6,3 +6,10 @@
 - **Files changed:** `hooks/gate/enforce-ralph-loop.sh`
 - **Learnings:** The guard block (lines 21-35) intercepted git commits when `.active` was staged with a different value than HEAD. Removing it was a clean deletion — no other code depended on those variables.
 - **Status:** done
+
+## Iteration 2 — 2026-02-26T00:48
+
+- **Task:** Remove plan-requirement gate from pre-write.sh gate_check()
+- **Files changed:** `hooks/gate/pre-write.sh`
+- **Learnings:** gate_check() had find_active_plan → block + review verdict check. Replaced entire body with advisory-only progress display. The checklist check-off gate hashes verify commands with `echo | shasum` (includes trailing newline) — must match when logging hashes programmatically.
+- **Status:** done
