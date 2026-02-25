@@ -15,6 +15,9 @@ if [ -z "$WORKSPACE" ] || [ "$WORKSPACE" = "/" ]; then
   hook_block "🚫 BLOCKED: Cannot determine workspace root. Refusing all writes for safety."
 fi
 
+# Allow sibling projects: parent of workspace
+WORKSPACE_PARENT=$(dirname "$WORKSPACE")
+
 case "$TOOL_NAME" in
   fs_write|Write|Edit)
     FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)
@@ -38,10 +41,10 @@ case "$TOOL_NAME" in
     fi
 
     case "$RESOLVED" in
-      "$WORKSPACE"/*|"$WORKSPACE") exit 0 ;;
+      "$WORKSPACE_PARENT"/*) exit 0 ;;
     esac
 
-    hook_block_with_recovery "🚫 BLOCKED: Write outside workspace ($RESOLVED). Use paths inside: $WORKSPACE/" "$FILE"
+    hook_block_with_recovery "🚫 BLOCKED: Write outside workspace parent ($RESOLVED). Allowed: $WORKSPACE_PARENT/*" "$FILE"
     ;;
 
   execute_bash|Bash)
