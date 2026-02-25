@@ -324,7 +324,7 @@ Round 2: Goal Alignment APPROVE + Verify Correctness APPROVE.
 - [x] generate_configs.py 包含 skill 生成 | `grep -q "CC skill files" scripts/generate_configs.py && echo PASS`
 - [x] sync-omcc.sh 包含 MCP 注册 | `grep -q "mcp-prompts" tools/sync-omcc.sh && echo PASS`
 - [x] AGENTS.md 包含新命令 | `grep -q '@o/agent' AGENTS.md && grep -q '@o/know' AGENTS.md && echo PASS`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ -v --timeout=30; test $? -eq 0 && echo PASS`
+- [x] 回归测试通过 | `python3 -m pytest tests/ -v --timeout=30; test $? -eq 0 && echo PASS`
 
 ## Errors
 
