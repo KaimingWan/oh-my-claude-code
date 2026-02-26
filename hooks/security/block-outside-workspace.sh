@@ -58,11 +58,10 @@ case "$TOOL_NAME" in
       '>+\s*/usr/'
       '>+\s*/var/'
       '>+\s*/opt/'
-      '>+\s*\$HOME/'
-      'tee\s+(-a\s+)?(/etc/|/usr/|/var/|~/|~/.|\$HOME/)'
-      '\b(cp|mv|install)\b.*\s+(/etc/|/usr/|/var/|~/|~/.|\$HOME/)'
-      '\bln\b.*\s+(/etc/|/usr/|/var/|~/|~/.|\$HOME/)'
-      '\btar\b.*-C\s*(/etc/|/usr/|/var/|~/|\$HOME/)'
+      'tee\s+(-a\s+)?(/etc/|/usr/|/var/)'
+      '\b(cp|mv|install)\b.*\s+(/etc/|/usr/|/var/)'
+      '\bln\b.*\s+(/etc/|/usr/|/var/)'
+      '\btar\b.*-C\s*(/etc/|/usr/|/var/)'
     )
 
     for pattern in "${OUTSIDE_WRITE_PATTERNS[@]}"; do
