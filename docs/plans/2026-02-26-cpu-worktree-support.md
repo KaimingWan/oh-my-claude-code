@@ -103,7 +103,7 @@ git push
 
 # Cleanup
 git worktree remove "$worktree_path" --force
-git branch -D "$feature_branch"
+git branch -d "$feature_branch"
 ​```
 
 Report: "Merged `<feature_branch>` into `<base_branch>`, pushed, worktree cleaned up."
@@ -117,13 +117,13 @@ worktree_path=$(pwd)
 # Create PR
 gh pr create --title "<generate from commits>" --body "<summary of changes>"
 
-# Cleanup worktree (code is on remote, worktree no longer needed)
+# Cleanup worktree only (code is on remote, worktree no longer needed)
+# Do NOT delete local branch - PR hasn't merged yet
 cd "$(git rev-parse --git-common-dir)/.."
 git worktree remove "$worktree_path" --force
-git branch -D "$feature_branch"
 ​```
 
-Report: "PR created: <url>. Worktree cleaned up. Branch will be deleted when PR merges (use `--delete-branch` on merge)."
+Report: "PR created: <url>. Worktree cleaned up. Local branch kept until PR merges."
 
 ## Edge Cases
 - **Uncommitted changes in main worktree:** Before merge (4A), check `git -C <main-tree> status --porcelain`. If dirty, warn user and abort merge.
@@ -156,6 +156,7 @@ git commit -m "feat(cpu): add worktree support with auto-merge/PR flow"
 
 ## Findings
 <!-- Append-only during execution -->
+- 4A uses `git branch -d` (safe delete, branch already merged). 4B does NOT delete local branch (PR not merged yet). Branch cleaned up after PR merge + `git fetch --prune`.
 
 ## Checklist
 
