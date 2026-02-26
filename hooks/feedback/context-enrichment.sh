@@ -40,6 +40,13 @@ elif echo "$USER_MSG" | grep -qiE '(\btest.*(fail|brok)|traceback|exception.*thr
   emit "🐛 Debug detected → read skills/debugging/SKILL.md. Use LSP tools (get_diagnostics, search_symbols, find_references) BEFORE attempting fixes."
 fi
 
+# Planning intent — force planning skill workflow
+if echo "$USER_MSG" | grep -qE '(plan|计划|整理|梳理|沉淀|规划|方案|设计.*方案|重构.*plan)' && ! echo "$USER_MSG" | grep -qE '^@execute|^/execute'; then
+  if [ ! -f ".brainstorm-confirmed" ]; then
+    emit "📋 Planning intent detected → Read skills/planning/SKILL.md and follow the FULL workflow: Phase 0 (Deep Understanding) → Phase 1 (Write Plan to docs/plans/) → Phase 1.5 (Dispatch 4 reviewer subagents) → Phase 2 (Execute via ralph loop). Do NOT skip phases. Plan file MUST have ## Tasks, ## Checklist, ## Review sections."
+  fi
+fi
+
 # @execute command — force ralph loop
 if echo "$USER_MSG" | grep -qE '^@execute|^/execute'; then
   PLAN_POINTER="docs/plans/.active"

@@ -2,6 +2,12 @@
 ## Workflow
 - Explore → Plan → Code（先调研，再计划，再编码）
 - 复杂任务先 interview，不要假设
+- **涉及多文件改动的任务，必须读取 `skills/planning/SKILL.md` 并严格执行完整流程：**
+  1. Phase 0: Deep Understanding（调研 + 提问）
+  2. Phase 1: Write Plan（写到 `docs/plans/`，必须有 `## Tasks` + `## Checklist` + `## Review`）
+  3. Phase 1.5: Plan Review（dispatch 4 个 reviewer subagent 并行 review）
+  4. Phase 2: Execute（用户确认后通过 ralph loop 执行）
+  5. **禁止跳过 Phase 1.5 的 reviewer dispatch，禁止自己 review 自己的 plan**
 
 ## Skill Routing
 
