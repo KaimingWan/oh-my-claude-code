@@ -160,10 +160,10 @@ git commit -m "feat(cpu): add worktree support with auto-merge/PR flow"
 
 ## Checklist
 
-- [ ] cpu.md 包含 worktree 检测逻辑 | `grep -q 'git rev-parse --git-common-dir' commands/cpu.md`
-- [ ] cpu.md 包含 branch protection 检测 | `grep -q 'protection' commands/cpu.md`
-- [ ] cpu.md 包含无保护时本地 merge 流程 | `grep -q 'git merge --no-ff' commands/cpu.md`
-- [ ] cpu.md 包含有保护时 PR 创建流程 | `grep -q 'gh pr create' commands/cpu.md`
-- [ ] cpu.md 包含 worktree 清理 | `grep -q 'git worktree remove' commands/cpu.md`
-- [ ] cpu.md 包含 merge 冲突回退到 PR | `grep -q 'merge --abort' commands/cpu.md`
-- [ ] cpu.md 包含主 worktree dirty 检查 | `grep -q 'porcelain' commands/cpu.md`
+- [x] cpu.md 包含 worktree 检测逻辑 | `grep -q 'git rev-parse --git-common-dir' commands/cpu.md`
+- [x] cpu.md 包含 branch protection 检测 | `grep -q 'protection' commands/cpu.md`
+- [x] cpu.md 包含无保护时本地 merge 流程 | `grep -q 'git merge --no-ff' commands/cpu.md`
+- [x] cpu.md 包含有保护时 PR 创建流程 | `grep -q 'gh pr create' commands/cpu.md`
+- [x] cpu.md 包含 worktree 清理 | `grep -q 'git worktree remove' commands/cpu.md`
+- [x] cpu.md 包含 merge 冲突回退到 PR | `grep -q 'merge --abort' commands/cpu.md`
+- [x] cpu.md 包含主 worktree dirty 检查 | `grep -q 'porcelain' commands/cpu.md`
