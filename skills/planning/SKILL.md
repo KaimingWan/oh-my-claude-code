@@ -91,6 +91,7 @@ Then proceed to Phase 1 with the accumulated understanding.
 **Non-Goals:** [What this plan explicitly does NOT do]
 **Architecture:** [2-3 sentences]
 **Tech Stack:** [Key technologies]
+**Work Dir:** [Relative path to working directory, e.g. `src/` or `.`]
 
 ## Review
 <!-- Reviewer writes here -->

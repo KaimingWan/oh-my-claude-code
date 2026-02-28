@@ -114,6 +114,8 @@ gate_plan_structure() {
   echo "$CONTENT" | grep -q '^## Review' || \
     hook_block "🚫 BLOCKED: Plan missing ## Review section."
 
+  echo "$CONTENT" | grep -q '^\*\*Work Dir:\*\*' ||     hook_block "🚫 BLOCKED: Plan missing **Work Dir:** field in header."
+
   TASK_COUNT=$(echo "$CONTENT" | grep -c '^### Task' || true)
   [ "${TASK_COUNT:-0}" -eq 0 ] && \
     hook_block "🚫 BLOCKED: Plan has no ### Task sections."
