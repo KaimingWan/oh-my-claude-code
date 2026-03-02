@@ -1,6 +1,6 @@
 #!/bin/bash
 # Initialize a new project with oh-my-claude-code framework
-# Usage: ./init-project.sh /path/to/project [project-name] [--type coding|gtm]
+# Usage: ./init-project.sh /path/to/project [project-name] [--type coding|gtm] [--knowledge file|openviking]
 
 set -e
 
@@ -8,11 +8,16 @@ set -e
 TARGET=""
 PROJECT_NAME=""
 PROJECT_TYPE="coding"
+KNOWLEDGE_BACKEND="file"
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --type)
       PROJECT_TYPE="${2:?--type requires an argument (coding|gtm)}"
+      shift 2
+      ;;
+    --knowledge)
+      KNOWLEDGE_BACKEND="${2:?--knowledge requires an argument (file|openviking)}"
       shift 2
       ;;
     -*)
@@ -143,7 +148,11 @@ fi
 # ── Create overlay scaffolding ────────────────────────────────────────────────
 # Empty .omcc-overlay.json for project-specific skill/hook extensions
 if [ ! -f "$TARGET/.omcc-overlay.json" ]; then
-  printf '{\n  "extra_skills": [],\n  "extra_hooks": {}\n}\n' > "$TARGET/.omcc-overlay.json"
+  if [ "$KNOWLEDGE_BACKEND" = "openviking" ]; then
+    printf '{\n  "extra_skills": [],\n  "extra_hooks": {},\n  "knowledge_backend": "openviking",\n  "openviking": {\n    "data_dir": "data/openviking"\n  }\n}\n' > "$TARGET/.omcc-overlay.json"
+  else
+    printf '{\n  "extra_skills": [],\n  "extra_hooks": {}\n}\n' > "$TARGET/.omcc-overlay.json"
+  fi
 fi
 
 # hooks/project/ directory for project-specific hooks
