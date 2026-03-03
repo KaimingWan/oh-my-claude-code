@@ -322,7 +322,7 @@ Expected: PASS
 
 ## Checklist
 
-- [ ] ov-init.sh contains no socat references | `! grep -q socat hooks/_lib/ov-init.sh`
+- [x] ov-init.sh contains no socat references | `! grep -q socat hooks/_lib/ov-init.sh`
 - [ ] ov-init.sh ov_call works via python3 socket | `python3 -m pytest tests/test_ov_client.py::test_ov_call_no_socat -v`
 - [ ] validate-project.sh has no socat warning | `! grep -q socat tools/validate-project.sh`
 - [ ] ov-daemon.py uses StorageConfig | `grep -q StorageConfig scripts/ov-daemon.py`

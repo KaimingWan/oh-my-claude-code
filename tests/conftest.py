@@ -4,6 +4,11 @@ import pytest
 
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Exclude e2e test from default collection — it has module-level code that
+# requires agfs-server binary (Linux x86-64, incompatible with macOS ARM).
+# Run explicitly with: python3 -m pytest tests/test_openviking_e2e.py
+collect_ignore = [os.path.join(os.path.dirname(__file__), "test_openviking_e2e.py")]
+
 @pytest.fixture(autouse=True)
 def _guard_cwd_and_head():
     """Fail-safe: restore cwd and git HEAD after every test."""
