@@ -37,3 +37,17 @@
 - **Files changed:** `docs/plans/2026-03-04-openviking-integration.md` — marked checklist item
 - **Learnings:** Fallback already works — when OV socket doesn't exist, ov_init returns 1 and the Layer 4 block is skipped silently. Script exits 0.
 - **Status:** done
+
+## Iteration 4 — 2026-03-04
+
+- **Task:** Auto-index episodes and findings to OpenViking (Task 3)
+- **Files changed:**
+  - `hooks/feedback/auto-capture.sh` — added OV indexing after episode write
+  - `hooks/feedback/post-write.sh` — added run_ov_index for knowledge/findings/progress files
+  - `tests/test_ov_capture.py` — new test (2 tests: auto-capture + post-write OV indexing)
+  - `docs/plans/2026-03-04-openviking-integration.md` — marked final 2 checklist items
+- **Learnings:**
+  - auto-capture.sh uses BASH_SOURCE for SCRIPT_DIR (not $0) since it's sourced in some contexts
+  - post-write.sh pattern: case match on file path for knowledge/*.md and *.findings.md/*.progress.md
+  - Mock server needs listen(5) for capture tests since health+add_resource = 2 connections per test
+- **Status:** done

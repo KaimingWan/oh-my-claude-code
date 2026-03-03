@@ -73,5 +73,15 @@ echo "$DATE | active | $KEYWORDS | $SUMMARY" >> "$EPISODES"
 echo "📝 Auto-captured → episodes.md: '$SUMMARY'"
 
 # ── 标记知识库变更（供 Stop hook 质量报告用）──
+# ── OV indexing ──
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OV_LIB="$SCRIPT_DIR/../_lib/ov-init.sh"
+if [ -f "$OV_LIB" ]; then
+  source "$OV_LIB"
+  if ov_init 2>/dev/null; then
+    ov_add "$EPISODES" "episode: $SUMMARY" >/dev/null 2>&1
+  fi
+fi
+
 touch "/tmp/kb-changed-$(pwd | shasum 2>/dev/null | cut -c1-8 || echo default).flag"
 exit 0

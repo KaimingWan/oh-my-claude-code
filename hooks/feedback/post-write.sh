@@ -54,7 +54,26 @@ run_test() {
   return 0
 }
 
+
+# === OV index (knowledge files) ===
+run_ov_index() {
+  case "$FILE" in
+    knowledge/*.md|*.findings.md|*.progress.md)
+      SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+      OV_LIB="$SCRIPT_DIR/../_lib/ov-init.sh"
+      if [ -f "$OV_LIB" ]; then
+        source "$OV_LIB"
+        if ov_init 2>/dev/null; then
+          ov_add "$FILE" "knowledge update" >/dev/null 2>&1
+        fi
+      fi
+      ;;
+  esac
+  return 0
+}
+
 # --- Execute all ---
 run_lint || true
 run_test
+run_ov_index || true
 exit $?
