@@ -1,5 +1,6 @@
 """CLI auto-detection for ralph loop."""
 import os
+import signal
 import shutil
 import subprocess
 import sys
@@ -12,20 +13,26 @@ def detect_cli() -> list[str]:
         return env_cmd.split()
 
     if shutil.which('claude'):
-        # Verify claude is authenticated
+        # Verify claude is authenticated (quick probe, must not hang)
         try:
-            r = subprocess.run(
-                ['claude', '-p', 'ping', '--output-format', 'text'],
-                capture_output=True, text=True, timeout=10,
+            proc = subprocess.Popen(
+                ['claude', '-p', 'ping', '--output-format', 'text', '--no-session-persistence'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                start_new_session=True,
             )
-            if r.returncode == 0:
-                return [
-                    'claude', '-p',
-                    '--allowedTools', 'Bash,Read,Write,Edit,Task,WebSearch,WebFetch',
-                    '--output-format', 'stream-json', '--verbose',
-                    '--no-session-persistence',
-                ]
-        except (subprocess.TimeoutExpired, FileNotFoundError):
+            try:
+                stdout, _ = proc.communicate(timeout=5)
+                if proc.returncode == 0:
+                    return [
+                        'claude', '-p',
+                        '--allowedTools', 'Bash,Read,Write,Edit,Task,WebSearch,WebFetch',
+                        '--output-format', 'stream-json', '--verbose',
+                        '--no-session-persistence',
+                    ]
+            except subprocess.TimeoutExpired:
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                proc.wait()
+        except (OSError, FileNotFoundError):
             pass
 
     if shutil.which('kiro-cli'):

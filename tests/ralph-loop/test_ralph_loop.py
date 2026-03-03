@@ -481,9 +481,9 @@ from unittest.mock import patch
 def test_detect_claude_cli():
     """When claude is available and authenticated, detect_cli returns claude command."""
     from scripts.lib.cli_detect import detect_cli
+    mock_proc = type('MockProc', (), {'communicate': lambda self, timeout=None: (b'pong', b''), 'returncode': 0, 'pid': 99999})()
     with patch('shutil.which', side_effect=lambda x: '/usr/bin/claude' if x == 'claude' else None), \
-         patch('subprocess.run') as mock_run:
-        mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0, stdout='pong', stderr='')
+         patch('subprocess.Popen', return_value=mock_proc):
         cmd = detect_cli()
         assert cmd[0] == 'claude'
         assert '-p' in cmd
@@ -702,9 +702,9 @@ def test_claude_cmd_has_no_session_persistence():
     """Claude command should include --no-session-persistence to avoid disk I/O."""
     from scripts.lib.cli_detect import detect_cli
     from unittest.mock import patch
+    mock_proc = type('MockProc', (), {'communicate': lambda self, timeout=None: (b'pong', b''), 'returncode': 0, 'pid': 99999})()
     with patch('shutil.which', side_effect=lambda x: '/usr/bin/claude' if x == 'claude' else None), \
-         patch('subprocess.run') as mock_run:
-        mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0, stdout='pong', stderr='')
+         patch('subprocess.Popen', return_value=mock_proc):
         cmd = detect_cli()
         assert '--no-session-persistence' in cmd
 
