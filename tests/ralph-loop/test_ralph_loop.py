@@ -754,3 +754,39 @@ def test_main_has_no_inline_env_reads():
     inline_env = [l.strip() for l in main_body.split("\n")
                   if "os.environ.get" in l and "def " not in l and "_RALPH_LOOP_RUNNING" not in l]
     assert inline_env == [], f"Inline env reads in main(): {inline_env}"
+
+
+def test_stale_prompt_contains_error_context(tmp_path):
+    plan_file = tmp_path / "plan.md"
+    plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
+    pf = PlanFile(plan_file)
+    log_file = tmp_path / "ralph.log"
+    log_file.write_text("Error: something broke\nTraceback:\n  File x\nValueError: bad\n")
+    prompt = build_prompt(3, pf, plan_file, tmp_path, skip_precheck="1",
+                          stale_rounds=2, log_path=log_file)
+    assert "STUCK" in prompt or "stuck" in prompt
+    assert "alternative approach" in prompt.lower() or "different strategy" in prompt.lower()
+
+def test_reverted_items_in_prompt(tmp_path):
+    plan_file = tmp_path / "plan.md"
+    plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
+    pf = PlanFile(plan_file)
+    reverted = [(1, "pytest tests/ -v")]
+    prompt = build_prompt(2, pf, plan_file, tmp_path, skip_precheck="1",
+                          reverted_items=reverted)
+    assert "verify commands FAILED" in prompt
+    assert "pytest" in prompt
+
+def test_normal_prompt_has_autonomous_instructions(tmp_path):
+    plan_file = tmp_path / "plan.md"
+    plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
+    pf = PlanFile(plan_file)
+    prompt = build_prompt(1, pf, plan_file, tmp_path, skip_precheck="1", is_first=True)
+    assert "solve it yourself" in prompt.lower() or "autonomous" in prompt.lower() or "self-diagnose" in prompt.lower()
+
+def test_prompt_instructs_patterns_consolidation(tmp_path):
+    plan_file = tmp_path / "plan.md"
+    plan_file.write_text("# T\n## Checklist\n- [ ] a | `true`\n")
+    pf = PlanFile(plan_file)
+    prompt = build_prompt(1, pf, plan_file, tmp_path, skip_precheck="1", is_first=True)
+    assert "Codebase Patterns" in prompt or "codebase patterns" in prompt

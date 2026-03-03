@@ -23,6 +23,7 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from scripts.lib.plan import PlanFile
+from scripts.lib.error_context import extract_error_context, format_reverted_context
 from scripts.lib.lock import LockFile
 from scripts.lib.cli_detect import detect_cli
 from scripts.lib.precheck import run_precheck
@@ -112,7 +113,8 @@ def write_summary(exit_code: int, plan: PlanFile, plan_path: Path, summary_file:
 # --- Build prompt ---
 def build_prompt(iteration: int, plan: PlanFile, plan_path: Path, project_root: Path,
                  skip_precheck: str = "", prev_exit: int = -1, is_first: bool = False,
-                 work_dir: str = "") -> str:
+                 work_dir: str = "", stale_rounds: int = 0, log_path: Path | None = None,
+                 reverted_items: list[tuple[int, str]] | None = None) -> str:
     plan.reload()
     progress_file = plan.progress_path
     findings_file = plan.findings_path
@@ -142,6 +144,27 @@ You MUST work in this directory. All file edits, test runs, and git commits happ
 The plan file is in the parent project — read it but do NOT modify files outside your working directory.
 """
 
+    # Stale/error context injection
+    stale_section = ""
+    if stale_rounds >= 2 and log_path:
+        error_ctx = extract_error_context(log_path)
+        stale_section = f"""
+⚠️ STUCK: {stale_rounds} rounds with no progress. Previous errors:
+{error_ctx if error_ctx else '(no error output captured)'}
+
+You MUST try a DIFFERENT STRATEGY. The previous approach failed — do not repeat it.
+Consider: alternative implementation, different library, simpler approach, or breaking the task down.
+"""
+    elif stale_rounds >= 2:
+        stale_section = f"""
+⚠️ STUCK: {stale_rounds} rounds with no progress.
+You MUST try a DIFFERENT STRATEGY. The previous approach failed — do not repeat it.
+"""
+
+    reverted_section = ""
+    if reverted_items:
+        reverted_section = format_reverted_context(reverted_items)
+
     return f"""{header}
 
 Read these files first:
@@ -150,6 +173,7 @@ Read these files first:
 3. Findings: {findings_file} (if exists — contains research discoveries and decisions)
 
 Environment: {env_status}
+{stale_section}{reverted_section}
 {work_dir_section}
 {pre_items + chr(10) if pre_items else ""}Next unchecked items:
 {next_items}
@@ -167,10 +191,11 @@ Rules:
    - **Status:** done / skipped
 6. If you discover reusable patterns or make technical decisions, write to {findings_file}.
 7. Commit: feat: <item description>.
-8. Continue with next unchecked item. Do NOT stop while unchecked items remain.
-9. If stuck after 3 attempts, change item to '- [SKIP] <reason>' and move to next.
+8. You are AUTONOMOUS — self-diagnose errors, research solutions, try alternative approaches. Do NOT stop or ask for help. Solve it yourself.
+9. If stuck after 3 attempts, try a DIFFERENT STRATEGY before giving up. Change item to '- [SKIP] <reason>' only as last resort.
 10. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command. If blocked 3+ times on the same item, mark it as '- [SKIP] blocked by security hook' and continue.
 11. NEVER mark an item `- [x]` if the verify command fails or the implementation was not actually executed. If unsure, re-run the verify command.
+12. Codebase Patterns: When you discover patterns (naming conventions, error handling idioms, test structure), note them in {findings_file} under a "## Codebase Patterns" section so future iterations can reuse them.
 """
 
 
@@ -306,6 +331,7 @@ def main():
     # --- Main loop ---
     prev_checked = 0
     stale_rounds = 0
+    last_reverted: list[tuple[int, str]] = []
     final_exit = 1
     prev_exit = -1  # -1 = no previous iteration; 0 = last CLI exited OK (precheck cacheable)
 
@@ -340,9 +366,9 @@ def main():
 
         # Build prompt
         if i == 1 and plan.checked == 0:
-            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, is_first=True)
+            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, is_first=True, stale_rounds=stale_rounds, log_path=log_file)
         else:
-            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck)
+            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, stale_rounds=stale_rounds, log_path=log_file, reverted_items=last_reverted)
 
         if shutdown_flag[0]:
             break
@@ -389,6 +415,7 @@ def main():
         # Post-iteration: verify inline commands and revert false [x] marks
         plan.reload()
         reverted = plan.revert_failed_checks(cwd=str(PROJECT_ROOT), timeout=120)
+        last_reverted = reverted
         if reverted:
             print(f"🔍 Reverted {len(reverted)} falsely checked items:", flush=True)
             for idx, cmd in reverted:
