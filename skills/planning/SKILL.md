@@ -15,7 +15,7 @@ Before writing any plan, build deep understanding of the goal. Skip this phase o
 
 ### Step 1: Form Initial Understanding
 
-Read relevant code, docs, and recent commits to understand the context. Do NOT ask questions yet — first build your own mental model of:
+Start with `generate_codebase_overview` to get the project's high-level structure, then read relevant code, docs, and recent commits to understand the context. Do NOT ask questions yet — first build your own mental model of:
 - What the user wants to achieve
 - What exists today (current state)
 - What would need to change (gap analysis)

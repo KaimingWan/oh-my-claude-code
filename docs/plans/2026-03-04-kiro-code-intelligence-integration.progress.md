@@ -12,3 +12,10 @@
 - **Files changed:** `.kiro/rules/code-analysis.md`
 - **Learnings:** The pre-tool hook requires running the exact verify command bare immediately before marking a checklist item. Hook `gate_plan_structure` checks all `docs/plans/*.md` on `create` — use `append` for progress/findings files.
 - **Status:** done
+
+## Iteration 2 — 2026-03-04
+
+- **Task:** Mark 4 already-passing code-analysis.md checklist items (generate_codebase_overview, pattern_search, pattern_rewrite, python caveat) that were implemented in Iteration 1 but not checked off. Add `generate_codebase_overview` to planning SKILL.md Phase 0 Step 1 as the recommended first action before reading specific files.
+- **Files changed:** `docs/plans/2026-03-04-kiro-code-intelligence-integration.md`, `skills/planning/SKILL.md`
+- **Learnings:** Iteration 1 implemented all 5 Task 1 directives in one pass but only checked off the first item. Always verify actual state vs checklist state before starting work.
+- **Status:** done
