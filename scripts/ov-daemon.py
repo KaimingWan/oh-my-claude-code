@@ -46,16 +46,41 @@ except ImportError:
 SOCKET_PATH = "/tmp/omcc-ov.sock"
 ov = None
 
+# --- Gate: filter noise queries ---
+_CONFIRM_WORDS = frozenset(["ok", "好", "确认", "嗯", "是的", "好的", "收到", "明白", "yes", "no", "是", "否"])
+
+def _is_noise_query(query: str) -> bool:
+    q = query.strip()
+    return len(q) <= 3 or q.lower() in _CONFIRM_WORDS
+
+def _autocut(results, min_score=0.55, max_gap=0.08):
+    """Filter by min score, then cut at first large gap."""
+    kept = [r for r in results if r.score >= min_score]
+    if len(kept) <= 1:
+        return kept
+    cut = []
+    for i, r in enumerate(kept):
+        cut.append(r)
+        if i + 1 < len(kept) and (r.score - kept[i + 1].score) > max_gap:
+            break
+    return cut
+
 def handle(conn):
     data = conn.recv(65536).decode()
     req = json.loads(data)
     cmd = req["cmd"]
     try:
         if cmd == "search":
-            result = ov.search(req["query"], limit=req.get("limit", 3),
+            query = req["query"]
+            if _is_noise_query(query):
+                conn.sendall(json.dumps({"ok": True, "results": []}).encode())
+                return
+            limit = req.get("limit", 3)
+            result = ov.search(query, limit=limit * 2,
                                score_threshold=req.get("threshold", 0.3))
+            filtered = _autocut(result.resources)[:limit]
             out = []
-            for r in result.resources[:req.get("limit", 3)]:
+            for r in filtered:
                 text = r.abstract or r.uri
                 out.append(f"[{r.score:.2f}] {r.uri}: {text[:120]}")
             conn.sendall(json.dumps({"ok": True, "results": out}).encode())
