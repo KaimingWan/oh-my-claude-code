@@ -1,0 +1,8 @@
+{
+  "extra_skills": [],
+  "extra_hooks": {},
+  "knowledge_backend": "openviking",
+  "openviking": {
+    "data_dir": "data/openviking"
+  }
+}
