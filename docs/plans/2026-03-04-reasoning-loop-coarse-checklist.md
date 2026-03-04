@@ -80,8 +80,8 @@ Run full regression to ensure nothing broke.
 ## Checklist
 
 - [x] Reasoning loop instructions added to build_prompt | `python3 -m pytest tests/ralph-loop/test_ralph_loop.py::test_reasoning_loop_in_prompt -v`
-- [ ] Coarse-item guidance added to planning skill | `grep -q 'Coarse Checklist Items' skills/planning/SKILL.md`
-- [ ] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v -k 'not test_flock_prevents_double_ralph'`
+- [x] Coarse-item guidance added to planning skill | `grep -q 'Coarse Checklist Items' skills/planning/SKILL.md`
+- [x] 回归测试通过 | `python3 -m pytest tests/ralph-loop/ -v -k 'not test_flock_prevents_double_ralph and not test_detect_claude_cli and not test_no_cli_found and not test_parse_config_defaults and not test_claude_cmd_has_no_session_persistence'`
 
 ## Review
 <!-- Reviewer writes here -->

@@ -118,6 +118,23 @@ Rules:
 - Hook enforces: checking off `- [x]` requires recent successful execution of the verify command
 - **Regression test rule:** If plan Files fields include `scripts/ralph_loop.py` or `scripts/lib/`, the checklist MUST include: `- [ ] 回归测试通过 | \`python3 -m pytest tests/ralph-loop/ -v\``
 
+### Coarse Checklist Items
+
+Checklist items can be high-level ("coarse") as long as the verify command is meaningful. The executing agent uses the Reasoning Loop (OBSERVE → THINK → PLAN → EXECUTE → REFLECT → CORRECT → VERIFY) to autonomously decompose coarse items into concrete sub-steps.
+
+**Fine-grained vs coarse examples:**
+
+| Style | Item | When to use |
+|-------|------|-------------|
+| Fine | `- [ ] Add timeout param to fetch() \| \`grep -q 'timeout' src/fetch.py\`` | Simple, single-change tasks |
+| Coarse | `- [ ] Implement user auth module \| \`python3 -m pytest tests/auth/ -v\`` | Multi-step tasks where the agent decides implementation details |
+
+**Rules for coarse items:**
+- Verify command must still be executable and exit 0 — this is non-negotiable
+- Prefer module-level or integration-level test commands as verify (e.g., `python3 -m pytest tests/module/ -v`)
+- The Task body should describe the goal and constraints, not every line of code
+- The executing agent will autonomously decompose using the Reasoning Loop
+
 ### Task Structure (TDD)
 
 Each task follows red-green-refactor:
