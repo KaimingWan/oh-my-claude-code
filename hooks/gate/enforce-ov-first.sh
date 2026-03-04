@@ -10,7 +10,7 @@ CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
 [ -f /tmp/omcc-ov-has-results ] || exit 0
 
 # Check if command searches knowledge directory via find/grep/ls
-if echo "$CMD" | grep -qE '(find|grep|rg|ag|ls)\b.*knowledge/'; then
+if echo "$CMD" | grep -qiE '(find|grep|rg|ag|ls)\b.*\bknowledge[/ ]'; then
   # Allow if it's clearly a supplementary search (contains "补搜" or similar won't help — agent writes English commands)
   # Block it
   printf '🚫 BLOCKED: OV knowledge results available — use 🔎 results first before searching filesystem. See AGENTS.md §3' >&2
