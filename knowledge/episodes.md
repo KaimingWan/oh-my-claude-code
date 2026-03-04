@@ -32,3 +32,4 @@
 
 2026-03-04 | active | timeout,bash,hang,install,openviking | 运行bash安装脚本(ov-install.sh)没加超时保护导致卡死被用户打断. 两个问题: ①运行可能交互/卡死的命令必须加超时(macOS用perl -e 'alarm(N); exec @ARGV') ②没调研清楚就动手, 在agfs-server二进制不兼容问题上浪费大量时间瞎试. 正确做法: 先调研openviking在macOS arm64上的正确安装方式(用户说另一台已部署成功), 再动手
 2026-03-04 | active | openviking,install,deploy,macos-arm,config,azure | OpenViking 0.1.12 Mac ARM部署知识: ①pip install openviking即可,无ov CLI,全靠Python/HTTP API ②Azure embedding环境变量必须含DENSE(OPENVIKING_EMBEDDING_DENSE_*),URL以/openai/v1/结尾,DIMENSION必须设3072 ③SyncOpenViking初始化必须传config参数(StorageConfig+AGFSConfig backend=local),否则连VikingDB localhost:8080报错 ④agfs-server路径: python3 -c "import openviking,os;print(os.path.join(os.path.dirname(openviking.__file__),'bin','agfs-server'))" ⑤ov-daemon通过/tmp/omcc-ov.sock通信 ⑥已知限制: AGFS timeout硬编码5s需30s+, Azure兼容不完美需0.1.13+, 项目通过env+自定义daemon绕过,生产可用
+2026-03-04 | active | heartbeat [correction] | heartbeat 还是改成之前的 60s 
