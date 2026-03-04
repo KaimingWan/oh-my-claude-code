@@ -3,7 +3,7 @@
 - Evidence before claims（任何完成声明前必须有验证证据，enforced by stop hook）
 - As code（能代码化就不靠文字约束）
 - TDD driven（测试驱动开发）
-- No hallucination（必须引用来源，不确定就调研，不要信口开河）
+- No hallucination（必须引用来源，不确定就调研，不要信口开河。未实测的工具/模型/方案不做能力评价）
 - Fail closed（检测失败时拒绝，不放行）
 - Minimal context, single source of truth（优先低 context 开销方案，信息只在一处维护）
 - End-to-end autonomy（目标明确时独立端到端完成，不中断问人。遇到问题自己调研解决，主动克服障碍，直到拿到最终结果）
