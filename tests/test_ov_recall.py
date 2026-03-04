@@ -68,3 +68,24 @@ def test_enrichment_fallback_no_ov(tmp_path):
         input=inp, capture_output=True, text=True, env=env, cwd=str(tmp_path), timeout=10
     )
     assert r.returncode == 0
+
+
+def test_enrichment_warns_when_ov_down(tmp_path):
+    """When overlay is configured for OV but daemon is down, emit warning."""
+    overlay = tmp_path / ".omcc-overlay.json"
+    overlay.write_text(json.dumps({"knowledge_backend": "openviking"}))
+    ws_hash = subprocess.run(
+        ["bash", "-c", f"echo '{tmp_path}' | shasum | cut -c1-8"],
+        capture_output=True, text=True
+    ).stdout.strip()
+    Path(f"/tmp/ctx-enrich-{ws_hash}.ts").unlink(missing_ok=True)
+
+    env = os.environ.copy()
+    env["OV_SOCKET"] = "/tmp/nonexistent-ov.sock"
+    inp = json.dumps({"prompt": "how to configure storage"})
+    r = subprocess.run(
+        ["bash", os.path.join(PROJECT_ROOT, "hooks/feedback/context-enrichment.sh")],
+        input=inp, capture_output=True, text=True, env=env, cwd=str(tmp_path), timeout=10
+    )
+    assert r.returncode == 0
+    assert "OV unavailable" in r.stdout

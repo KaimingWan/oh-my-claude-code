@@ -229,6 +229,8 @@ for r in d.get('results',[])[:3]:
         done <<< "$OV_RESULTS"
       fi
     fi
+  elif _ov_check_overlay 2>/dev/null; then
+    emit "⚠️ OV unavailable — knowledge semantic recall degraded. Run: python3 scripts/ov-daemon.py &"
   fi
 fi
 

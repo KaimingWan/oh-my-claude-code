@@ -82,12 +82,12 @@
 ## Checklist
 
 - [x] session-init 启动时自动启动 OV daemon（如未运行） | `bash -c 'source hooks/_lib/ov-init.sh && type ov_init' && grep -q 'ov-daemon' hooks/feedback/session-init.sh`
-- [ ] session-init 增量同步 knowledge/*.md 到 OV | `grep -q 'ov_add' hooks/feedback/session-init.sh`
-- [ ] post-bash 检测 knowledge 文件变更并同步 OV | `grep -q 'knowledge/' hooks/feedback/post-bash.sh && grep -A3 'knowledge/' hooks/feedback/post-bash.sh | grep -q 'ov_add'`
-- [ ] context-enrichment OV 失败时 emit 告警 | `grep -q 'OV unavailable' hooks/feedback/context-enrichment.sh`
-- [ ] 所有 hook 语法正确 | `bash -n hooks/feedback/session-init.sh && bash -n hooks/feedback/post-bash.sh && bash -n hooks/feedback/context-enrichment.sh`
-- [ ] 新增测试通过 | `python3 -m pytest tests/test_ov_capture.py tests/test_ov_recall.py -v`
-- [ ] 不使用 macOS 不存在的 timeout 命令 | `! grep -rn '\btimeout\b' hooks/feedback/session-init.sh hooks/feedback/post-bash.sh hooks/feedback/context-enrichment.sh`
+- [x] session-init 增量同步 knowledge/*.md 到 OV | `grep -q 'ov_add' hooks/feedback/session-init.sh`
+- [x] post-bash 检测 knowledge 文件变更并同步 OV | `grep -q 'knowledge/' hooks/feedback/post-bash.sh && grep -A3 'knowledge/' hooks/feedback/post-bash.sh | grep -q 'ov_add'`
+- [x] context-enrichment OV 失败时 emit 告警 | `grep -q 'OV unavailable' hooks/feedback/context-enrichment.sh`
+- [x] 所有 hook 语法正确 | `bash -n hooks/feedback/session-init.sh && bash -n hooks/feedback/post-bash.sh && bash -n hooks/feedback/context-enrichment.sh`
+- [x] 新增测试通过 | `python3 -m pytest tests/test_ov_capture.py tests/test_ov_recall.py -v`
+- [x] 不使用 macOS 不存在的 timeout 命令 | `! grep -rn '\btimeout\b' hooks/feedback/session-init.sh hooks/feedback/post-bash.sh hooks/feedback/context-enrichment.sh`
 
 ## Errors
 

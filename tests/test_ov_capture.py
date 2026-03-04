@@ -77,3 +77,47 @@ def test_post_write_indexes_findings(mock_ov_add, tmp_path):
     import time; time.sleep(0.3)
     ov_adds = [c for c in captured if c.get("cmd") == "add_resource"]
     assert len(ov_adds) >= 1
+
+
+def test_post_bash_indexes_knowledge_changes(mock_ov_add, tmp_path):
+    """post-bash hook calls ov_add when command touches knowledge/ files."""
+    srv, captured = mock_ov_add
+    overlay = tmp_path / "knowledge"
+    overlay.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "knowledge" / "rules.md").write_text("# Rules\n")
+    (tmp_path / ".omcc-overlay.json").write_text(json.dumps({"knowledge_backend": "openviking"}))
+
+    inp = json.dumps({
+        "tool_name": "execute_bash",
+        "tool_input": {"command": "echo test >> knowledge/rules.md"},
+        "tool_output": {"exit_code": 0}
+    })
+    env = os.environ.copy()
+    env["OV_SOCKET"] = SOCKET_PATH
+    r = subprocess.run(
+        ["bash", os.path.join(PROJECT_ROOT, "hooks/feedback/post-bash.sh")],
+        input=inp, capture_output=True, text=True, env=env, cwd=str(tmp_path), timeout=10
+    )
+    assert r.returncode == 0
+    import time; time.sleep(0.3)
+    ov_adds = [c for c in captured if c.get("cmd") == "add_resource"]
+    assert len(ov_adds) >= 1
+
+
+def test_post_bash_silent_when_ov_down(tmp_path):
+    """post-bash exits 0 even when OV is unavailable."""
+    (tmp_path / "knowledge").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "knowledge" / "rules.md").write_text("# Rules\n")
+
+    inp = json.dumps({
+        "tool_name": "execute_bash",
+        "tool_input": {"command": "echo test >> knowledge/rules.md"},
+        "tool_output": {"exit_code": 0}
+    })
+    env = os.environ.copy()
+    env["OV_SOCKET"] = "/tmp/nonexistent-ov.sock"
+    r = subprocess.run(
+        ["bash", os.path.join(PROJECT_ROOT, "hooks/feedback/post-bash.sh")],
+        input=inp, capture_output=True, text=True, env=env, cwd=str(tmp_path), timeout=10
+    )
+    assert r.returncode == 0
