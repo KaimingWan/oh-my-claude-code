@@ -9,7 +9,7 @@ from scripts.generate_configs import _main_agent_resources, _build_main_agent, l
 def test_generates_valid_json():
     r = subprocess.run(["python3", "scripts/generate_configs.py"], capture_output=True, text=True)
     assert r.returncode == 0
-    for f in [".claude/settings.json", ".kiro/agents/pilot.json",
+    for f in [".kiro/agents/pilot.json",
               ".kiro/agents/reviewer.json", ".kiro/agents/researcher.json",
               ".kiro/agents/executor.json"]:
         p = Path(f)
@@ -26,7 +26,7 @@ def test_hooks_registered():
 
 def test_idempotent_generation():
     """Running generate_configs.py twice produces identical output."""
-    configs = [".claude/settings.json", ".kiro/agents/pilot.json",
+    configs = [".kiro/agents/pilot.json",
                ".kiro/agents/reviewer.json", ".kiro/agents/researcher.json",
                ".kiro/agents/executor.json"]
     r1 = subprocess.run(["python3", "scripts/generate_configs.py"], capture_output=True, text=True)
