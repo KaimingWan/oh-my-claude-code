@@ -3,7 +3,7 @@
 # Sourced library. Caller must set: EPISODES_FILE, RULES_FILE, RULES_DIR, ARCHIVE_DIR
 
 # ── distill_check ──
-# Scan episodes for keywords with freq ≥2, not covered by rules.md or .claude/rules/.
+# Scan episodes for keywords with freq ≥2, not covered by rules.md or .kiro/rules/.
 # Determine severity, write rule, mark source episodes promoted.
 distill_check() {
   [ -f "$EPISODES_FILE" ] || return 0
@@ -31,7 +31,7 @@ distill_check() {
       continue
     fi
 
-    # Keyword covered by .claude/rules/ → mark promoted, no rule written
+    # Keyword covered by .kiro/rules/ → mark promoted, no rule written
     if echo "$covered_rules_dir" | grep -qw "$kw_lower" 2>/dev/null; then
       _mark_promoted "$kw"
       distilled=$((distilled + 1))

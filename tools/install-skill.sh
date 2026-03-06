@@ -1,9 +1,9 @@
 #!/bin/bash
-# Install a skill into a project's OMCC overlay
+# Install a skill into a project's OMK overlay
 #
 # Usage:
 #   install-skill.sh --register-only PROJECT_ROOT SKILL_PATH
-#     → Adds SKILL_PATH to .omcc-overlay.json extra_skills (no copy, no npx)
+#     → Adds SKILL_PATH to .omk-overlay.json extra_skills (no copy, no npx)
 #
 #   install-skill.sh SOURCE
 #     → Runs `npx skills add SOURCE`, moves result to skills/, registers in overlay, runs sync
@@ -14,7 +14,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-OMCC_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+OMK_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 err() { echo "ERROR: $*" >&2; exit 1; }
 
@@ -39,7 +39,7 @@ scan_skill_file() {
 
 
 # ─── Overlay JSON helper ───────────────────────────────────────────────────────
-# Adds a skill path to .omcc-overlay.json extra_skills (creates file if absent)
+# Adds a skill path to .omk-overlay.json extra_skills (creates file if absent)
 register_skill_in_overlay() {
   local overlay_file="$1"
   local skill_path="$2"
@@ -75,7 +75,7 @@ if [ "${1:-}" = "--register-only" ]; then
 
   [ -d "$PROJECT_ROOT" ] || err "PROJECT_ROOT does not exist: $PROJECT_ROOT"
 
-  OVERLAY_FILE="$PROJECT_ROOT/.omcc-overlay.json"
+  OVERLAY_FILE="$PROJECT_ROOT/.omk-overlay.json"
 
   # Resolve skill path relative to project root if not absolute
   if [[ "$SKILL_PATH" != /* ]]; then
@@ -103,7 +103,7 @@ PROJECT_ROOT="${2:-$(pwd)}"
 [ -d "$PROJECT_ROOT" ] || err "PROJECT_ROOT does not exist: $PROJECT_ROOT"
 
 SKILLS_DIR="$PROJECT_ROOT/skills"
-OVERLAY_FILE="$PROJECT_ROOT/.omcc-overlay.json"
+OVERLAY_FILE="$PROJECT_ROOT/.omk-overlay.json"
 
 # Check that npx is available
 command -v npx >/dev/null 2>&1 || err "npx not found — install Node.js to use SOURCE mode"
@@ -152,10 +152,10 @@ for installed_dir in "${INSTALLED_DIRS[@]}"; do
 done
 
 # Validate and sync
-SYNC_SCRIPT="$SCRIPT_DIR/sync-omcc.sh"
+SYNC_SCRIPT="$SCRIPT_DIR/sync-omk.sh"
 if [ -f "$SYNC_SCRIPT" ]; then
-  echo "🔄 Running sync-omcc..."
+  echo "🔄 Running sync-omk..."
   bash "$SYNC_SCRIPT" "$PROJECT_ROOT"
 else
-  echo "ℹ️  sync-omcc.sh not found, skipping sync"
+  echo "ℹ️  sync-omk.sh not found, skipping sync"
 fi

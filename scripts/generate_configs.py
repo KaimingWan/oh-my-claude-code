@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""generate_configs.py — Single source of truth for CC + Kiro agent configs.
+"""generate_configs.py — Single source of truth for Kiro agent configs.
 
-Replaces generate-platform-configs.sh. Outputs:
-  .claude/settings.json
+Outputs:
   .kiro/agents/{pilot,reviewer,researcher,executor}.json
 """
 import argparse
@@ -12,7 +11,7 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SCRIPT_ROOT = Path(__file__).resolve().parent.parent  # Always points to OMCC repo
+SCRIPT_ROOT = Path(__file__).resolve().parent.parent  # Always points to OMK repo
 
 # ── Validation ───────────────────────────────────────────────────────────
 
@@ -56,7 +55,9 @@ def validate() -> int:
         in_registry.add(m.group(1))
 
     # Source 3: overlay extra_hooks (project-specific hooks declared in .omcc-overlay.json)
-    overlay_file = PROJECT_ROOT / ".omcc-overlay.json"
+    overlay_file = PROJECT_ROOT / ".omk-overlay.json"
+    if not overlay_file.exists():
+        overlay_file = PROJECT_ROOT / ".omcc-overlay.json"  # backward compat
     if overlay_file.exists():
         import json
         try:
@@ -94,7 +95,7 @@ def validate() -> int:
 # ── Overlay support ───────────────────────────────────────────────────────
 
 def load_overlay(overlay_path: Path, project_root: Path) -> tuple[list, dict]:
-    """Load and validate .omcc-overlay.json, return (extra_skills, extra_hooks).
+    """Load and validate .omk-overlay.json (or .omcc-overlay.json fallback), return (extra_skills, extra_hooks).
 
     extra_skills: list of skill paths (relative to project_root) whose SKILL.md exists
     extra_hooks: dict mapping event name to list of hook command dicts
@@ -117,7 +118,6 @@ def load_overlay(overlay_path: Path, project_root: Path) -> tuple[list, dict]:
             raise ValueError(f"extra_skills path missing SKILL.md: {project_root / skill_path}")
 
     # Validate extra_hooks: event names must be valid camelCase Kiro hook types
-    # Claude Code uses PascalCase (UserPromptSubmit), Kiro uses camelCase (userPromptSubmit)
     VALID_HOOK_EVENTS = {'agentSpawn', 'userPromptSubmit', 'preToolUse', 'postToolUse', 'stop'}
     for event in extra_hooks:
         if event not in VALID_HOOK_EVENTS:
@@ -152,12 +152,6 @@ SECURITY_HOOKS_BASH = [
     {"matcher": "fs_write", "command": "hooks/security/block-outside-workspace.sh"},
 ]
 
-SECURITY_HOOKS_CLAUDE = [
-    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-dangerous.sh'},
-    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-secrets.sh'},
-    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-sed-json.sh'},
-    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'},
-]
 
 DENIED_COMMANDS_STRICT = [
     r"rm\s+(-[rRf]|--recursive|--force).*",
@@ -174,76 +168,9 @@ DENIED_COMMANDS_SUBAGENT = [
     "git commit.*", "git push.*", "git checkout.*", "git reset.*", "git stash.*",
 ]
 
-# Overlay uses camelCase (Kiro-native). Map to PascalCase for Claude Code.
-CAMEL_TO_PASCAL = {
-    "agentSpawn": "AgentSpawn",
-    "userPromptSubmit": "UserPromptSubmit",
-    "preToolUse": "PreToolUse",
-    "postToolUse": "PostToolUse",
-    "stop": "Stop",
-}
 
 
 # ── Config builders ──────────────────────────────────────────────────────
-
-def claude_settings(extra_hooks: dict | None = None) -> dict:
-    """Claude Code settings. Note: CC uses PascalCase hook events, Kiro uses camelCase."""
-    settings = {
-        "permissions": {"allow": ["Bash(*)", "Read(*)", "Write(*)", "Edit(*)"], "deny": []},
-        "hooks": {
-            "UserPromptSubmit": [{"hooks": [
-                {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/correction-detect.sh'},
-                {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/session-init.sh'},
-                {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/context-enrichment.sh'},
-            ]}],
-            "PreToolUse": [
-                {"matcher": "Bash", "hooks": SECURITY_HOOKS_CLAUDE + [
-                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/gate/enforce-ralph-loop.sh'},
-                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/gate/require-regression.sh'},
-                ]},
-                {"matcher": "Write|Edit", "hooks": [
-                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'},
-                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/gate/pre-write.sh'},
-                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/gate/enforce-ralph-loop.sh'},
-                ]},
-            ],
-            "PostToolUse": [
-                {"matcher": "Write|Edit", "hooks": [
-                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/post-write.sh'},
-                ]},
-                {"matcher": "Bash", "hooks": [
-                    {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/post-bash.sh'},
-                ]},
-            ],
-            "Stop": [{"hooks": [
-                {"type": "command", "command": 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/verify-completion.sh'},
-            ]}],
-        },
-    }
-    # Merge overlay extra_hooks (camelCase → PascalCase)
-    # CC hooks use grouped structure: [{"matcher": "X", "hooks": [...]}, ...]
-    # Kiro matcher names differ from CC (execute_bash→Bash, fs_write→Write|Edit)
-    KIRO_TO_CC_MATCHER = {"execute_bash": "Bash", "fs_write": "Write|Edit"}
-    for event, hook_list in (extra_hooks or {}).items():
-        pascal_event = CAMEL_TO_PASCAL.get(event, event)
-        if pascal_event not in settings["hooks"]:
-            cc_hooks = [{"type": "command", "command": f'bash "$CLAUDE_PROJECT_DIR"/{h["command"]}'} for h in hook_list]
-            settings["hooks"][pascal_event] = [{"hooks": cc_hooks}]
-            continue
-        for h in hook_list:
-            cc_hook = {"type": "command", "command": f'bash "$CLAUDE_PROJECT_DIR"/{h["command"]}'}
-            cc_matcher = KIRO_TO_CC_MATCHER.get(h.get("matcher", ""), "")
-            # Find matching group or append to last non-matcher group
-            placed = False
-            for group in settings["hooks"][pascal_event]:
-                if cc_matcher and group.get("matcher") == cc_matcher:
-                    group["hooks"].append(cc_hook)
-                    placed = True
-                    break
-            if not placed:
-                # No matcher or no matching group — append to last group's hooks
-                settings["hooks"][pascal_event][-1].setdefault("hooks", []).append(cc_hook)
-    return settings
 
 
 def _main_agent_resources(extra_skills: list | None = None) -> list:
@@ -393,120 +320,17 @@ def write_json(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
 
-def write_md(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content)
 
 
-def cc_reviewer_agent() -> str:
-    prompt = (SCRIPT_ROOT / "agents" / "reviewer-prompt.md").read_text()
-    return f"""---
-name: reviewer
-description: "Review expert. Plan review: challenge decisions, find gaps. Code review: check quality, security, SOLID."
-tools: Read, Write, Bash, Grep, Glob
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-dangerous.sh'
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-secrets.sh'
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-sed-json.sh'
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
-    - matcher: "Write|Edit"
-      hooks:
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
-  PostToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/post-bash.sh'
-  Stop:
-    - hooks:
-        - type: command
-          command: 'echo "📋 Review checklist: correctness, security, edge cases, test coverage?"'
----
 
-{prompt}
-"""
-
-
-def cc_researcher_agent() -> str:
-    prompt = (SCRIPT_ROOT / "agents" / "researcher-prompt.md").read_text()
-    return f"""---
-name: researcher
-description: "Research specialist. Web research via fetch MCP + code search via ripgrep MCP + Tavily via shell."
-tools: Read, Bash, Grep, Glob, WebSearch, WebFetch
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-dangerous.sh'
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-secrets.sh'
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-sed-json.sh'
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
-  PostToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/post-bash.sh'
-  Stop:
-    - hooks:
-        - type: command
-          command: 'echo "📝 Research complete. Did you: cite sources, cross-verify, report gaps?"'
----
-
-{prompt}
-"""
-
-
-def cc_executor_agent() -> str:
-    return """---
-name: executor
-description: "Task executor for parallel plan execution. Implements code + runs verify. Does NOT edit plan files or git commit."
-tools: Read, Write, Edit, Bash, Grep, Glob
-permissionMode: bypassPermissions
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-dangerous.sh'
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-secrets.sh'
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-sed-json.sh'
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
-    - matcher: "Write|Edit"
-      hooks:
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/security/block-outside-workspace.sh'
-  PostToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR"/hooks/feedback/post-bash.sh'
----
-
-⚡ EXECUTOR: 1) Implement assigned task 2) Run verify command 3) Report result 4) Do NOT git commit or edit plan files
-"""
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate CC + Kiro agent configs.")
+    parser = argparse.ArgumentParser(description="Generate Kiro agent configs.")
     parser.add_argument("--project-root", type=Path, default=None,
                         help="Project root directory (default: repo root)")
     parser.add_argument("--overlay", type=Path, default=None,
-                        help="Path to .omcc-overlay.json with extra_skills/extra_hooks")
+                        help="Path to .omk-overlay.json (or .omcc-overlay.json) with extra_skills/extra_hooks")
     parser.add_argument("--skip-validate", action="store_true",
                         help="Skip hook registry validation (for use with external --project-root)")
     parser.add_argument("--validate", action="store_true",
@@ -543,7 +367,6 @@ def main(argv: list[str] | None = None) -> int:
     print("🔧 Generating platform configs from unified source...")
 
     targets = [
-        (PROJECT_ROOT / ".claude" / "settings.json", claude_settings(extra_hooks)),
         (PROJECT_ROOT / ".kiro" / "agents" / "default.json", default_agent(extra_skills, extra_hooks)),
         (PROJECT_ROOT / ".kiro" / "agents" / "pilot.json", pilot_agent(extra_skills, extra_hooks)),
         (PROJECT_ROOT / ".kiro" / "agents" / "reviewer.json", reviewer_agent()),
@@ -562,26 +385,6 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  ❌ INVALID JSON: {path.relative_to(PROJECT_ROOT)}")
             errors += 1
 
-    # CC agent markdown files
-    cc_targets = [
-        (PROJECT_ROOT / ".claude" / "agents" / "reviewer.md", cc_reviewer_agent()),
-        (PROJECT_ROOT / ".claude" / "agents" / "researcher.md", cc_researcher_agent()),
-        (PROJECT_ROOT / ".claude" / "agents" / "executor.md", cc_executor_agent()),
-    ]
-    for path, content in cc_targets:
-        write_md(path, content)
-        print(f"  ✅ {path.relative_to(PROJECT_ROOT)}")
-
-    # CC skill files (commands with $ARGUMENTS support)
-    skills_src = SCRIPT_ROOT / "skills"
-    if skills_src.is_dir():
-        skills_dst = PROJECT_ROOT / ".claude" / "skills"
-        for skill_dir in sorted(skills_src.iterdir()):
-            if skill_dir.is_dir() and (skill_dir / "SKILL.md").exists():
-                dst = skills_dst / skill_dir.name / "SKILL.md"
-                dst.parent.mkdir(parents=True, exist_ok=True)
-                dst.write_text((skill_dir / "SKILL.md").read_text())
-                print(f"  ✅ {dst.relative_to(PROJECT_ROOT)}")
 
     if errors:
         print(f"\n❌ {errors} config(s) have invalid JSON!")

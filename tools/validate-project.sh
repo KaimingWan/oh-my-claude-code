@@ -1,5 +1,5 @@
 #!/bin/bash
-# Validate a project's OMCC overlay configuration
+# Validate a project's OMK overlay configuration
 # Usage: validate-project.sh [PROJECT_ROOT]
 # Exit 0: valid (warnings may be emitted)
 # Exit 1: errors found
@@ -8,7 +8,7 @@ set -euo pipefail
 
 PROJECT_ROOT="${1:-$(pwd)}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-OMCC_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+OMK_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 ERRORS=0
 WARNINGS=0
@@ -16,7 +16,7 @@ WARNINGS=0
 err() { echo "ERROR: $*" >&2; ERRORS=$((ERRORS + 1)); }
 warn() { echo "WARNING: $*"; WARNINGS=$((WARNINGS + 1)); }
 
-OVERLAY_FILE="$PROJECT_ROOT/.omcc-overlay.json"
+OVERLAY_FILE="$PROJECT_ROOT/.omk-overlay.json"
 
 # Valid hook event names (camelCase — canonical overlay format)
 VALID_EVENTS="agentSpawn userPromptSubmit preToolUse postToolUse stop"
@@ -24,9 +24,9 @@ VALID_EVENTS="agentSpawn userPromptSubmit preToolUse postToolUse stop"
 # ─── E1: Overlay file validation ──────────────────────────────────────────────
 if [ -f "$OVERLAY_FILE" ]; then
   if ! [ -s "$OVERLAY_FILE" ]; then
-    err "E1: .omcc-overlay.json is empty"
+    err "E1: .omk-overlay.json is empty"
   elif ! jq empty "$OVERLAY_FILE" 2>/dev/null; then
-    err "E1: .omcc-overlay.json is not valid JSON"
+    err "E1: .omk-overlay.json is not valid JSON"
   fi
 else
   # No overlay is fine — project may not use extension points
@@ -93,7 +93,7 @@ if [ "$OVERLAY_VALID" = true ]; then
       else
         # W3: project hook name similar to framework hook name
         hook_basename=$(basename "$cmd_bin")
-        framework_hooks=$(find "$OMCC_ROOT/hooks" -name "*.sh" -exec basename {} \; 2>/dev/null || true)
+        framework_hooks=$(find "$OMK_ROOT/hooks" -name "*.sh" -exec basename {} \; 2>/dev/null || true)
         while IFS= read -r fw_hook; do
           [ -z "$fw_hook" ] && continue
           if [ "$hook_basename" = "$fw_hook" ]; then
@@ -107,7 +107,7 @@ fi
 
 # ─── E5: project skill name conflicts framework skill ─────────────────────────
 if [ "$OVERLAY_VALID" = true ]; then
-  FRAMEWORK_SKILLS_DIR="$OMCC_ROOT/skills"
+  FRAMEWORK_SKILLS_DIR="$OMK_ROOT/skills"
   EXTRA_SKILLS=$(jq -r '.extra_skills[]? // empty' "$OVERLAY_FILE" 2>/dev/null || true)
   while IFS= read -r skill_path; do
     [ -z "$skill_path" ] && continue
@@ -121,11 +121,11 @@ fi
 # ─── E6: AGENTS.md BEGIN/END markers ─────────────────────────────────────────
 AGENTS_MD="$PROJECT_ROOT/AGENTS.md"
 if [ -f "$AGENTS_MD" ]; then
-  if ! grep -q '<!-- BEGIN OMCC' "$AGENTS_MD" 2>/dev/null; then
-    err "E6: AGENTS.md missing <!-- BEGIN OMCC ... --> markers"
+  if ! grep -q '<!-- BEGIN OMK' "$AGENTS_MD" 2>/dev/null; then
+    err "E6: AGENTS.md missing <!-- BEGIN OMK ... --> markers"
   fi
-  if ! grep -q '<!-- END OMCC' "$AGENTS_MD" 2>/dev/null; then
-    err "E6: AGENTS.md missing <!-- END OMCC ... --> markers"
+  if ! grep -q '<!-- END OMK' "$AGENTS_MD" 2>/dev/null; then
+    err "E6: AGENTS.md missing <!-- END OMK ... --> markers"
   fi
   # W5: AGENTS.md >200 lines
   line_count=$(wc -l < "$AGENTS_MD")
@@ -135,7 +135,7 @@ if [ -f "$AGENTS_MD" ]; then
 fi
 
 # ─── E7: key symlinks ─────────────────────────────────────────────────────────
-for link in ".claude/hooks" ".kiro/hooks" ".claude/skills" ".kiro/skills"; do
+for link in ".kiro/hooks" ".kiro/hooks" ".kiro/skills" ".kiro/skills"; do
   link_path="$PROJECT_ROOT/$link"
   if [ -L "$link_path" ] && [ ! -e "$link_path" ]; then
     err "E7: broken symlink: $link_path"

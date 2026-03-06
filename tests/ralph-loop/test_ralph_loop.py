@@ -478,17 +478,6 @@ def test_fully_unparseable_plan_fallback(tmp_path):
 
 from unittest.mock import patch
 
-def test_detect_claude_cli():
-    """When claude is available and authenticated, detect_cli returns claude command."""
-    from scripts.lib.cli_detect import detect_cli
-    mock_proc = type('MockProc', (), {'communicate': lambda self, timeout=None: (b'pong', b''), 'returncode': 0, 'pid': 99999})()
-    with patch('shutil.which', side_effect=lambda x: '/usr/bin/claude' if x == 'claude' else None), \
-         patch('subprocess.Popen', return_value=mock_proc):
-        cmd = detect_cli()
-        assert cmd[0] == 'claude'
-        assert '-p' in cmd
-
-
 def test_detect_kiro_cli():
     """When only kiro-cli is available, detect_cli returns kiro command."""
     from scripts.lib.cli_detect import detect_cli

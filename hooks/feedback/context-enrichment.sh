@@ -74,7 +74,7 @@ fi
 DISTILL_LIB="$SCRIPT_DIR/../_lib/distill.sh"
 EPISODES_FILE="knowledge/episodes.md"
 RULES_FILE="knowledge/rules.md"
-RULES_DIR=".claude/rules"
+RULES_DIR=".kiro/rules"
 ARCHIVE_DIR="knowledge/archive"
 if [ -f "$DISTILL_LIB" ] && [ -f "$EPISODES_FILE" ]; then
   source "$DISTILL_LIB"
