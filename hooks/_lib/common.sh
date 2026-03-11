@@ -80,3 +80,39 @@ find_active_plan() {
 
   echo "$LATEST"
 }
+
+# --- Submodule utilities (generic, used by project hooks) ---
+
+ws_hash() {
+  printf '%s' "$PWD" | md5 -q 2>/dev/null || printf '%s' "$PWD" | md5sum 2>/dev/null | cut -c1-8
+}
+
+cached_workspace() {
+  local hash
+  hash=$(ws_hash | cut -c1-8)
+  local cache="/tmp/git-ws-${hash}.path"
+  if [ -f "$cache" ] && [ $(($(date +%s) - $(file_mtime "$cache"))) -lt 300 ]; then
+    cat "$cache"
+  else
+    local ws
+    ws=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
+    echo "$ws" > "$cache"
+    echo "$ws"
+  fi
+}
+
+cached_submodule_paths() {
+  local ws
+  ws=$(cached_workspace)
+  local hash
+  hash=$(ws_hash | cut -c1-8)
+  local cache="/tmp/git-sm-${hash}.paths"
+  local gitmod="$ws/.gitmodules"
+  [ -f "$gitmod" ] || return
+  if [ -f "$cache" ] && [ "$cache" -nt "$gitmod" ]; then
+    cat "$cache"
+  else
+    git config --file "$gitmod" --get-regexp '^submodule\..*\.path$' 2>/dev/null | awk '{print $2}' > "$cache"
+    cat "$cache"
+  fi
+}
