@@ -66,10 +66,15 @@ When you say "no, use X not Y", the agent captures the pattern and writes it to 
 │  verify-completion · correction-detect · auto-capture    │
 │  session-init · context-enrichment · kb-health-report    │
 ├─────────────────────────────────────────────────────────┤
-│  Skills (On-Demand, 10 core)                             │
-│  planning · reviewing · debugging · research             │
-│  verification · finishing · self-reflect · find-skills   │
+│  Skills (On-Demand, 11 core)                             │
+│  planning · reviewing · coding · debugging · research    │
+│  verification · finishing · self-reflect · context7-docs │
 │  agent · know                                            │
+├─────────────────────────────────────────────────────────┤
+│  Skill Security (Supply Chain Hardening)                  │
+│  audit-skill.sh — 8-category threat scan                 │
+│  install-skill.sh — audit gate before registration       │
+│  patterns.sh — block bare npx skill installation         │
 ├─────────────────────────────────────────────────────────┤
 │  Subagents (Task Isolation, 3 specialists)               │
 │  reviewer · researcher · executor                        │
@@ -104,7 +109,7 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 | `gate/enforce-ralph-loop.sh` | Blocks direct source edits when an active plan exists — forces execution through Ralph Loop |
 | `gate/enforce-work-dir.sh` | Restricts file writes to the plan's declared Work Dir during execution |
 | `gate/require-regression.sh` | Blocks checklist check-off for ralph_loop/lib changes without regression tests |
-| `security/block-dangerous.sh` | Blocks `rm -rf`, `sudo`, `curl\|bash`, force push, etc. |
+| `security/block-dangerous.sh` | Blocks `rm -rf`, `sudo`, `curl\|bash`, bare `npx skills add`, etc. |
 | `security/block-secrets.sh` | Scans for API keys, private keys before git commit/push |
 | `security/block-sed-json.sh` | Blocks sed/awk on JSON files — use jq instead |
 | `security/block-outside-workspace.sh` | Blocks file operations outside the project workspace |
@@ -134,25 +139,52 @@ The primary way to trigger workflows deterministically. Each command hardcodes t
 | Library | Purpose |
 |---------|---------|
 | `common.sh` | `hook_block()`, `file_mtime()`, `detect_test_command()`, `is_source_file()`, `find_active_plan()` |
-| `patterns.sh` | Regex patterns for file classification |
+| `patterns.sh` | Regex patterns for dangerous commands, injection detection, secret detection |
 | `distill.sh` | Episode → rule promotion, section cap enforcement, archive cleanup |
 | `ov-init.sh` | OpenViking client: `ov_init()`, `ov_search()`, `ov_add()`, `ov_session_commit()` |
 | `block-recovery.sh` | Recovery from hook-blocked operations |
 
-## Skills (10 Core)
+## Skills (11 Core)
 
 | Skill | Purpose |
 |-------|---------|
 | `planning` | Full plan lifecycle: Phase 0 (deep understanding) → Phase 1 (write plan with TDD) → Phase 1.5 (4-reviewer parallel review) → Phase 2 (Ralph Loop execution) |
 | `reviewing` | Code and plan review — multi-angle dispatch, P0-P3 categorization, file:line citations |
+| `coding` | Coding best practices enforcement: LSP init, TDD red-green-refactor, minimal changes, self-review, verification |
 | `debugging` | Systematic: reproduce → hypothesize → verify → fix (with LSP-first rule) |
 | `research` | Multi-level: L0 built-in → L1 web search → L2 deep research → persist findings |
 | `verification` | Evidence before completion claims — no shortcuts |
 | `finishing` | Branch completion: merge / PR / keep / discard + worktree cleanup |
 | `self-reflect` | Capture corrections → extract insight → dedup check → append to episodes.md |
-| `find-skills` | Discover available skills and match to user needs |
+| `context7-docs` | Fetch current library/framework documentation via Context7 MCP |
 | `agent` | Codify agent identity and principles into AGENTS.md |
 | `know` | Persist knowledge discoveries to knowledge/ files |
+
+## Skill Security
+
+Agent skills are a supply chain attack surface. Based on [Snyk's ToxicSkills research](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/) (Feb 2026: 36.82% of public skills have security issues), OMK enforces a multi-layer defense:
+
+| Layer | Mechanism | What It Catches |
+|-------|-----------|-----------------|
+| `audit-skill.sh` | 8-category threat scan | Prompt injection, malicious code, credential theft, base64 obfuscation, secret leaks, suspicious downloads |
+| `install-skill.sh` | Audit gate before registration | Blocks CRITICAL skills, warns on HIGH, auto-removes failed skills |
+| `sync-omk.sh` | Audit during framework sync | Blocks compromised skills from propagating to downstream projects |
+| `patterns.sh` | Hook hard block | Prevents bare `npx skills add` — forces all installs through `install-skill.sh` |
+
+### Threat Categories (based on Snyk ToxicSkills taxonomy)
+
+| Category | Severity | Examples |
+|----------|----------|---------|
+| Prompt Injection | 🔴 CRITICAL | "ignore previous instructions", base64 obfuscation, Unicode smuggling, DAN jailbreaks |
+| Malicious Code | 🔴 CRITICAL | eval/exec, shell=True, backdoors |
+| Suspicious Downloads | 🔴 CRITICAL | curl\|bash, password-protected archives |
+| Credential Handling | 🟠 HIGH | Reading ~/.aws/credentials, echoing API keys |
+| Secret Detection | 🟠 HIGH | Hardcoded AWS keys, GitHub tokens, private keys |
+| Third-Party Content | 🟡 MEDIUM | External HTTP fetches (indirect injection vector) |
+| Unverifiable Dependencies | 🟡 MEDIUM | Runtime remote loading, dynamic imports |
+| Excessive Permissions | 🟡 MEDIUM | sudo, systemctl modifications |
+
+Run manually: `bash tools/audit-skill.sh <SKILL_DIR>`
 
 ## Subagents (3 Specialists)
 
@@ -173,13 +205,13 @@ Additional configs: `pilot.json` (main orchestrator with all hooks wired) and `d
 | `knowledge/INDEX.md` | Routing table: question type → source file |
 | `knowledge/rules.md` | Keyword-sectioned rules, injected per-message by topic match (🔴 critical = always, 🟡 relevant = keyword-matched) |
 | `knowledge/episodes.md` | Mistakes and wins timeline (auto-cleanup on promotion, 30-entry cap) |
-| `knowledge/reference/` | Archived skill content (writing style, mermaid, java, etc.) |
+| `knowledge/reference/` | Reference materials (writing style, java coding standards, etc.) |
 
 ### OpenViking Semantic Search (Optional)
 
 When configured via `.omk-overlay.json`, the framework uses OpenViking for semantic knowledge recall:
 
-- **Auto-indexing**: knowledge files are automatically synced to OV on every write (fs_write, execute_bash, or session startup)
+- **Auto-indexing**: knowledge files are automatically synced to OV on every write
 - **Semantic recall**: context-enrichment hook queries OV on every user prompt, injecting relevant knowledge snippets
 - **Daemon**: `scripts/ov-daemon.py` runs as a background process, communicating via Unix socket
 - **Degradation alert**: if OV is unavailable, hooks emit `⚠️ OV unavailable` instead of silently degrading
@@ -189,7 +221,7 @@ When configured via `.omk-overlay.json`, the framework uses OpenViking for seman
 The execution engine for approved plans. A Python outer loop (`scripts/ralph_loop.py`) that:
 
 1. Reads the plan's `## Checklist` section
-2. Spawns a fresh CLI instance (Kiro or Kiro) per iteration
+2. Spawns a fresh CLI instance per iteration
 3. Each iteration works on unchecked items until context fills up
 4. Verifies checklist items by running their inline verify commands
 5. Reverts any `- [x]` items whose verify commands fail
@@ -207,53 +239,36 @@ The execution engine for approved plans. A Python outer loop (`scripts/ralph_loo
 │   ├── gate/                      # pre-write, enforce-ralph-loop, enforce-work-dir, require-regression
 │   └── feedback/                  # post-write, post-bash, verify-completion, correction-detect,
 │                                  # auto-capture, session-init, context-enrichment, kb-health-report
-├── skills/                        # 10 core skills (each has SKILL.md)
+├── skills/                        # 11 core skills (each has SKILL.md)
 ├── agents/                        # Subagent prompt files
 ├── commands/                      # Custom commands (@plan, @execute, @review, @research, @cpu, @lint, @skill)
 ├── scripts/
 │   ├── ralph_loop.py              # Ralph Loop: Python outer loop for plan execution
-│   ├── generate_configs.py        # Single source → CC + Kiro configs
+│   ├── generate_configs.py        # Single source → Kiro configs
 │   ├── ov-daemon.py               # OpenViking semantic search daemon
 │   └── lib/                       # Shared Python modules (plan.py, cli_detect.py, etc.)
 ├── tools/                         # CLI tools
 │   ├── init-project.sh            # Bootstrap OMK into existing project
-│   ├── install-skill.sh           # Install individual skills
-│   ├── sync-omk.sh               # Sync upstream OMK changes
-│   ├── validate-project.sh        # Validate project setup
-│   └── audit-skills.sh            # Audit skill integrity
-├── .kiro/                       # Generated CC config
-│   ├── settings.json              # Generated by scripts/generate_configs.py
-│   └── rules/                     # security, shell, workflow, subagent, debugging, git-workflow, testing, code-quality
+│   ├── install-skill.sh           # Install skill with security audit gate
+│   ├── audit-skill.sh             # 8-category skill security audit
+│   ├── sync-omk.sh               # Sync upstream OMK changes + skill sync
+│   └── validate-project.sh        # Validate project setup
 ├── .kiro/                         # Generated Kiro config
 │   ├── agents/*.json              # pilot, reviewer, researcher, executor, default
-│   └── rules/                     # enforcement, commands, reference, code-analysis
+│   ├── rules/                     # enforcement, commands, reference, code-analysis
+│   └── settings/                  # lsp.json, mcp.json
 ├── knowledge/                     # Persistent memory
 │   ├── INDEX.md                   # Knowledge routing table
 │   ├── rules.md                   # Keyword-section rules (smart injection)
 │   ├── episodes.md                # Mistakes and wins (auto-cleanup)
-│   └── reference/                 # Archived reference materials
+│   └── reference/                 # Reference materials
 └── docs/
     ├── designs/                   # Design documents
     ├── plans/                     # Implementation plans (.active pointer)
     └── releases/                  # Release notes
 ```
 
-Key design: `hooks/`, `skills/`, `agents/`, `commands/` are the single source of truth. Platform configs (`.kiro/`, `.kiro/`) are generated by `scripts/generate_configs.py`.
-
-## Compatibility
-
-| Platform | Hooks | Commands | Skills | Subagents | Agent Configs |
-|----------|-------|----------|--------|-----------|---------------|
-| **Kiro** | ✅ Full | Via slash commands | ✅ | ✅ Full | `.kiro/agents/*.json` |
-| **Kiro CLI** | ✅ 5 events (preToolUse, postToolUse, userPromptSubmit, stop, agentSpawn) | ✅ `.kiro/prompts/` | ✅ | ✅ With constraints | `.kiro/agents/*.json` |
-
-### Kiro Support
-
-Full Kiro support via `scripts/generate_configs.py`:
-- Agent configs: `.kiro/agents/{reviewer,researcher,executor}.md` with YAML frontmatter + inlined prompts
-- Hook wiring: `.kiro/settings.json` with `$KIRO_PROJECT_DIR` paths
-- Ralph loop: auto-detects `kiro-cli` CLI and uses `kiro-cli chat` with appropriate `--allowedTools`
-- `stop_hook_active` handling: verify-completion.sh exits immediately on recursive stop
+Key design: `hooks/`, `skills/`, `agents/`, `commands/` are the single source of truth. Platform configs are generated by `scripts/generate_configs.py`.
 
 ## Quick Start
 
@@ -270,9 +285,17 @@ python3 scripts/generate_configs.py  # Generate platform configs
 ### Add to existing project
 
 ```bash
-git clone https://github.com/KaimingWan/oh-my-kiro.git /tmp/omk
-/tmp/omk/tools/init-project.sh ./my-project "My Project"
+git submodule add https://github.com/KaimingWan/oh-my-kiro.git oh-my-kiro
+bash oh-my-kiro/tools/init-project.sh . "My Project"
 ```
+
+### Sync updates
+
+```bash
+bash oh-my-kiro/tools/sync-omk.sh .
+```
+
+This updates the submodule, syncs skills (with security audit), rules, configs, and AGENTS.md sections.
 
 ### Cherry-pick
 
@@ -281,8 +304,12 @@ git clone https://github.com/KaimingWan/oh-my-kiro.git /tmp/omk
 | Just hooks | `hooks/` + run `scripts/generate_configs.py` |
 | Just self-learning | `skills/self-reflect/` + `knowledge/rules.md` + `knowledge/episodes.md` |
 | Just knowledge system | `knowledge/` + `hooks/_lib/ov-init.sh` + `scripts/ov-daemon.py` |
-| Just subagents | `agents/` + `.kiro/agents/` |
+| Just skill security | `tools/audit-skill.sh` + `tools/install-skill.sh` |
 | Just Ralph Loop | `scripts/ralph_loop.py` + `scripts/lib/` |
+
+## Extending OMK
+
+See [EXTENSION-GUIDE.md](docs/EXTENSION-GUIDE.md) for adding project-specific skills, hooks, and knowledge.
 
 ## Design Principles
 
@@ -293,6 +320,7 @@ git clone https://github.com/KaimingWan/oh-my-kiro.git /tmp/omk
 5. **Evidence before claims** — Verification first, always
 6. **No hacky workarounds** — Fix root causes, not symptoms
 7. **Bold reform over timid patches** — Quality over backward compatibility
+8. **Secure by default** — All skill installs audited, dangerous commands blocked
 
 ## License
 
