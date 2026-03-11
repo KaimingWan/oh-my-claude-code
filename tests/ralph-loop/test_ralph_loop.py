@@ -783,3 +783,17 @@ def test_reasoning_loop_in_prompt(tmp_path):
     assert "Reasoning Loop" in result
     # Verify it mentions coarse/vague items
     assert "coarse" in result.lower() or "vague" in result.lower()
+
+
+def test_cmd_uses_positional_input_not_dash_p():
+    """Final cmd must pass prompt as positional arg, not -p flag.
+
+    kiro-cli chat accepts [INPUT] as positional argument.
+    Regression: old code used `kiro-cli -p '<prompt>' chat ...` which is invalid.
+    """
+    source = open("scripts/ralph_loop.py").read()
+    # The cmd construction must NOT contain '-p' special-casing
+    assert "'-p', prompt" not in source, "cmd must not use -p flag — kiro-cli uses positional INPUT"
+    assert '"-p", prompt' not in source, "cmd must not use -p flag — kiro-cli uses positional INPUT"
+    # Must use base_cmd + [prompt]
+    assert "base_cmd + [prompt]" in source, "cmd should be base_cmd + [prompt]"
