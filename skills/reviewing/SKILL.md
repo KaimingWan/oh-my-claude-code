@@ -12,13 +12,9 @@ description: "Code review — covers requesting, executing, and receiving code r
 ### Plan Review — 4 angles, 4 parallel subagents
 
 #### Pre-review Risk Identification
-Before dispatching reviewers, the main agent MUST:
-1. Read the plan and identify 2-3 specific risk points (e.g. race conditions, missing edge cases, incorrect assumptions)
-2. Formulate each risk as a concrete question with a verifiable answer
-3. Include these as "Specific Questions" in each reviewer's dispatch query
-4. Craft one canary question per dispatch that requires reading a specific source file
+Before dispatching reviewers, the main agent MUST run the **Pre-mortem Analysis** defined in `skills/planning/SKILL.md` (Phase 1.5 → Pre-mortem Analysis section). This produces 3 risk questions (Integration / Assumption / Environment) that are injected as "Specific Questions" into each reviewer's dispatch query.
 
-This pre-review step focuses reviewer attention on real risks instead of surface-level observations.
+Additionally, craft one canary question per dispatch that requires reading a specific source file.
 
 #### Dispatch
 

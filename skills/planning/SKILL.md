@@ -60,9 +60,30 @@ When the task involves creative/architectural work (new features, new components
 
 Skip this step for simple refactors, bug fixes, or tasks with a fully specified design doc.
 
+### Step 6: Readiness Check
+
+Before proceeding to Phase 1, verify the task is well-defined across 4 dimensions:
+
+| Dimension | ✅ Criterion | Greenfield | Brownfield |
+|-----------|-------------|------------|------------|
+| **Goal** | 能用一句话无歧义地说清楚要做什么 | Required | Required |
+| **Constraints** | 边界、非目标、限制条件已明确 | Required | Required |
+| **Success Criteria** | 至少有 2 个可测试的验收标准 | Required | Required |
+| **Context** | 理解被修改的现有代码/系统 | Skip | Required |
+
+Rules:
+- All applicable dimensions must be ✅ to proceed to Phase 1
+- If any dimension is ❌, ask ONE question targeting the weakest dimension
+- This step adds at most 3 questions (on top of Step 2's questions)
+- User says "skip" → state assumptions and continue
+
+**Challenge Modes** (activate on 2nd+ question in this step):
+- **Contrarian** (2nd question): "如果 [核心假设] 是错的呢？"
+- **Simplifier** (3rd question): "最简版本是什么样的？"
+
 ### Transition to Phase 1
 
-After Phase 0 completes, before writing the plan, validate each major design decision with Socratic self-check:
+After Phase 0 completes (including Readiness Check), before writing the plan, validate each major design decision with Socratic self-check:
 1. **Essence** — What is the core problem this decision solves?
 2. **Framework** — Does the current codebase already solve this? What known patterns apply?
 3. **Application** — Is this feasible on all target platforms? Does benefit > maintenance cost?
@@ -226,6 +247,16 @@ Two categories: **fixed** (every round) and **random** (sampled each round).
 | Compatibility & Rollback | For each modified file in the plan: 1) list existing tests that import or call functions in that file, 2) check if the plan's changes could break those existing tests, 3) verify the plan includes running existing tests (not just new ones). Also: can the plan's changes be reverted with a single `git revert`? | Existing-test impact analysis | Breaking Changes / Revert Safety / Verdict |
 | Performance | For each Task involving subprocess or threading: 1) calculate worst-case wall-clock time (timeout × max_iterations × retry count), 2) sum across all Tasks to get total suite time, 3) flag any single test that could exceed 30s without @pytest.mark.slow. Provide concrete numbers, not estimates. | Quantified time budget per Task | Time Budget Table / Slow Test Violations / Verdict |
 | Clarity | For each Task's "What to implement" section: 1) attempt to write the function signature and key assertions from the description alone (without reading source), 2) flag any Task where you cannot determine the exact test structure from the description. A clear plan = an executor agent can implement without reading source first. | Implementability dry-run | Ambiguous Tasks / Missing Specs / Verdict |
+
+### Pre-mortem Analysis
+
+Before selecting review angles, assume the plan has already been executed and **failed**. Identify the 3 most likely failure causes:
+
+1. **Integration risks** — will the changes break existing behavior or conflict with other components?
+2. **Assumption risks** — what implicit assumptions might be wrong? (e.g. file format, API behavior, execution order)
+3. **Environment risks** — will this work across all target environments? (e.g. CI, different OS, missing dependencies)
+
+For each risk, formulate a concrete verifiable question. Inject these as "Specific Questions" in each reviewer's dispatch query (see Dispatch Query Template below).
 
 ### Angle Selection
 
