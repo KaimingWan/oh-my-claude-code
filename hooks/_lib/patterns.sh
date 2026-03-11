@@ -27,6 +27,7 @@ DANGEROUS_BASH_PATTERNS=(
   '\bfind\b[[:space:]]+(/etc|/usr|/var|/sys|/boot)(/[^[:space:]]*)?[[:space:]].*-delete'
   '\bfind\b[[:space:]]+(/etc|/usr|/var|/sys|/boot)(/[^[:space:]]*)?[[:space:]].*-exec[[:space:]]+rm'
   '(pipx[[:space:]]+run|npx[[:space:]]+-y|uvx)[[:space:]]+\S*\bmcp\b'
+  '\bnpx[[:space:]]+skills[[:space:]]+add\b'
 )
 
 # Case-insensitive patterns (SQL keywords may appear in any case)

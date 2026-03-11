@@ -11,7 +11,8 @@
     "file://AGENTS.md",
     "file://knowledge/INDEX.md",
     "skill://skills/planning/SKILL.md",
-    "skill://skills/reviewing/SKILL.md"
+    "skill://skills/reviewing/SKILL.md",
+    "skill://skills/coding/SKILL.md"
   ],
   "hooks": {
     "userPromptSubmit": [

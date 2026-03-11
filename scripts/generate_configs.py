@@ -179,6 +179,7 @@ def _main_agent_resources(extra_skills: list | None = None) -> list:
         "file://knowledge/INDEX.md",
         "skill://skills/planning/SKILL.md",
         "skill://skills/reviewing/SKILL.md",
+        "skill://skills/coding/SKILL.md",
     ]
     for skill_path in (extra_skills or []):
         resources.append(f"skill://{skill_path}/SKILL.md")

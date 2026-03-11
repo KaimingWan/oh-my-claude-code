@@ -41,6 +41,7 @@
 | 规划/设计 | planning | `@plan` 命令 | 预加载 |
 | 执行计划 | planning + ralph loop | `@execute` 命令 | 预加载 |
 | Code Review | reviewing | `@review` 命令 | 预加载 |
+| 写代码/改代码 | coding | 进入 worktree/submodule 写代码时 | 预加载 |
 | 调试 | debugging | rules.md 自动注入 | 按需读取 |
 | 调研 | research | `@research` 命令 | 按需读取 |
 | 完成前验证 | verification | Stop hook 自动 | 按需读取 |
@@ -48,7 +49,13 @@
 | 纠正/学习 | self-reflect | context-enrichment 检测 | 按需读取 |
 | 沉淀纲领 | agent (CC skill / MCP prompt) | `/agent` or `@o/agent` | 按需读取 |
 | 沉淀知识 | know (CC skill / MCP prompt) | `/know` or `@o/know` | 按需读取 |
-| 发现 skill | find-skills | 用户询问时 | 按需读取 |
+
+## Skill 安装规则
+
+- 禁止直接 `npx skills add` — hook 硬拦截
+- 所有外部 skill 安装必须走 `bash tools/install-skill.sh <source>`（内含 `audit-skill.sh` 安全审计）
+- 调研发现好的 skill → 优先参考思路自己写，其次走 install-skill.sh 安装
+- `audit-skill.sh` 检测到 CRITICAL → 自动拒绝，不可覆盖
 
 ## Knowledge Retrieval
 - Question → knowledge/INDEX.md → topic indexes → source docs

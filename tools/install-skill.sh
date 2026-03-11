@@ -24,6 +24,8 @@ if [ -f "$PATTERNS_LIB" ]; then
   source "$PATTERNS_LIB"
 fi
 
+AUDIT_SCRIPT="$(cd "$(dirname "$0")" && pwd)/audit-skill.sh"
+
 scan_skill_file() {
   local skill_md="$1"
   [ ! -f "$skill_md" ] && return 0
@@ -89,6 +91,13 @@ if [ "${1:-}" = "--register-only" ]; then
 
   scan_skill_file "$ABS_SKILL_PATH/SKILL.md"
 
+  # Full security audit (if audit-skill.sh exists)
+  if [ -f "$AUDIT_SCRIPT" ]; then
+    if ! bash "$AUDIT_SCRIPT" "$ABS_SKILL_PATH"; then
+      err "Security audit failed for: $ABS_SKILL_PATH"
+    fi
+  fi
+
   register_skill_in_overlay "$OVERLAY_FILE" "$SKILL_PATH"
   exit 0
 fi
@@ -145,6 +154,15 @@ for installed_dir in "${INSTALLED_DIRS[@]}"; do
 
   # Scan for injection/secrets before registering
   scan_skill_file "$dest/SKILL.md"
+
+  # Full security audit
+  if [ -f "$AUDIT_SCRIPT" ]; then
+    if ! bash "$AUDIT_SCRIPT" "$dest"; then
+      echo "🚫 Security audit FAILED for: $dest — removing"
+      mv "$dest" ~/.Trash/ 2>/dev/null || true
+      continue
+    fi
+  fi
 
   # Register in overlay (use relative path)
   relative_path="skills/$skill_name"

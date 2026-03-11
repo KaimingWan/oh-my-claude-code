@@ -159,6 +159,51 @@ else
 fi
 
 
+# ─── Step 3.10.5: Sync framework skills ──────────────────────────────────────
+# Copy new/updated OMK skills to project. Project-only skills are untouched.
+OMK_SKILLS="$OMK_ROOT/skills"
+PROJECT_SKILLS="$PROJECT_ROOT/skills"
+KIRO_SKILLS="$PROJECT_ROOT/.kiro/skills"
+AUDIT_SCRIPT="$OMK_ROOT/tools/audit-skill.sh"
+if [ -d "$OMK_SKILLS" ] && [ -d "$PROJECT_SKILLS" ] && [ -d "$KIRO_SKILLS" ]; then
+  SKILLS_ADDED=0
+  SKILLS_UPDATED=0
+  SKILLS_BLOCKED=0
+  for skill_dir in "$OMK_SKILLS"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name=$(basename "$skill_dir")
+    target="$PROJECT_SKILLS/$skill_name"
+
+    # Security audit before sync
+    if [ -f "$AUDIT_SCRIPT" ]; then
+      if ! bash "$AUDIT_SCRIPT" "$skill_dir" >/dev/null 2>&1; then
+        echo "  ⚠️  Skill '$skill_name' failed security audit, skipping"
+        SKILLS_BLOCKED=$((SKILLS_BLOCKED + 1))
+        continue
+      fi
+    fi
+
+    if [ ! -d "$target" ]; then
+      cp -r "$skill_dir" "$target"
+      ln -sf "../../skills/$skill_name" "$KIRO_SKILLS/$skill_name"
+      SKILLS_ADDED=$((SKILLS_ADDED + 1))
+    else
+      # Update existing framework skill (overwrite SKILL.md + resources)
+      rsync -a --delete "$skill_dir" "$target/"
+      # Ensure symlink exists
+      [ -L "$KIRO_SKILLS/$skill_name" ] || ln -sf "../../skills/$skill_name" "$KIRO_SKILLS/$skill_name"
+      SKILLS_UPDATED=$((SKILLS_UPDATED + 1))
+    fi
+  done
+  if [ "$SKILLS_ADDED" -gt 0 ] || [ "$SKILLS_UPDATED" -gt 0 ] || [ "$SKILLS_BLOCKED" -gt 0 ]; then
+    ok "Step 3.10.5: Skills synced ($SKILLS_ADDED added, $SKILLS_UPDATED updated, $SKILLS_BLOCKED blocked)"
+  else
+    info "Step 3.10.5: Skills already up to date"
+  fi
+else
+  info "Step 3.10.5: skills/ directory not found in OMK or project, skipping"
+fi
+
 # ─── Step 3.11: Ensure knowledge/episodes.md and rules.md exist ───────────────
 KNOWLEDGE_DIR="$PROJECT_ROOT/knowledge"
 TEMPLATES_DIR="$OMK_ROOT/templates/knowledge"
