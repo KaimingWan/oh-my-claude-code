@@ -34,10 +34,24 @@ elif echo "$USER_MSG" | grep -qiE '(research|investigate|look into|compare.*opti
 fi
 
 # Debugging skill reminder
-if echo "$USER_MSG" | grep -qE '(报错|\bbug\b|调试|修复.*错误|测试失败|不工作了)'; then
+if echo "$USER_MSG" | grep -qE '(报错|\bbug\b|调试|修复|测试失败|不工作了|失败了|checks?\s*失败|CI\s*失败|build\s*失败|lint\s*失败|挂了)'; then
   emit "🐛 Debug detected → read skills/debugging/SKILL.md. Use LSP tools (get_diagnostics, search_symbols, find_references) BEFORE attempting fixes."
-elif echo "$USER_MSG" | grep -qiE '(\btest.*(fail|brok)|traceback|exception.*thrown|crash|not working|fix.*bug|\bis broken\b|\bbug\b)'; then
+elif echo "$USER_MSG" | grep -qiE '(\btest.*(fail|brok)|traceback|exception.*thrown|crash|not working|fix.*bug|\bis broken\b|\bbug\b|\bfix\b|checks?\s*fail|CI\s*fail|build\s*fail|lint\s*(fail|error))'; then
   emit "🐛 Debug detected → read skills/debugging/SKILL.md. Use LSP tools (get_diagnostics, search_symbols, find_references) BEFORE attempting fixes."
+fi
+
+# Coding skill reminder
+if echo "$USER_MSG" | grep -qE '(写代码|改代码|实现|重构|加个功能|修改.*代码|worktree|submodule.*改|sub.*module|修复)'; then
+  emit "💻 Coding detected → read skills/coding/SKILL.md. Init LSP, write test first, minimal changes."
+elif echo "$USER_MSG" | grep -qiE '(implement|refactor|write.*code|modify.*code|add.*feature|change.*function|worktree|submodule|\bfix\b)'; then
+  emit "💻 Coding detected → read skills/coding/SKILL.md. Init LSP, write test first, minimal changes."
+fi
+
+# Review skill reminder
+if echo "$USER_MSG" | grep -qE '(review|审查|代码审查|帮我看|帮我.*review|PR\b|pull.?request|合并请求)'; then
+  emit "📝 Review detected → read skills/reviewing/SKILL.md for review workflow."
+elif echo "$USER_MSG" | grep -qiE '(\breview\b|\bPR\b|pull.?request|code.?review|look.*at.*code)'; then
+  emit "📝 Review detected → read skills/reviewing/SKILL.md for review workflow."
 fi
 
 # Planning intent — force planning skill workflow
