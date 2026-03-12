@@ -152,6 +152,7 @@ Rules:
 - Cover: happy path + edge case + integration (where applicable)
 - Hook enforces: checking off `- [x]` requires recent successful execution of the verify command
 - **Regression test rule:** If plan Files fields include `scripts/ralph_loop.py` or `scripts/lib/`, the checklist MUST include: `- [ ] 回归测试通过 | \`python3 -m pytest tests/ralph-loop/ -v\``
+- **Vertical slice rule:** Organize tasks as vertical slices (one feature end-to-end) rather than horizontal layers (all models, then all APIs). Vertical slices have fewer inter-task dependencies, enabling cleaner atomic commits. Exception: tasks that are inherently horizontal (e.g., "add logging to all hooks") need not be forced into vertical slices.
 
 ### Coarse Checklist Items
 
@@ -233,6 +234,28 @@ Rules:
 - Append-only — never rewrite, only add new entries
 - Use when execution-phase research reveals something relevant to later tasks
 - Not required for simple plans where no research happens during execution
+
+### Session State Section (optional)
+
+Plans may include a `## Session State` section for cross-session continuity:
+
+```markdown
+## Session State
+
+**Position:** Task N of M
+**Last session:** YYYY-MM-DD HH:MM
+**Decisions made this session:**
+- [decision with rationale]
+
+**Notes for next session:**
+- [what to pick up, what to watch out for]
+```
+
+Rules:
+- Updated at the end of each Ralph Loop round (before agent exits)
+- Read at the start of each round (part of Session Resume Protocol)
+- Append-only for decisions; position and notes are overwritten each round
+- Not required for small plans (≤ 3 items) that complete in a single round
 
 ## Phase 1.5: Plan Review
 
