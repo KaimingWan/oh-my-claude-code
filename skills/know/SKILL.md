@@ -1,5 +1,5 @@
 ---
-name: know
+name: omk-know
 description: "Capture knowledge into episodes.md. Use when preserving insights, lessons learned, or corrections from the current conversation."
 argument-hint: "[insight to capture]"
 disable-model-invocation: true

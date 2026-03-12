@@ -1,5 +1,5 @@
 ---
-name: research
+name: omk-research
 description: "Multi-level research with automatic fallback. Web search → Deep research API. Use when you need comprehensive research grounded in web data."
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: agent
+name: omk-agent
 description: "Distill a top-level principle into knowledge/rules.md. Use when capturing architectural decisions, workflow principles, or behavioral guidelines."
 argument-hint: "[principle to capture]"
 disable-model-invocation: true

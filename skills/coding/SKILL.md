@@ -1,5 +1,5 @@
 ---
-name: coding
+name: omk-coding
 description: "Enforces coding best practices when writing or modifying code: LSP initialization, TDD, minimal changes, self-review, and verification. Auto-triggered when entering a code-heavy worktree or submodule."
 ---
 
@@ -115,6 +115,21 @@ After implementation, before claiming done:
    - New test passes? → Revert your fix → test must FAIL → restore fix
    - This proves the test actually tests your change
 ```
+
+### Frontend Visual Verification (when UI files changed)
+
+If any modified file is a frontend file (.tsx/.jsx/.vue/.html/.css/.scss), you MUST verify visually:
+
+```
+1. Ensure dev server is running (check with curl or ps)
+2. Use agent-browser to screenshot the affected page:
+   agent-browser open http://localhost:<port>/<path> && agent-browser wait --load networkidle && agent-browser screenshot --annotate
+3. Review the screenshot — does it match the expected behavior?
+4. If the visual result is wrong, fix and re-verify. Do NOT claim done without visual confirmation.
+5. For style/layout issues, use agent-browser snapshot -i to inspect element structure
+```
+
+**CRITICAL:** Never claim a frontend issue is "fixed" based only on code changes. The browser is the source of truth.
 
 ## Phase 4: Self-Review
 

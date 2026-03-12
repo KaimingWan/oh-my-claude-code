@@ -1,5 +1,5 @@
 ---
-name: reviewing
+name: omk-reviewing
 description: "Code review — covers requesting, executing, and receiving code reviews."
 ---
 

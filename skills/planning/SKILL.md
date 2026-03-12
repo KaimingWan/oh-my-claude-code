@@ -1,5 +1,5 @@
 ---
-name: planning
+name: omk-planning
 description: "Write and execute implementation plans. Covers: plan writing, TDD task structure, execution strategies (sequential/parallel/subagent), and git worktree isolation."
 ---
 
@@ -83,7 +83,21 @@ Rules:
 
 ### Transition to Phase 1
 
-After Phase 0 completes (including Readiness Check), before writing the plan, validate each major design decision with Socratic self-check:
+#### Goal-Backward Derivation
+
+After the Readiness Check, reverse-engineer from Success Criteria before writing the plan:
+
+For each Success Criterion:
+1. **What must be TRUE** for this criterion to pass?
+2. Which of these truths **already exist** in the codebase?
+3. Which must be **newly created**? → These become Tasks
+4. What are the **dependencies** between new truths? → These determine Task order
+
+This ensures the plan covers everything needed for the goal, not just what seems obvious forward-thinking.
+
+#### Socratic Self-Check
+
+Then validate each major design decision:
 1. **Essence** — What is the core problem this decision solves?
 2. **Framework** — Does the current codebase already solve this? What known patterns apply?
 3. **Application** — Is this feasible on all target platforms? Does benefit > maintenance cost?

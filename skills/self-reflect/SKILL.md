@@ -1,5 +1,5 @@
 ---
-name: self-reflect
+name: omk-self-reflect
 description: "Handles promotion of episodes to rules, and complex insight capture that auto-capture can't handle."
 ---
 
