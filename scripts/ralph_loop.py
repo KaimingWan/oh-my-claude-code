@@ -23,7 +23,7 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from scripts.lib.plan import PlanFile
-from scripts.lib.error_context import extract_error_context, format_reverted_context
+from scripts.lib.error_context import extract_error_context, format_reverted_context, classify_exit
 from scripts.lib.lock import LockFile
 from scripts.lib.cli_detect import detect_cli
 from scripts.lib.precheck import run_precheck
@@ -90,7 +90,8 @@ def _heartbeat(proc: subprocess.Popen, iteration: int, stop_event: threading.Eve
 
 
 # --- Summary writer ---
-def write_summary(exit_code: int, plan: PlanFile, plan_path: Path, summary_file: Path):
+def write_summary(exit_code: int, plan: PlanFile, plan_path: Path, summary_file: Path,
+                  exit_reason: str = ""):
     plan.reload()
     status = "✅ SUCCESS" if exit_code == 0 else "❌ FAILED"
     lines = [
@@ -102,6 +103,17 @@ def write_summary(exit_code: int, plan: PlanFile, plan_path: Path, summary_file:
         f"- **Skipped:** {plan.skipped}",
         f"- **Finished at:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
     ]
+    if exit_reason:
+        reason_labels = {
+            "stuck": "连续多轮无进展，circuit breaker 触发",
+            "timeout": "任务超时",
+            "env_failure": "环境预检失败",
+            "cli_crash": "CLI 子进程启动失败",
+            "partial": "部分完成后失败",
+            "qa_failed": "全局 QA 验证失败",
+            "unknown": "未知原因",
+        }
+        lines.append(f"- **Exit Reason:** {exit_reason} — {reason_labels.get(exit_reason, exit_reason)}")
     if plan.unchecked > 0:
         lines += ["", "## Remaining Items"] + plan.next_unchecked(50)
     summary = "\n".join(lines)
@@ -114,7 +126,8 @@ def write_summary(exit_code: int, plan: PlanFile, plan_path: Path, summary_file:
 def build_prompt(iteration: int, plan: PlanFile, plan_path: Path, project_root: Path,
                  skip_precheck: str = "", prev_exit: int = -1, is_first: bool = False,
                  work_dir: str = "", stale_rounds: int = 0, log_path: Path | None = None,
-                 reverted_items: list[tuple[int, str]] | None = None) -> str:
+                 reverted_items: list[tuple[int, str]] | None = None,
+                 reads_file: Path | None = None) -> str:
     plan.reload()
     progress_file = plan.progress_path
     findings_file = plan.findings_path
@@ -165,6 +178,12 @@ You MUST try a DIFFERENT STRATEGY. The previous approach failed — do not repea
     if reverted_items:
         reverted_section = format_reverted_context(reverted_items)
 
+    reads_section = ""
+    if reads_file and reads_file.exists():
+        reads_content = reads_file.read_text(errors="replace")[:2000]
+        if reads_content.strip():
+            reads_section = f"\n## Parallel Reads Output (from previous iteration)\n{reads_content}\n"
+
     return f"""{header}
 
 Read these files first:
@@ -173,7 +192,7 @@ Read these files first:
 3. Findings: {findings_file} (if exists — contains research discoveries and decisions)
 
 Environment: {env_status}
-{stale_section}{reverted_section}
+{stale_section}{reverted_section}{reads_section}
 {work_dir_section}
 {pre_items + chr(10) if pre_items else ""}Next unchecked items:
 {next_items}
@@ -226,6 +245,7 @@ class Config:
     heartbeat_interval: int = 60
     skip_dirty_check: str = ""
     skip_precheck: str = ""
+    skip_review: str = ""
     plan_pointer: Path | None = None
     instance_slug: str = ""
     work_dir: str = ""
@@ -257,6 +277,7 @@ def parse_config(argv: list[str] | None = None) -> Config:
         heartbeat_interval=int(os.environ.get("RALPH_HEARTBEAT_INTERVAL", "60")),
         skip_dirty_check=os.environ.get("RALPH_SKIP_DIRTY_CHECK", ""),
         skip_precheck=os.environ.get("RALPH_SKIP_PRECHECK", ""),
+        skip_review=os.environ.get("RALPH_SKIP_REVIEW", ""),
         plan_pointer=plan_pointer,
         instance_slug=slug,
         work_dir=os.environ.get("RALPH_WORK_DIR", ""),
@@ -348,6 +369,7 @@ def main():
     last_reverted: list[tuple[int, str]] = []
     final_exit = 1
     prev_exit = -1  # -1 = no previous iteration; 0 = last CLI exited OK (precheck cacheable)
+    reads_file: Path | None = None
 
     for i in range(1, max_iterations + 1):
         plan.reload()
@@ -380,15 +402,32 @@ def main():
 
         # Build prompt
         if i == 1 and plan.checked == 0:
-            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, is_first=True, stale_rounds=stale_rounds, log_path=log_file)
+            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, is_first=True, stale_rounds=stale_rounds, log_path=log_file, reads_file=reads_file)
         else:
-            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, stale_rounds=stale_rounds, log_path=log_file, reverted_items=last_reverted)
+            prompt = build_prompt(i, plan, plan_path, PROJECT_ROOT, skip_precheck, stale_rounds=stale_rounds, log_path=log_file, reverted_items=last_reverted, reads_file=reads_file)
 
         if shutdown_flag[0]:
             break
 
         # Launch kiro-cli with PTY for unbuffered output + idle watchdog
         cmd = base_cmd + [prompt]
+
+        # --- Parallel read-only subagent (experimental, optional) ---
+        parallel_read_proc = None
+        reads_file = plan.path.parent / f"{plan.path.stem}.reads.md"
+        parallel_reads_section = re.search(
+            r'^## Parallel Reads\b.*?\n```(?:bash)?\n(.+?)\n```',
+            plan._text, re.MULTILINE | re.DOTALL,
+        )
+        if parallel_reads_section:
+            read_prompt = parallel_reads_section.group(1).strip()
+            try:
+                parallel_read_proc = subprocess.Popen(
+                    base_cmd + [read_prompt],
+                    stdout=open(reads_file, "w"), stderr=subprocess.DEVNULL,
+                )
+            except Exception:
+                parallel_read_proc = None  # silent skip
 
         proc, pty_stop = pty_run(cmd, log_file)
         child_proc_ref[0] = proc
@@ -417,6 +456,13 @@ def main():
         stop_event.set()
         hb.join(timeout=2)
         pty_stop()
+
+        # Clean up parallel read subagent
+        if parallel_read_proc is not None:
+            try:
+                parallel_read_proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                parallel_read_proc.kill()
 
         prev_exit = proc.returncode if proc.returncode is not None else 1
 
@@ -448,7 +494,68 @@ def main():
             print(f"\n⚠️ Reached max iterations ({max_iterations}). {plan.unchecked} items still unchecked.",
                   flush=True)
 
-    write_summary(final_exit, plan, plan_path, summary_file)
+    # --- QA stage: run global verification if plan has ## QA section ---
+    qa_failed = False
+    if final_exit == 0:
+        qa_cmd = plan.parse_qa_command()
+        if qa_cmd:
+            print(f"\n🧪 Running QA: {qa_cmd}", flush=True)
+            try:
+                qa_result = subprocess.run(qa_cmd, shell=True, capture_output=True, text=True,
+                                           timeout=300, cwd=str(PROJECT_ROOT))
+                if qa_result.returncode != 0:
+                    print(f"❌ QA failed (exit {qa_result.returncode}):\n{qa_result.stdout[-1000:]}\n{qa_result.stderr[-500:]}", flush=True)
+                    final_exit = 1
+                    qa_failed = True
+                else:
+                    print("✅ QA passed", flush=True)
+            except subprocess.TimeoutExpired:
+                print("❌ QA timed out (300s)", flush=True)
+                final_exit = 1
+                qa_failed = True
+
+    # --- Completion review: dispatch reviewer if QA passed ---
+    def completion_review(plan_path: Path, base_cmd: list[str]) -> bool | None:
+        """Run a completion review via kiro-cli. Returns True=approve, False=reject, None=skipped."""
+        if cfg.skip_review:
+            return None
+        prompt = (
+            f"Review the completed plan at {plan_path}. Check: "
+            "1) all checklist items genuinely done, 2) no regressions in modified files, "
+            "3) git diff looks clean. Output: APPROVE or REQUEST CHANGES with details."
+        )
+        try:
+            r = subprocess.run(base_cmd + [prompt], capture_output=True, text=True, timeout=300)
+            output = r.stdout + r.stderr
+            if "APPROVE" in output.upper():
+                return True
+            return False
+        except Exception as e:
+            print(f"⚠️ Completion review skipped (error: {e})", flush=True)
+            return None
+
+    if final_exit == 0:
+        print("\n📋 Running completion review...", flush=True)
+        review_result = completion_review(plan_path, base_cmd)
+        if review_result is True:
+            print("✅ Completion review: APPROVED", flush=True)
+        elif review_result is False:
+            print("⚠️ Completion review: REQUEST CHANGES (see output above)", flush=True)
+        # review_result None = skipped, no action needed
+
+    # Classify exit reason
+    plan.reload()
+    exit_reason = ""
+    if final_exit != 0:
+        if qa_failed:
+            exit_reason = "qa_failed"
+        else:
+            exit_reason = classify_exit(
+                exit_code=final_exit, stale_rounds=stale_rounds, max_stale=MAX_STALE,
+                timed_out=False, env_ok=True, checked=plan.checked,
+            )
+
+    write_summary(final_exit, plan, plan_path, summary_file, exit_reason=exit_reason)
     lock.release()
     sys.exit(final_exit)
 

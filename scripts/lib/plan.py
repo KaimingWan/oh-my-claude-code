@@ -196,6 +196,11 @@ class PlanFile:
             self.reload()
         return results
 
+    def parse_qa_command(self) -> str | None:
+        """Parse optional ## QA section for a bash command in a code block."""
+        m = re.search(r'^## QA\b.*?\n```(?:bash)?\n(.+?)\n```', self._text, re.MULTILINE | re.DOTALL)
+        return m.group(1).strip() if m else None
+
     def revert_failed_checks(self, cwd: str = ".", timeout: int = 30) -> list[tuple[int, str]]:
         """Revert [x] items back to [ ] if their inline verify command fails.
 

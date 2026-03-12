@@ -40,3 +40,19 @@ def format_reverted_context(reverted: list[tuple[int, str]]) -> str:
     for idx, cmd in reverted:
         lines.append(f"  #{idx}: `{cmd}` — fix the root cause, don't just re-mark it")
     return "\n".join(lines)
+
+
+def classify_exit(exit_code: int, stale_rounds: int, max_stale: int,
+                  timed_out: bool, env_ok: bool, checked: int = 0) -> str:
+    """Classify ralph loop exit reason into a diagnostic category."""
+    if stale_rounds >= max_stale:
+        return "stuck"
+    if timed_out:
+        return "timeout"
+    if not env_ok:
+        return "env_failure"
+    if exit_code != 0 and checked == 0:
+        return "cli_crash"
+    if exit_code != 0 and checked > 0:
+        return "partial"
+    return "unknown"

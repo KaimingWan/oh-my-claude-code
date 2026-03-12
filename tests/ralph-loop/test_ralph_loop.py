@@ -32,6 +32,7 @@ def run_ralph(tmp_path, extra_env=None, max_iter="1"):
         "RALPH_HEARTBEAT_INTERVAL": "999",
         "RALPH_SKIP_DIRTY_CHECK": "1",
         "RALPH_SKIP_PRECHECK": "1",
+        "RALPH_SKIP_REVIEW": "1",
     }
     if extra_env:
         env.update(extra_env)
