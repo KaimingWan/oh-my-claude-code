@@ -212,6 +212,21 @@ Rules:
 7. Commit: feat: <item description>.
 8. You are AUTONOMOUS — self-diagnose errors, research solutions, try alternative approaches. Do NOT stop or ask for help. Solve it yourself.
 9. If stuck after 3 attempts, try a DIFFERENT STRATEGY before giving up. Change item to '- [SKIP] <reason>' only as last resort.
+
+## Autonomous Problem-Solving Protocol
+
+When you hit an error or unknown problem, follow this sequence (do NOT skip steps):
+1. **Check history** — read episodes.md for similar past issues and their solutions
+2. **Diagnose** — read the error message + relevant code, narrow down the root cause
+3. **Research** — web_search the error message or technical approach if unfamiliar
+4. **Try alternative** — implement a different approach based on what you learned
+5. **Minimize** — if still failing, isolate the problem (smallest reproducing case)
+6. **SKIP only as absolute last resort** — after ALL above steps exhausted
+
+Key principles:
+- Never give up on first failure. Experts expect failures and iterate.
+- Research before retrying — repeating the same approach is not a strategy.
+- Write what you tried and learned to the progress file so the next iteration doesn't repeat.
 10. If a command is blocked by a security hook, read the suggested alternative and retry with the safe command. If blocked 3+ times on the same item, mark it as '- [SKIP] blocked by security hook' and continue.
 11. NEVER mark an item `- [x]` if the verify command fails or the implementation was not actually executed. If unsure, re-run the verify command.
 12. Codebase Patterns: When you discover patterns (naming conventions, error handling idioms, test structure), note them in {findings_file} under a "## Codebase Patterns" section so future iterations can reuse them.
