@@ -110,7 +110,7 @@ fi
 ok "Step 3: Agent configs generated"
 
 # ─── Step 3.5: Ensure commands symlink ────────────────────────────────────────
-if [ -d "$OMK_ROOT/commands" ] && [ ! -e "$PROJECT_ROOT/commands" ]; then
+if [ -d "$OMK_ROOT/commands" ] && [ ! -e "$PROJECT_ROOT/commands" ] && [ ! -L "$PROJECT_ROOT/commands" ]; then
   ln -s .omk/commands "$PROJECT_ROOT/commands"
   ok "Step 3.5: commands/ symlink created"
 elif [ -L "$PROJECT_ROOT/commands" ]; then
@@ -119,19 +119,51 @@ else
   info "Step 3.5: commands/ directory exists (not a symlink), skipping"
 fi
 
-# ─── Step 3.6: Ensure .kiro/prompts → commands symlink (Kiro CLI custom commands) ─
+# ─── Step 3.6: Sync OMK commands to .kiro/prompts (Kiro CLI custom commands) ──
 KIRO_PROMPTS="$PROJECT_ROOT/.kiro/prompts"
-if [ -d "$PROJECT_ROOT/.kiro" ] && [ -e "$PROJECT_ROOT/commands" ]; then
+OMK_COMMANDS="$OMK_ROOT/commands"
+if [ -d "$PROJECT_ROOT/.kiro" ] && [ -d "$OMK_COMMANDS" ]; then
   if [ ! -e "$KIRO_PROMPTS" ]; then
-    ln -s ../commands "$KIRO_PROMPTS"
-    ok "Step 3.6: .kiro/prompts → ../commands symlink created"
+    # No prompts dir yet — symlink if project has no custom commands, else copy
+    if [ -e "$PROJECT_ROOT/commands" ]; then
+      ln -s ../commands "$KIRO_PROMPTS"
+      ok "Step 3.6: .kiro/prompts → ../commands symlink created"
+    else
+      mkdir -p "$KIRO_PROMPTS"
+      cp "$OMK_COMMANDS"/*.md "$KIRO_PROMPTS/" 2>/dev/null
+      ok "Step 3.6: .kiro/prompts/ created with OMK commands"
+    fi
   elif [ -L "$KIRO_PROMPTS" ]; then
-    info "Step 3.6: .kiro/prompts symlink already exists"
+    info "Step 3.6: .kiro/prompts is a symlink, skipping merge"
   else
-    info "Step 3.6: .kiro/prompts is a real directory, skipping"
+    # Real directory — merge OMK commands (don't overwrite project-specific ones)
+    CMDS_ADDED=0
+    CMDS_UPDATED=0
+    for cmd_file in "$OMK_COMMANDS"/*.md; do
+      [ -f "$cmd_file" ] || continue
+      cmd_name=$(basename "$cmd_file")
+      if [ ! -f "$KIRO_PROMPTS/$cmd_name" ]; then
+        cp "$cmd_file" "$KIRO_PROMPTS/$cmd_name"
+        CMDS_ADDED=$((CMDS_ADDED + 1))
+      else
+        # Update if OMK version is newer
+        if [ "$cmd_file" -nt "$KIRO_PROMPTS/$cmd_name" ]; then
+          # Only update if content differs (project may have customized)
+          if ! diff -q "$cmd_file" "$KIRO_PROMPTS/$cmd_name" >/dev/null 2>&1; then
+            cp "$cmd_file" "$KIRO_PROMPTS/$cmd_name"
+            CMDS_UPDATED=$((CMDS_UPDATED + 1))
+          fi
+        fi
+      fi
+    done
+    if [ "$CMDS_ADDED" -gt 0 ] || [ "$CMDS_UPDATED" -gt 0 ]; then
+      ok "Step 3.6: Commands synced to .kiro/prompts/ ($CMDS_ADDED added, $CMDS_UPDATED updated)"
+    else
+      info "Step 3.6: .kiro/prompts/ commands already up to date"
+    fi
   fi
 else
-  info "Step 3.6: .kiro/ or commands/ not found, skipping prompts symlink"
+  info "Step 3.6: .kiro/ or OMK commands/ not found, skipping"
 fi
 
 # ─── Step 3.7: Ensure scripts symlink (needed for ralph_loop.py) ──────────────

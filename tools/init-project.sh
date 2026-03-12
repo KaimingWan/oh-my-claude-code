@@ -139,10 +139,11 @@ if [ -d "$TEMPLATE_DIR/skills" ]; then
   echo "📦 Copied $SKILL_COUNT skills"
 fi
 
-# ── Symlink commands ──────────────────────────────────────────────────────────
+# ── Copy commands & link to .kiro/prompts ─────────────────────────────────────
 if [ -d "$TEMPLATE_DIR/commands" ]; then
   cp -r "$TEMPLATE_DIR/commands" "$TARGET/commands"
-  echo "📦 Copied commands"
+  ln -s ../commands "$TARGET/.kiro/prompts"
+  echo "📦 Copied commands → .kiro/prompts"
 fi
 
 # ── Create overlay scaffolding ────────────────────────────────────────────────
