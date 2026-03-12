@@ -26,6 +26,27 @@ if [ -n "$ACTIVE_PLAN" ] && [ -f "$ACTIVE_PLAN" ]; then
   [ -f "/tmp/verify-log-${WS_HASH}.jsonl" ] && : > "/tmp/verify-log-${WS_HASH}.jsonl"
 fi
 
+# --- PreCompletion baseline verification ---
+# Inject structured verification prompt against user's original request.
+WS=$(ws_hash)
+BASELINE="/tmp/session-baseline-${WS}.txt"
+if [ -f "$BASELINE" ] && [ -s "$BASELINE" ]; then
+  ORIGINAL=$(cat "$BASELINE")
+  ORIGINAL=$(printf '%.500s' "$ORIGINAL")
+  cat <<EOF
+
+🔍 **PreCompletion Verification** — 对照用户原始需求自检:
+
+> 原始需求: ${ORIGINAL}
+
+请逐条回答:
+1. 用户要求的每一项是否都已完成？如有遗漏，列出。
+2. 交付物是否经过验证（测试通过/实际运行/人工确认）？
+3. 是否有引入但用户未要求的额外内容？如有，说明理由。
+EOF
+  : > "$BASELINE"
+fi
+
 # KB health report (only if knowledge changed this session)
 bash "$(dirname "$0")/kb-health-report.sh" 2>/dev/null
 

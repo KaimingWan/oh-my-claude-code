@@ -61,5 +61,11 @@ else
   _ov_check_overlay 2>/dev/null && echo "⚠️ OV daemon unavailable at session start — knowledge sync skipped"
 fi
 
+# Save first user message as completion baseline for verify-completion.sh
+BASELINE="/tmp/session-baseline-$(ws_hash).txt"
+if [ ! -f "$BASELINE" ] && [ -n "$USER_MSG" ]; then
+  printf '%s' "$USER_MSG" > "$BASELINE"
+fi
+
 touch "$LESSONS_FLAG"
 exit 0
