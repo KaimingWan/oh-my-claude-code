@@ -43,6 +43,38 @@ else
   info "Step 1: No OMK submodule detected, skipping submodule update"
 fi
 
+# ─── Step 1.5: Sync framework hooks ──────────────────────────────────────────
+# Sync OMK hooks to project BEFORE validation. Framework dirs
+# (security/gate/feedback/_lib) are rsync'd. Dispatch scripts overwritten.
+# hooks/project/ is never touched (project-specific extensions).
+OMK_HOOKS="$OMK_ROOT/hooks"
+PROJECT_HOOKS="$PROJECT_ROOT/hooks"
+if [ -d "$OMK_HOOKS" ] && [ -d "$PROJECT_HOOKS" ]; then
+  HOOKS_SYNCED=0
+  for hook_subdir in security gate feedback _lib; do
+    if [ -d "$OMK_HOOKS/$hook_subdir" ]; then
+      mkdir -p "$PROJECT_HOOKS/$hook_subdir"
+      rsync -a "$OMK_HOOKS/$hook_subdir/" "$PROJECT_HOOKS/$hook_subdir/"
+      HOOKS_SYNCED=$((HOOKS_SYNCED + 1))
+    fi
+  done
+  for dispatch in "$OMK_HOOKS"/dispatch-*.sh; do
+    [ -f "$dispatch" ] || continue
+    cp "$dispatch" "$PROJECT_HOOKS/$(basename "$dispatch")"
+    chmod +x "$PROJECT_HOOKS/$(basename "$dispatch")"
+    HOOKS_SYNCED=$((HOOKS_SYNCED + 1))
+  done
+  ok "Step 1.5: Hooks synced ($HOOKS_SYNCED items from OMK, project/ untouched)"
+else
+  if [ -d "$OMK_HOOKS" ] && [ ! -d "$PROJECT_HOOKS" ]; then
+    mkdir -p "$PROJECT_HOOKS"
+    rsync -a "$OMK_HOOKS/" "$PROJECT_HOOKS/" --exclude='project/'
+    ok "Step 1.5: Hooks directory created from OMK"
+  else
+    info "Step 1.5: hooks/ not found in OMK, skipping"
+  fi
+fi
+
 # ─── Step 2: Validate project overlay ────────────────────────────────────────
 info "Step 2: Validating project overlay..."
 VALIDATE_SCRIPT="$OMK_ROOT/tools/validate-project.sh"
@@ -157,6 +189,7 @@ if [ -d "$OMK_KIRO_RULES" ] && [ -d "$PROJECT_KIRO_RULES" ]; then
 else
   info "Step 3.10: .kiro/rules/ source or target not found, skipping"
 fi
+
 
 
 # ─── Step 3.10.5: Sync framework skills ──────────────────────────────────────
