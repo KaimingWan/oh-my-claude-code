@@ -15,6 +15,7 @@
 | OV-first enforcer | `hooks/gate/enforce-ov-first.sh` | preToolUse[bash] | block |
 | Work directory enforcer | `hooks/gate/enforce-work-dir.sh` | preToolUse[write] | block |
 | Regression requirement | `hooks/gate/require-regression.sh` | preToolUse[bash] | block |
+| Lint-before-push gate | `hooks/gate/require-lint-before-push.sh` | preToolUse[bash] | block |
 | Post-write feedback (lint + test + progress remind) | `hooks/feedback/post-write.sh` | postToolUse[write] | feedback |
 | Bash execution log | `hooks/feedback/post-bash.sh` | postToolUse[bash] | feedback |
 | Correction detection | `hooks/feedback/correction-detect.sh` | userPromptSubmit | inject |
