@@ -177,9 +177,9 @@ def _main_agent_resources(extra_skills: list | None = None) -> list:
     resources = [
         "file://AGENTS.md",
         "file://knowledge/INDEX.md",
-        "skill://skills/planning/SKILL.md",
-        "skill://skills/reviewing/SKILL.md",
-        "skill://skills/coding/SKILL.md",
+        "skill://skills/omk-planning/SKILL.md",
+        "skill://skills/omk-reviewing/SKILL.md",
+        "skill://skills/omk-coding/SKILL.md",
     ]
     for skill_path in (extra_skills or []):
         resources.append(f"skill://{skill_path}/SKILL.md")
@@ -249,7 +249,7 @@ def reviewer_agent() -> dict:
         "prompt": "file://../../agents/reviewer-prompt.md",
         "tools": ["read", "write", "shell"],
         "allowedTools": ["read", "write", "shell"],
-        "resources": ["skill://skills/reviewing/SKILL.md"],
+        "resources": ["skill://skills/omk-reviewing/SKILL.md"],
         "hooks": {
             "agentSpawn": [{"command": "echo '🔍 REVIEWER: Never skip analysis — always read the full plan/diff before giving verdict'"}],
             "preToolUse": SECURITY_HOOKS_BASH,
@@ -276,7 +276,7 @@ def researcher_agent() -> dict:
         },
         "tools": ["read", "shell", "@ripgrep", "@fetch"],
         "allowedTools": ["read", "shell", "@ripgrep", "@fetch"],
-        "resources": ["skill://skills/research/SKILL.md"],
+        "resources": ["skill://skills/omk-research/SKILL.md"],
         "hooks": {
             "agentSpawn": [{"command": "echo '🔬 RESEARCHER: 1) Cite sources 2) Cross-verify claims 3) Report gaps explicitly'"}],
             "preToolUse": SECURITY_HOOKS_BASH,

@@ -49,4 +49,4 @@ This bash script will:
 The script prints a summary block on exit. Use that output to report:
 - How many checklist items completed vs total
 - Any `- [SKIP]` items with reasons
-- Read skills/finishing/SKILL.md for merge/PR/cleanup options
+- Read skills/omk-finishing/SKILL.md for merge/PR/cleanup options

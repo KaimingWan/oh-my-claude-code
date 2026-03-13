@@ -1,4 +1,4 @@
-You MUST read skills/research/SKILL.md first, then follow its search level strategy.
+You MUST read skills/omk-research/SKILL.md first, then follow its search level strategy.
 
 ## Rules
 1. Start at Level 0 (built-in knowledge). Only escalate if insufficient.

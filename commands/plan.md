@@ -1,10 +1,10 @@
 You MUST follow this exact sequence. Do NOT skip or reorder any step.
 
 ## Step 1: Deep Understanding (skill: planning Phase 0)
-Follow skills/planning/SKILL.md Phase 0 to build deep understanding of the goal. Ask clarifying questions, research if needed, and present design for creative/architectural work. Do NOT proceed until the user confirms the direction. After user confirms: `touch .brainstorm-confirmed`
+Follow skills/omk-planning/SKILL.md Phase 0 to build deep understanding of the goal. Ask clarifying questions, research if needed, and present design for creative/architectural work. Do NOT proceed until the user confirms the direction. After user confirms: `touch .brainstorm-confirmed`
 
 ## Step 2: Writing Plan (skill: planning)
-Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, an empty ## Review section, and a ## Checklist section with all acceptance criteria as `- [ ]` items. The checklist is the contract — @execute will not proceed without it.
+Read skills/omk-planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, an empty ## Review section, and a ## Checklist section with all acceptance criteria as `- [ ]` items. The checklist is the contract — @execute will not proceed without it.
 
 ### Checklist Structure Rules (CRITICAL — Ralph Loop depends on these)
 1. **All checklist items go in the `## Checklist` section** (as defined in SKILL.md). Do NOT scatter `- [ ]` items inline across Phases — Ralph Loop and hooks parse `## Checklist` as the single source of truth.
@@ -16,7 +16,7 @@ Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md.
 Before dispatching reviewer, confirm the plan file contains a `## Checklist` section with at least one `- [ ]` item. If missing, add it NOW — do not proceed to review without it.
 
 ## Step 4: Plan Review (skill: planning)
-Follow `skills/planning/SKILL.md` Phase 1.5 for plan review. Select review angles based on plan complexity, dispatch reviewer subagent(s), and apply calibration rules defined there.
+Follow `skills/omk-planning/SKILL.md` Phase 1.5 for plan review. Select review angles based on plan complexity, dispatch reviewer subagent(s), and apply calibration rules defined there.
 
 ## Step 5: Address Feedback
 If reviewer verdict is REQUEST CHANGES or REJECT:
