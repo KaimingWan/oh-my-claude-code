@@ -97,10 +97,10 @@ PLAN_PROMPT = """\
 You MUST follow this exact sequence. Do NOT skip or reorder any step.
 
 ## Step 1: Deep Understanding (skill: planning Phase 0)
-Follow skills/omk-planning/SKILL.md Phase 0 to build deep understanding of the goal. Ask clarifying questions, research if needed, and present design for creative/architectural work. Do NOT proceed until the user confirms the direction. After user confirms: `touch .brainstorm-confirmed`
+Follow skills/planning/SKILL.md Phase 0 to build deep understanding of the goal. Ask clarifying questions, research if needed, and present design for creative/architectural work. Do NOT proceed until the user confirms the direction. After user confirms: `touch .brainstorm-confirmed`
 
 ## Step 2: Writing Plan (skill: planning)
-Read skills/omk-planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, an empty ## Review section, and a ## Checklist section with all acceptance criteria as `- [ ]` items. The checklist is the contract — @execute will not proceed without it.
+Read skills/planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>.md. The plan MUST include: Goal, Steps with TDD structure, an empty ## Review section, and a ## Checklist section with all acceptance criteria as `- [ ]` items. The checklist is the contract — @execute will not proceed without it.
 
 ### Checklist Structure Rules (CRITICAL — Ralph Loop depends on these)
 1. **All checklist items go in the `## Checklist` section** (as defined in SKILL.md). Do NOT scatter `- [ ]` items inline across Phases — Ralph Loop and hooks parse `## Checklist` as the single source of truth.
@@ -112,7 +112,7 @@ Read skills/omk-planning/SKILL.md, then write a plan to docs/plans/<date>-<slug>
 Before dispatching reviewer, confirm the plan file contains a `## Checklist` section with at least one `- [ ]` item. If missing, add it NOW — do not proceed to review without it.
 
 ## Step 4: Plan Review (skill: planning)
-Follow `skills/omk-planning/SKILL.md` Phase 1.5 for plan review. Select review angles based on plan complexity, dispatch reviewer subagent(s), and apply calibration rules defined there.
+Follow `skills/planning/SKILL.md` Phase 1.5 for plan review. Select review angles based on plan complexity, dispatch reviewer subagent(s), and apply calibration rules defined there.
 
 ## Step 5: Address Feedback
 If reviewer verdict is REQUEST CHANGES or REJECT:
@@ -189,13 +189,13 @@ You MUST follow this exact sequence. @auto is a fully automated pipeline — no 
 
 ## Stage 2: Planning (Phase 1)
 
-Phase 0 已在 Stage 1 完成，直接从 Phase 1（写 plan）开始。Read `skills/omk-planning/SKILL.md` Phase 1 section only — do NOT re-run Phase 0 steps. Write plan to `docs/plans/<date>-<slug>.md` with Goal, Tasks (TDD structure), `## Review`, and `## Checklist` with verify commands.
+Phase 0 已在 Stage 1 完成，直接从 Phase 1（写 plan）开始。Read `skills/planning/SKILL.md` Phase 1 section only — do NOT re-run Phase 0 steps. Write plan to `docs/plans/<date>-<slug>.md` with Goal, Tasks (TDD structure), `## Review`, and `## Checklist` with verify commands.
 
 Follow all Checklist Structure Rules from the @plan prompt Step 2.
 
 ## Stage 3: Review (Phase 1.5 + Pre-mortem)
 
-Follow `skills/omk-planning/SKILL.md` Phase 1.5:
+Follow `skills/planning/SKILL.md` Phase 1.5:
 1. Run **Pre-mortem Analysis** — identify 3 failure risks (Integration / Assumption / Environment)
 2. Select review angles (2 fixed + 2 random = 4 reviewers)
 3. Dispatch 4 reviewer subagents in parallel with pre-mortem questions injected
@@ -292,7 +292,7 @@ fi
 """
 
 RESEARCH_PROMPT = """\
-You MUST read skills/omk-research/SKILL.md first, then follow its search level strategy.
+You MUST read skills/research/SKILL.md first, then follow its search level strategy.
 
 ## Rules
 1. Start at Level 0 (built-in knowledge). Only escalate if insufficient.
