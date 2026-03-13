@@ -120,44 +120,83 @@ else
 fi
 
 # ─── Step 3.6: Sync OMK commands to .kiro/prompts (Kiro CLI custom commands) ──
+# IMPORTANT: Commands that are also exposed as MCP prompts (with {content} args)
+# must NOT be copied to .kiro/prompts/ — file-based prompts take precedence over
+# MCP prompts in Kiro, which breaks argument passing.
 KIRO_PROMPTS="$PROJECT_ROOT/.kiro/prompts"
 OMK_COMMANDS="$OMK_ROOT/commands"
+MCP_PROMPTS_PY="$OMK_ROOT/scripts/mcp-prompts.py"
+
+# Build skip list from MCP prompt names
+MCP_SKIP=""
+if [ -f "$MCP_PROMPTS_PY" ]; then
+  MCP_SKIP=$(grep -A1 "@mcp.prompt" "$MCP_PROMPTS_PY" | grep "def " | sed 's/def \([a-z_]*\).*/\1/' | tr '\n' '|')
+fi
+
+_is_mcp_prompt() {
+  local name="$1"
+  [ -z "$MCP_SKIP" ] && return 1
+  echo "$MCP_SKIP" | grep -qw "$name"
+}
+
 if [ -d "$PROJECT_ROOT/.kiro" ] && [ -d "$OMK_COMMANDS" ]; then
-  if [ ! -e "$KIRO_PROMPTS" ]; then
-    # No prompts dir yet — symlink if project has no custom commands, else copy
-    if [ -e "$PROJECT_ROOT/commands" ]; then
-      ln -s ../commands "$KIRO_PROMPTS"
-      ok "Step 3.6: .kiro/prompts → ../commands symlink created"
-    else
-      mkdir -p "$KIRO_PROMPTS"
-      cp "$OMK_COMMANDS"/*.md "$KIRO_PROMPTS/" 2>/dev/null
-      ok "Step 3.6: .kiro/prompts/ created with OMK commands"
+  # If .kiro/prompts is a symlink, convert to real directory (symlinks cause
+  # MCP prompt shadowing when commands/ contains MCP-duplicate files)
+  if [ -L "$KIRO_PROMPTS" ]; then
+    LINK_TARGET=$(cd "$(dirname "$KIRO_PROMPTS")" && readlink "$(basename "$KIRO_PROMPTS")")
+    unlink "$KIRO_PROMPTS"
+    mkdir -p "$KIRO_PROMPTS"
+    # Resolve the symlink target relative to .kiro/
+    RESOLVED_DIR="$PROJECT_ROOT/.kiro/$LINK_TARGET"
+    if [ -d "$RESOLVED_DIR" ]; then
+      for f in "$RESOLVED_DIR"/*.md; do
+        [ -f "$f" ] || continue
+        fname=$(basename "$f" .md)
+        _is_mcp_prompt "$fname" && continue
+        cp "$f" "$KIRO_PROMPTS/"
+      done
     fi
-  elif [ -L "$KIRO_PROMPTS" ]; then
-    info "Step 3.6: .kiro/prompts is a symlink, skipping merge"
+    ok "Step 3.6: Converted .kiro/prompts symlink to directory (MCP duplicates excluded)"
+  fi
+
+  if [ ! -e "$KIRO_PROMPTS" ]; then
+    mkdir -p "$KIRO_PROMPTS"
+    for f in "$OMK_COMMANDS"/*.md; do
+      [ -f "$f" ] || continue
+      fname=$(basename "$f" .md)
+      _is_mcp_prompt "$fname" && continue
+      cp "$f" "$KIRO_PROMPTS/"
+    done
+    ok "Step 3.6: .kiro/prompts/ created with OMK commands (MCP duplicates excluded)"
   else
     # Real directory — merge OMK commands (don't overwrite project-specific ones)
     CMDS_ADDED=0
     CMDS_UPDATED=0
+    CMDS_SKIPPED=0
     for cmd_file in "$OMK_COMMANDS"/*.md; do
       [ -f "$cmd_file" ] || continue
-      cmd_name=$(basename "$cmd_file")
-      if [ ! -f "$KIRO_PROMPTS/$cmd_name" ]; then
-        cp "$cmd_file" "$KIRO_PROMPTS/$cmd_name"
+      cmd_name=$(basename "$cmd_file" .md)
+      # Skip commands that MCP already exposes (to avoid shadowing)
+      if _is_mcp_prompt "$cmd_name"; then
+        # Remove if previously synced (cleanup stale file-based duplicates)
+        if [ -f "$KIRO_PROMPTS/$cmd_name.md" ]; then
+          mv "$KIRO_PROMPTS/$cmd_name.md" ~/.Trash/ 2>/dev/null || true
+          CMDS_SKIPPED=$((CMDS_SKIPPED + 1))
+        fi
+        continue
+      fi
+      if [ ! -f "$KIRO_PROMPTS/$cmd_name.md" ]; then
+        cp "$cmd_file" "$KIRO_PROMPTS/$cmd_name.md"
         CMDS_ADDED=$((CMDS_ADDED + 1))
-      else
-        # Update if OMK version is newer
-        if [ "$cmd_file" -nt "$KIRO_PROMPTS/$cmd_name" ]; then
-          # Only update if content differs (project may have customized)
-          if ! diff -q "$cmd_file" "$KIRO_PROMPTS/$cmd_name" >/dev/null 2>&1; then
-            cp "$cmd_file" "$KIRO_PROMPTS/$cmd_name"
-            CMDS_UPDATED=$((CMDS_UPDATED + 1))
-          fi
+      elif [ "$cmd_file" -nt "$KIRO_PROMPTS/$cmd_name.md" ]; then
+        if ! diff -q "$cmd_file" "$KIRO_PROMPTS/$cmd_name.md" >/dev/null 2>&1; then
+          cp "$cmd_file" "$KIRO_PROMPTS/$cmd_name.md"
+          CMDS_UPDATED=$((CMDS_UPDATED + 1))
         fi
       fi
     done
-    if [ "$CMDS_ADDED" -gt 0 ] || [ "$CMDS_UPDATED" -gt 0 ]; then
-      ok "Step 3.6: Commands synced to .kiro/prompts/ ($CMDS_ADDED added, $CMDS_UPDATED updated)"
+    if [ "$CMDS_ADDED" -gt 0 ] || [ "$CMDS_UPDATED" -gt 0 ] || [ "$CMDS_SKIPPED" -gt 0 ]; then
+      ok "Step 3.6: Commands synced to .kiro/prompts/ ($CMDS_ADDED added, $CMDS_UPDATED updated, $CMDS_SKIPPED MCP-dupes removed)"
     else
       info "Step 3.6: .kiro/prompts/ commands already up to date"
     fi
