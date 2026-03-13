@@ -176,6 +176,27 @@ elif [ -d "$PROJECT_ROOT/scripts" ]; then
   info "Step 3.7: scripts/ is a real directory, skipping"
 fi
 
+# ─── Step 3.7.5: Sync agents/ prompt files (reviewer/researcher prompts) ──────
+OMK_AGENTS="$OMK_ROOT/agents"
+PROJECT_AGENTS="$PROJECT_ROOT/agents"
+if [ -d "$OMK_AGENTS" ]; then
+  mkdir -p "$PROJECT_AGENTS"
+  AGENTS_SYNCED=0
+  for f in "$OMK_AGENTS"/*.md; do
+    [ -f "$f" ] || continue
+    fname=$(basename "$f")
+    if [ ! -f "$PROJECT_AGENTS/$fname" ] || ! diff -q "$f" "$PROJECT_AGENTS/$fname" >/dev/null 2>&1; then
+      cp "$f" "$PROJECT_AGENTS/$fname"
+      AGENTS_SYNCED=$((AGENTS_SYNCED + 1))
+    fi
+  done
+  if [ "$AGENTS_SYNCED" -gt 0 ]; then
+    ok "Step 3.7.5: agents/ prompt files synced ($AGENTS_SYNCED updated)"
+  else
+    info "Step 3.7.5: agents/ prompt files already up to date"
+  fi
+fi
+
 # ─── Step 3.8: Ensure docs/plans/ directory (needed for @plan/@execute) ───────
 mkdir -p "$PROJECT_ROOT/docs/plans"
 info "Step 3.8: docs/plans/ ensured"
